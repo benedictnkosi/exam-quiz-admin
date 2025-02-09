@@ -1,18 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getSubjectsForGrade, updateSubjectGradeStatus, addSubject, getSubjectNames } from '@/services/api'
-
-interface Subject {
-    id: number
-    name: string
-    active: boolean
-    grade: {
-        id: number
-        number: number
-    }
-}
+import type { Subject } from '@/types/subjects'
 
 export default function SubjectGradeManager({ gradeId }: { gradeId: string }) {
     const { user } = useAuth()
@@ -23,22 +14,7 @@ export default function SubjectGradeManager({ gradeId }: { gradeId: string }) {
     const [selectedSubject, setSelectedSubject] = useState('')
     const [isAddingSubject, setIsAddingSubject] = useState(false)
 
-    useEffect(() => {
-        fetchSubjects()
-        fetchAvailableSubjects()
-    }, [gradeId])
-
-    const fetchAvailableSubjects = async () => {
-        try {
-            const names = await getSubjectNames()
-            setAvailableSubjects(names)
-        } catch (err) {
-            console.error('Error fetching subject names:', err)
-            setError('Failed to load available subjects')
-        }
-    }
-
-    const fetchSubjects = async () => {
+    const fetchSubjects = useCallback(async () => {
         if (!user?.uid) return
 
         try {
@@ -50,7 +26,22 @@ export default function SubjectGradeManager({ gradeId }: { gradeId: string }) {
         } finally {
             setLoading(false)
         }
-    }
+    }, [gradeId, user?.uid])
+
+    const fetchAvailableSubjects = useCallback(async () => {
+        try {
+            const names = await getSubjectNames()
+            setAvailableSubjects(names)
+        } catch (err) {
+            console.error('Error fetching subject names:', err)
+            setError('Failed to load available subjects')
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchSubjects()
+        fetchAvailableSubjects()
+    }, [fetchSubjects, fetchAvailableSubjects])
 
     const toggleSubjectStatus = async (subjectId: number, currentStatus: boolean) => {
         if (!user?.uid) return

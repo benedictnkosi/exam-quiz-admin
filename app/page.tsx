@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 import StatsCard from '@/components/dashboard/StatsCard'
 
 export default function Dashboard() {

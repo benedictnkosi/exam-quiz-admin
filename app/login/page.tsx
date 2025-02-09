@@ -22,7 +22,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider()
-      const result = await signInWithPopup(auth, provider)
+      await signInWithPopup(auth, provider)
 
       // After successful sign in, redirect to dashboard
       router.push('/')

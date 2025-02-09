@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import QuestionForm from '@/components/questions/QuestionForm'
-import AIOptionsGenerator from '@/components/questions/AIOptionsGenerator'
 
 export default function CreateQuestionPage() {
   const [formData, setFormData] = useState({
