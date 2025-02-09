@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"uid\":\"CAMSSENnaDVlbTlyTVhacmR4SXE0Z0VjUWhZS0NoSUlh2V\"\r\n}",
+					"raw": "{\"uid\":\"CAMSSENnaDVlbTlyTVhacmR4SXE0Z0VjUWhZS0NoSUlh2V4\",\r\n\"name\":\"timmy\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -119,10 +119,17 @@
 			"name": "Create Question",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "X-User-ID",
+						"value": "{{userUID}}",
+						"type": "text",
+						"disabled": true
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"question\": \"question with image answer2\",\r\n  \"type\": \"multiple_choice\",\r\n  \"subject\": \"Mathematical Literacy P1\",\r\n  \"context\": \"\",\r\n  \"answer\": \"this is the answer\",\r\n   \"options\": {\r\n    \"option1\": \"{\\\"answers\\\":\\\"Probability is the mass of an object in physics \",\r\n    \"option2\": \" Probability is the speed of light in a vacuum \",\r\n    \"option3\": \"\",\r\n    \"option4\": \"\"\r\n  },\r\n  \"term\": \"2\",\r\n  \"explanation\": \"\",\r\n  \"year\": 2023,\r\n  \"capturer\": \"nkosi@gmail.com\",\r\n  \"question_id\": 0\r\n}",
+					"raw": "{\r\n  \"question\": \"question with image answer3\",\r\n  \"type\": \"single\",\r\n  \"subject\": \"Mathematical Literacy P1\",\r\n  \"context\": \"\",\r\n  \"answer\": \"this is the answer\",\r\n   \"options\": {\r\n    \"option1\": \"{\\\"answers\\\":\\\"Probability is the mass of an object in physics \",\r\n    \"option2\": \" Probability is the speed of light in a vacuum \",\r\n    \"option3\": \"\",\r\n    \"option4\": \"\"\r\n  },\r\n  \"term\": \"2\",\r\n  \"explanation\": \"\",\r\n  \"year\": 2023,\r\n  \"capturer\": \"nkosi@gmail.com\",\r\n  \"question_id\": 0,\r\n  \"uid\":\"{{userUID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -151,7 +158,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"question\": \"What is the capital city of South Africa?\",\r\n    \"type\": \"single\",\r\n    \"subject\": \"Agricultural Sciences P1\",\r\n    \"context\": \"South Africa has three capital cities, each serving a different function.\",\r\n    \"answer\": \"Pretoria\",\r\n    \"options\": {\r\n        \"option1\": \"Pretoria\",\r\n        \"option2\": \"Johannesburg\",\r\n        \"option3\": \"Cape Town\",\r\n        \"option4\": \"Durban\"\r\n    },\r\n    \"term\": \"2\",\r\n    \"explanation\": \"Pretoria is the administrative capital of South Africa. Cape Town is the legislative capital, and Bloemfontein is the judicial capital.\",\r\n    \"year\": 2025,\r\n    \"capturer\": \"nkosi.benedict@gmail.com\",\r\n    \"question_id\": 0\r\n}",
+					"raw": "{\r\n    \"question\": \"test question\",\r\n    \"type\": \"single\",\r\n    \"subject\": \"Agricultural Sciences P1\",\r\n    \"context\": \"\",\r\n    \"answer\": \"answer\",\r\n    \"options\": {\r\n        \"option1\": \"\",\r\n        \"option2\": \"\",\r\n        \"option3\": \"\",\r\n        \"option4\": \"\"\r\n    },\r\n    \"explanation\": \"\",\r\n    \"year\": 2025,\r\n    \"term\": \"1\",\r\n    \"capturer\": \"nkosi.benedict@gmail.com\",\r\n    \"uid\": \"Kj5G98OKm2VKCxSTrG8YI1hGWes1\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -309,7 +316,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"subject_id\": \"22\"\r\n}",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"subject_id\": \"5\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -438,7 +445,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"question_id\": 55,\r\n  \"answer\": \"Pretoriaa\",\r\n  \"answers\": [],\r\n  \"requesting_type\": \"mock\"\r\n}",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"question_id\": 5,\r\n  \"answer\": \"Pretoriaa\",\r\n  \"answers\": [],\r\n  \"requesting_type\": \"real\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1729,7 +1736,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Mathematics\",\r\n    \"grade\": \"10\"\r\n}",
+					"raw": "{\r\n    \"name\": \"GeoGeo\",\r\n    \"grade\": \"10\",\r\n    \"uid\":\"{{userUID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -3039,6 +3046,11 @@
 							"value": "12"
 						},
 						{
+							"key": "status",
+							"value": null,
+							"disabled": true
+						},
+						{
 							"key": "subject",
 							"value": "Mathematical Literacy"
 						}
@@ -3347,6 +3359,327 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"status\": \"OK\",\n    \"subjects\": [\n        \"Agricultural Management Practices\",\n        \"Agricultural Sciences\",\n        \"Agricultural Technology\",\n        \"Business Studies\",\n        \"Civil Technology\",\n        \"Computer Application Technology\",\n        \"Consumer Studies\",\n        \"Dance Studies\",\n        \"Design\",\n        \"Dramatic Arts\",\n        \"Economics\",\n        \"Electrical Technology\",\n        \"Engineering Graphic and Design\",\n        \"Geography\",\n        \"History\",\n        \"Hospitality Studies\",\n        \"Information Technology\",\n        \"Life Orientation\",\n        \"Life Sciences\",\n        \"Marine Sciences\",\n        \"Mathematical Literacy\",\n        \"Mathematics\",\n        \"Mechanical Technology\",\n        \"Music\",\n        \"Physical Sciences\",\n        \"Religion Studies\",\n        \"Technical Mathematics\",\n        \"Technical Sciences\",\n        \"Tourism\",\n        \"Visual Arts\"\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "getQuestionsCapturedPerWeek",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/questions/captured-per-week",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"questions",
+						"captured-per-week"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/questions/captured-per-week",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"questions",
+								"captured-per-week"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "02d458"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "187"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Sun, 09 Feb 2025 11:24:15 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"data\": [\n        {\n            \"capturer\": \"msindazwetalent775@gmail.com\",\n            \"count\": 147,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"williamsarthur983@gmail.com\",\n            \"count\": 69,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"mnelisi079@gmail.com\",\n            \"count\": 56,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"nkosi.benedict@gmail.com\",\n            \"count\": 3,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"muntu@gmail.com\",\n            \"count\": 1,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        }\n    ],\n    \"total_questions\": 276\n}"
+				}
+			]
+		},
+		{
+			"name": "top-incorrect-questions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/questions/top-incorrect",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"questions",
+						"top-incorrect"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/questions/captured-per-week",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"questions",
+								"captured-per-week"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "02d458"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "187"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Sun, 09 Feb 2025 11:24:15 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"data\": [\n        {\n            \"capturer\": \"msindazwetalent775@gmail.com\",\n            \"count\": 147,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"williamsarthur983@gmail.com\",\n            \"count\": 69,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"mnelisi079@gmail.com\",\n            \"count\": 56,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"nkosi.benedict@gmail.com\",\n            \"count\": 3,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"muntu@gmail.com\",\n            \"count\": 1,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        }\n    ],\n    \"total_questions\": 276\n}"
+				}
+			]
+		},
+		{
+			"name": "users created-per-week",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/learners/created-per-week",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learners",
+						"created-per-week"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/questions/captured-per-week",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"questions",
+								"captured-per-week"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "02d458"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "187"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Sun, 09 Feb 2025 11:24:15 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"data\": [\n        {\n            \"capturer\": \"msindazwetalent775@gmail.com\",\n            \"count\": 147,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"williamsarthur983@gmail.com\",\n            \"count\": 69,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"mnelisi079@gmail.com\",\n            \"count\": 56,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"nkosi.benedict@gmail.com\",\n            \"count\": 3,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        },\n        {\n            \"capturer\": \"muntu@gmail.com\",\n            \"count\": 1,\n            \"week\": \"2025-02-03 to 2025-02-09\"\n        }\n    ],\n    \"total_questions\": 276\n}"
 				}
 			]
 		}

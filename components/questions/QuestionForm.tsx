@@ -101,12 +101,12 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       const questionType = initialData.type === 'multiple_choice' ? 'multiple' :
         initialData.type === 'true_false' ? 'true_false' : 'single'
 
-      // Parse the answer if it's a string representation of an array
+      // Parse the answer - remove array notation and quotes
       let parsedAnswer = initialData.answer
       try {
-        if (typeof initialData.answer === 'string' && initialData.answer.startsWith('[')) {
-          const parsed = JSON.parse(initialData.answer)
-          parsedAnswer = Array.isArray(parsed) ? parsed[0] : parsed
+        if (typeof initialData.answer === 'string') {
+          // Remove array brackets and quotes
+          parsedAnswer = initialData.answer.replace(/^\["(.+)"\]$/, '$1')
         }
       } catch (e) {
         console.error('Error parsing answer:', e)
@@ -296,13 +296,16 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         throw new Error('All options are required for multiple choice questions')
       }
 
+      // Clean up the answer by removing brackets and quotes if they exist
+      const cleanAnswer = formData.answer.replace(/^\["|"\]$/g, '')
+
       const payload: QuestionPayload = {
         question: formData.questionText,
         type: formData.questionType === 'single' ? 'single' :
           formData.questionType === 'multiple' ? 'multiple_choice' : 'true_false',
         subject: formData.subject,
         context: formData.context || '',
-        answer: formData.answer,
+        answer: cleanAnswer,  // Use cleaned answer here
         options: {
           option1: formData.options[0],
           option2: formData.options[1],
@@ -314,7 +317,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         term: formData.term,
         capturer: user.email,
         uid: user.uid,
-        question_id: mode === 'edit' && initialData ? initialData.id : 0  // Set proper question_id for updates
+        question_id: mode === 'edit' && initialData ? initialData.id : 0
       }
 
       const response: ApiResponse = await createQuestion(payload)
