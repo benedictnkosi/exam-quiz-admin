@@ -17,8 +17,7 @@ export default function ImageUpload({
   imageName,
   showReuseOption,
   lastUsedImage,
-  onResetImage
-}: ImageUploadProps) {
+  onResetImage }: ImageUploadProps) {
   return (
     <div className="mt-2">
       <label className="block text-sm text-gray-700 mb-1">

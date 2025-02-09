@@ -9,7 +9,6 @@ import {
   type QuestionPayload,
   getGrades,
   getActiveSubjects,
-  setQuestionImagePath,
   type DetailedQuestion
 } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -332,12 +331,6 @@ export default function QuestionForm({ initialData, mode = 'create' }: QuestionF
         const fileName = await handleImageUpload(formData.contextImage.file, 'question_context', questionId.toString())
         if (fileName) {
           setLastContextImage(fileName);
-          await setQuestionImagePath({
-            question_id: questionId.toString(),
-            image_name: fileName,
-            image_type: 'question_context',
-            uid: user.uid
-          })
         }
       } else if (formData.contextImage?.path) {
         // Reuse existing context image
@@ -588,8 +581,13 @@ export default function QuestionForm({ initialData, mode = 'create' }: QuestionF
         )}
 
         {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-            Question {mode === 'edit' ? 'updated' : 'created'} successfully!
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded space-y-1">
+            <p>Question {mode === 'edit' ? 'updated' : 'created'} successfully!</p>
+            {formData.contextImage?.path && !formData.contextImage.isNew && (
+              <p className="text-sm">
+                Used existing image: <span className="font-medium">{formData.contextImage.path}</span>
+              </p>
+            )}
           </div>
         )}
 
