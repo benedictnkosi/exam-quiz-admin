@@ -17,8 +17,8 @@ export default function ImageUpload({
   imageName,
   showReuseOption,
   lastUsedImage,
-  onReuseImage,
-  onResetImage }: ImageUploadProps) {
+  onResetImage
+}: ImageUploadProps) {
   return (
     <div className="mt-2">
       <label className="block text-sm text-gray-700 mb-1">
@@ -34,15 +34,6 @@ export default function ImageUpload({
           accept="image/*"
           className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
         />
-        {showReuseOption && lastUsedImage && (
-          <button
-            type="button"
-            onClick={onReuseImage}
-            className="px-4 py-2 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
-          >
-            Reuse Last Image
-          </button>
-        )}
         {showReuseOption && lastUsedImage && (
           <button
             type="button"
