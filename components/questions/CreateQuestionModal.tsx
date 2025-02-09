@@ -1,6 +1,5 @@
 'use client'
 
-import { type DetailedQuestion } from '@/services/api'
 import QuestionForm from './QuestionForm'
 
 interface CreateQuestionModalProps {

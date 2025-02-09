@@ -1,6 +1,6 @@
 'use client'
 
-import { ChangeEvent, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import ImageUpload from './ImageUpload'
 import { createQuestion, uploadQuestionImage, type QuestionPayload, getGrades, getActiveSubjects, setQuestionImagePath, type DetailedQuestion } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -190,7 +190,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     fetchSubjects()
   }, [formData.grade, initialData, mode])
 
-  const questionTypes = ['single', 'multiple', 'true_false']
   const terms = ['1', '2', '3', '4']
 
   const handleOptionChange = (index: number, value: string) => {
@@ -321,26 +320,8 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       }
 
       setSuccess(true)
-
-      // Only reset form if creating new question, not editing
-      if (mode === 'create') {
-        setFormData(prev => ({
-          ...prev,
-          questionText: '',
-          answer: '',
-          explanation: '',
-          options: ['', '', '', ''],
-          questionImage: null,
-          explanationImage: null,
-        }))
-      }
-
-      setTimeout(() => {
-        setSuccess(false)
-        if (onSuccess) {
-          onSuccess()
-        }
-      }, 1500)
+      resetForm()
+      onSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create question')
       console.error('Error creating question:', err)

@@ -1,6 +1,4 @@
 'use client'
-
-import { useState, useEffect } from 'react'
 import { type DetailedQuestion } from '@/services/api'
 import QuestionForm from './QuestionForm'
 

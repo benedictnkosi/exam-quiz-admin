@@ -3,11 +3,10 @@
 interface ImageUploadProps {
   onFileSelect: (file: File | null, imagePath?: string) => void
   label: string
-  currentImage: File | null | { file: File | null; path?: string; isNew: boolean }
   imageName?: string
 }
 
-export default function ImageUpload({ onFileSelect, label, currentImage, imageName }: ImageUploadProps) {
+export default function ImageUpload({ onFileSelect, label, imageName }: ImageUploadProps) {
   return (
     <div className="mt-2">
       <label className="block text-sm text-gray-700 mb-1">

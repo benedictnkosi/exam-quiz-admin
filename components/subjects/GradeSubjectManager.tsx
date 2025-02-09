@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
 import { getGrades, type Grade } from '@/services/api'
 import SubjectGradeManager from './SubjectGradeManager'
 

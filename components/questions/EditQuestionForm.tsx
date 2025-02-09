@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import QuestionForm from './QuestionForm'
 import { getQuestionById, type DetailedQuestion } from '@/services/api'
 
 export default function EditQuestionForm({ questionId }: { questionId: string }) {
-  const router = useRouter()
   const [question, setQuestion] = useState<DetailedQuestion | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

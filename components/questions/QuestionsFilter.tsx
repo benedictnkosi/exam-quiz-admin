@@ -9,7 +9,7 @@ interface QuestionsFilterProps {
     subject: string
     status: string
   }
-  setFilters: (filters: any) => void
+  setFilters: (filters: { grade: string; subject: string; status: string }) => void
   onSearch: () => void
 }
 

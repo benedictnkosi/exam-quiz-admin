@@ -8,8 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 const menuItems = [
   { path: '/', label: 'Dashboard' },
   { path: '/questions', label: 'Questions' },
-  { path: '/subjects', label: 'Manage Subjects' },
-  { path: '/admin-requests', label: 'Admin Requests' },
+  { path: '/subjects', label: 'Manage Subjects' }
 ]
 
 export default function Sidebar() {

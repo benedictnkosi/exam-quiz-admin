@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { setQuestionInactive, getQuestionById, type Question, type DetailedQuestion } from '@/services/api'
-import { useRouter } from 'next/navigation'
 import ViewQuestionModal from './ViewQuestionModal'
 import EditQuestionModal from './EditQuestionModal'
 
@@ -12,11 +11,9 @@ interface QuestionsTableProps {
 }
 
 export default function QuestionsTable({ questions, onDelete }: QuestionsTableProps) {
-  const router = useRouter()
   const [deleting, setDeleting] = useState<number | null>(null)
   const [viewingQuestion, setViewingQuestion] = useState<DetailedQuestion | null>(null)
   const [editingQuestion, setEditingQuestion] = useState<DetailedQuestion | null>(null)
-  const [loading, setLoading] = useState(false)
 
   const getSubjectDisplay = (subject: Question['subject']) => {
     if (typeof subject === 'string') return subject
@@ -36,10 +33,11 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
       await setQuestionInactive(questionId.toString())
       onDelete(questionId)
     } catch (error) {
-      alert('Failed to delete question')
+      alert(`Failed to delete question ${error}`)
     } finally {
       setDeleting(null)
     }
+
   }
 
   const handleView = async (question: Question) => {
