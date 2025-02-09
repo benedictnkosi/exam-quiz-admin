@@ -1,0 +1,3354 @@
+{
+	"info": {
+		"_postman_id": "346c8e9f-3b4d-4aba-8f28-f006d811c636",
+		"name": "learnMzansi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4965314"
+	},
+	"item": [
+		{
+			"name": "Create learner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"uid\":\"CAMSSENnaDVlbTlyTVhacmR4SXE0Z0VjUWhZS0NoSUlh2V\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/create",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"create"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Create learner",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"uid\":\"CAMSSENnaDVlbTlyTVhacmR4SXE0Z0VjUWhZS0NoSUlhV\",\r\n\"name\":\"benedict\",\r\n\"grade\":\"12\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"create"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 05 Feb 2025 18:19:30 GMT"
+						},
+						{
+							"key": "Expires",
+							"value": "Wed, 05 Feb 2025 18:19:30 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "d74dd9"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "56"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully created learner\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Create Question",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"question\": \"question with image answer2\",\r\n  \"type\": \"multiple_choice\",\r\n  \"subject\": \"Mathematical Literacy P1\",\r\n  \"context\": \"\",\r\n  \"answer\": \"this is the answer\",\r\n   \"options\": {\r\n    \"option1\": \"{\\\"answers\\\":\\\"Probability is the mass of an object in physics \",\r\n    \"option2\": \" Probability is the speed of light in a vacuum \",\r\n    \"option3\": \"\",\r\n    \"option4\": \"\"\r\n  },\r\n  \"term\": \"2\",\r\n  \"explanation\": \"\",\r\n  \"year\": 2023,\r\n  \"capturer\": \"nkosi@gmail.com\",\r\n  \"question_id\": 0\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/question/create",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"question",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Question Copy",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"question\": \"What is the capital city of South Africa?\",\r\n    \"type\": \"single\",\r\n    \"subject\": \"Agricultural Sciences P1\",\r\n    \"context\": \"South Africa has three capital cities, each serving a different function.\",\r\n    \"answer\": \"Pretoria\",\r\n    \"options\": {\r\n        \"option1\": \"Pretoria\",\r\n        \"option2\": \"Johannesburg\",\r\n        \"option3\": \"Cape Town\",\r\n        \"option4\": \"Durban\"\r\n    },\r\n    \"term\": \"2\",\r\n    \"explanation\": \"Pretoria is the administrative capital of South Africa. Cape Town is the legislative capital, and Bloemfontein is the judicial capital.\",\r\n    \"year\": 2025,\r\n    \"capturer\": \"nkosi.benedict@gmail.com\",\r\n    \"question_id\": 0\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/question/create",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"question",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "updateLearner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"name\": \"Benedict\",\r\n  \"grade\": \"12\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/update",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"update"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "updateLearner",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"name\": \"Benedict\",\r\n  \"grade\": \"10\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/update",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"update"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "b97ded"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Wed, 05 Feb 2025 15:26:10 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "56"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:26:10 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully updated learner\"\n}"
+				}
+			]
+		},
+		{
+			"name": "assignSubjectToLearner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"subject_id\": \"22\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/assign-subject",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"assign-subject"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\r\n  \"subject_id\": \"4\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/assign-subject",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"assign-subject"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "d59b63"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Wed, 05 Feb 2025 15:06:35 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "61"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:06:35 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully assigned subject to learner\"\n}"
+				}
+			]
+		},
+		{
+			"name": "checkLearnerAnswer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"question_id\": 55,\r\n  \"answer\": \"Pretoriaa\",\r\n  \"answers\": [],\r\n  \"requesting_type\": \"mock\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/check-answer",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"check-answer"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "checkLearnerAnswer",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"question_id\": 55,\r\n  \"answer\": \"Pretoriaa\",\r\n  \"answers\": [],\r\n  \"requesting_type\": \"mock\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/check-answer",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"check-answer"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "be57e1"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Wed, 05 Feb 2025 15:26:32 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "56"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:26:32 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"is_correct\": false,\n    \"correct_answers\": \"3\"\n}"
+				}
+			]
+		},
+		{
+			"name": "removeLearnerResultsBySubject",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"subject_id\": 23\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/remove-results",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"remove-results"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "removeLearnerResultsBySubject",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"subject_id\": 23\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/remove-results",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"remove-results"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "e851bb"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Wed, 05 Feb 2025 15:26:58 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "76"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:26:58 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully removed learner results for the subject\"\n}"
+				}
+			]
+		},
+		{
+			"name": "overide-term",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"override\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/update-overide-term",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"update-overide-term"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "overide-term",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"override\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/update-overide-term",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"update-overide-term"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "a0cdda"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Wed, 05 Feb 2025 15:27:12 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "59"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:27:12 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully set override term\"\n}"
+				}
+			]
+		},
+		{
+			"name": "setHigherGradeFlag",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"DNl3t8zGkzdHP9aVWlo3uWSINP92\",\r\n  \"learner_subject_id\": 10,\r\n  \"higher_grade\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/set-higher-grade-flag",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"set-higher-grade-flag"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "uploadImage",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "image",
+							"type": "file",
+							"src": "/C:/Users/Nhlaka/Downloads/Screenshot 2025-01-27 115323.png"
+						},
+						{
+							"key": "question_id",
+							"value": "5",
+							"type": "text"
+						},
+						{
+							"key": "image_type",
+							"value": "answer",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/upload-image",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"upload-image"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "fail",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/Nhlaka/Downloads/Screenshot 2025-01-27 115323.png"
+								},
+								{
+									"key": "question_id",
+									"value": "5",
+									"type": "text"
+								},
+								{
+									"key": "image_type",
+									"value": "answer",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/upload-image",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"upload-image"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 08 Feb 2025 09:51:18 GMT"
+						},
+						{
+							"key": "Expires",
+							"value": "Sat, 08 Feb 2025 09:51:18 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "dc803b"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "51"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"NOK\",\n    \"message\": \"No image file provided\"\n}"
+				}
+			]
+		},
+		{
+			"name": "updateQuestionImage",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"question_id\": 5,\r\n  \"image_name\": \"question.png\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/question/set-image-path",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"question",
+						"set-image-path"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "fail",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"question_id\": 5,\r\n  \"image_name\": \"question.png\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/question/set-image-path",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"question",
+								"set-image-path"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "429493"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Sat, 08 Feb 2025 09:42:00 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "49"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Sat, 08 Feb 2025 09:42:00 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"NOK\",\n    \"message\": \"Question not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "setImageForQuestionAnswer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"question_id\": 650,\r\n  \"image_name\": \"question.png\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/question/set-image-for-answer",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"question",
+						"set-image-for-answer"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"question_id\": 650,\r\n  \"image_name\": \"question.png\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/question/set-image-for-answer",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"question",
+								"set-image-for-answer"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "68de5b"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Sat, 08 Feb 2025 09:43:34 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "64"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Sat, 08 Feb 2025 09:43:34 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully set image path for question\"\n}"
+				}
+			]
+		},
+		{
+			"name": "setQuestionInactive",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"question_id\": 5\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/question/set-inactive",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"question",
+						"set-inactive"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"question_id\": 5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/question/set-inactive",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"question",
+								"set-inactive"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 08 Feb 2025 09:47:09 GMT"
+						},
+						{
+							"key": "Expires",
+							"value": "Sat, 08 Feb 2025 09:47:09 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "184968"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "65"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully set question to inactive\"\n}"
+				}
+			]
+		},
+		{
+			"name": "setQuestionStatus",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"question_id\": 5,\r\n  \"status\":\"approved\",\r\n  \"email\":\"nkosi.benedict@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/question/set-status",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"question",
+						"set-status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "removeSubjectFromLearner",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"subject_id\": 22\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/learner/remove-subject",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"remove-subject"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "removeSubjectFromLearner",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"subject_id\": 23\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/learner/remove-subject",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"remove-subject"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "b26ea8"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "expires",
+							"value": "Wed, 05 Feb 2025 15:23:53 GMT"
+						},
+						{
+							"key": "content-length",
+							"value": "85"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:23:53 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully removed subject from learner and deleted related results\"\n}"
+				}
+			]
+		},
+		{
+			"name": "logIssue",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"XR7VkzyEuoh1Ulij2bppadiAhfZ2\",\r\n  \"question_id\": 5,\r\n  \"comment\": \"testing\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/issue/log",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"issue",
+						"log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update learner role",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"uid\": \"{{userUID}}\",\r\n    \"role\": \"admin\",\r\n    \"requesting_uid\":\"{{userUID}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learner/role/update",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learner",
+						"role",
+						"update"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"uid\": \"{{userUID}}\",\r\n    \"role\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learner/role/update",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learner",
+								"role",
+								"update"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 09 Feb 2025 08:03:21 GMT"
+						},
+						{
+							"key": "Expires",
+							"value": "Sun, 09 Feb 2025 08:03:21 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "5d58c4"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "61"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully updated learner role\"\n}"
+				},
+				{
+					"name": "fail",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"uid\": \"{{userUID}}\",\r\n    \"role\": \"admin\",\r\n    \"requesting_uid\":\"{{userUID}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learner/role/update",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learner",
+								"role",
+								"update"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 09 Feb 2025 08:11:10 GMT"
+						},
+						{
+							"key": "Expires",
+							"value": "Sun, 09 Feb 2025 08:11:10 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "b906d3"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "72"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"NOK\",\n    \"message\": \"Users cannot update their own role to admin\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Create subject",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-User-ID",
+						"value": "{{userUID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Mathematics\",\r\n    \"grade\": \"10\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/subject/create",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"subject",
+						"create"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{userUID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Mathematics\",\r\n    \"grade\": \"10\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/subject/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"subject",
+								"create"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 09 Feb 2025 08:51:42 GMT"
+						},
+						{
+							"key": "Expires",
+							"value": "Sun, 09 Feb 2025 08:51:42 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "53233a"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "72"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully created subject\",\n    \"subject_id\": 33\n}"
+				}
+			]
+		},
+		{
+			"name": "update subject status",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-User-ID",
+						"value": "{{userUID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"subject_id\": 3, \"active\": true}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/subject/update-active",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"subject",
+						"update-active"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{userUID}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"subject_id\": 3, \"active\": true}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/subject/update-active",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"subject",
+								"update-active"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "max-age=0, must-revalidate, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 09 Feb 2025 08:58:59 GMT"
+						},
+						{
+							"key": "Expires",
+							"value": "Sun, 09 Feb 2025 08:58:59 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "b0011c"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "70"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"message\": \"Successfully updated subject active status\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Learner",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/learner?uid={{userUID}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{userUID}}"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Get Learner",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/learner?uid={{userUID}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner"
+							],
+							"query": [
+								{
+									"key": "uid",
+									"value": "{{userUID}}"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "0a6ed4"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "107"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:09:50 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": 27,\n    \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\n    \"name\": \"Benedict\",\n    \"overide_term\": true,\n    \"grade\": {\n        \"id\": 1,\n        \"number\": 12,\n        \"active\": 1\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Grades",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"question_id\": 5,\r\n  \"comment\": \"testing\"\r\n}"
+				},
+				"url": {
+					"raw": "{{host}}/public/learn/grades",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"grades"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Get Grades",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"uid\": \"{{userUID}}\",\r\n  \"question_id\": 5,\r\n  \"comment\": \"testing\"\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/public/learn/grades",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"grades"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "ce999a"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "72"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:27:52 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"grades\": [\n        {\n            \"id\": 1,\n            \"number\": 12,\n            \"active\": 1\n        },\n        {\n            \"id\": 2,\n            \"number\": 11,\n            \"active\": 1\n        },\n        {\n            \"id\": 3,\n            \"number\": 10,\n            \"active\": 1\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "getLearnerSubjects",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/learner/subjects?uid={{userUID}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"subjects"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{userUID}}"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "getLearnerSubjects",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/learner/subjects?uid={{userUID}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"subjects"
+							],
+							"query": [
+								{
+									"key": "uid",
+									"value": "{{userUID}}"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "d77127"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "377"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:09:14 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"subject\": {\n            \"id\": 77,\n            \"highergrade\": false,\n            \"overideterm\": false,\n            \"last_updated\": \"2025-02-05T15:06:35+00:00\",\n            \"percentage\": 0,\n            \"subject\": {\n                \"id\": 4,\n                \"name\": \"Agricultural Management Practices\",\n                \"active\": false,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            },\n            \"learner\": {\n                \"id\": 27,\n                \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\n                \"name\": \"Benedict\",\n                \"overide_term\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            }\n        },\n        \"total_questions\": 0,\n        \"answered_questions\": 0\n    },\n    {\n        \"subject\": {\n            \"id\": 75,\n            \"highergrade\": false,\n            \"overideterm\": false,\n            \"last_updated\": \"2025-02-05T06:58:12+00:00\",\n            \"percentage\": 0,\n            \"subject\": {\n                \"id\": 41,\n                \"name\": \"Business Studies P2\",\n                \"active\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            },\n            \"learner\": {\n                \"id\": 27,\n                \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\n                \"name\": \"Benedict\",\n                \"overide_term\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            }\n        },\n        \"total_questions\": 0,\n        \"answered_questions\": 0\n    },\n    {\n        \"subject\": {\n            \"id\": 74,\n            \"highergrade\": false,\n            \"overideterm\": false,\n            \"last_updated\": \"2025-02-04T07:58:29+00:00\",\n            \"percentage\": 0,\n            \"subject\": {\n                \"id\": 24,\n                \"name\": \"Mathematics P1\",\n                \"active\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            },\n            \"learner\": {\n                \"id\": 27,\n                \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\n                \"name\": \"Benedict\",\n                \"overide_term\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            }\n        },\n        \"total_questions\": 40,\n        \"answered_questions\": 0\n    },\n    {\n        \"subject\": {\n            \"id\": 73,\n            \"highergrade\": false,\n            \"overideterm\": false,\n            \"last_updated\": \"2025-02-03T20:19:05+00:00\",\n            \"percentage\": 0.25,\n            \"subject\": {\n                \"id\": 22,\n                \"name\": \"Life Sciences P1\",\n                \"active\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            },\n            \"learner\": {\n                \"id\": 27,\n                \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\n                \"name\": \"Benedict\",\n                \"overide_term\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            }\n        },\n        \"total_questions\": 61,\n        \"answered_questions\": 4\n    },\n    {\n        \"subject\": {\n            \"id\": 30,\n            \"highergrade\": false,\n            \"overideterm\": false,\n            \"last_updated\": \"2025-01-29T14:08:17+00:00\",\n            \"percentage\": 0,\n            \"subject\": {\n                \"id\": 23,\n                \"name\": \"Mathematical Literacy P1\",\n                \"active\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            },\n            \"learner\": {\n                \"id\": 27,\n                \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\n                \"name\": \"Benedict\",\n                \"overide_term\": true,\n                \"grade\": {\n                    \"id\": 1,\n                    \"number\": 12,\n                    \"active\": 1\n                }\n            }\n        },\n        \"total_questions\": 76,\n        \"answered_questions\": 4\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "getQuestionByID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/questions?id=44",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"questions"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "44"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "getQuestionByID",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/questions?id=44",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"questions"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "44"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "3c9669"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "691"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:28:21 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 44,\n        \"question\": \"State the Doppler effect in words.\",\n        \"type\": \"multiple_choice\",\n        \"context\": \"An ambulance is moving away from a stationary listener with a constant velocity of 25 m∙s-1. The siren of the ambulance emits sound waves at a frequency of 550 Hz. The listener detects the frequency of these sound waves\\nto be 512,64 Hz.\\n\\nIgnore the effects of wind.\\n\",\n        \"answer\": \"[\\\"The change in frequency (pitch) of the sound detected by a listener because the sound source and the listener have different velocities relative to the medium of sound propagation. \\\"]\",\n        \"options\": {\n            \"option1\": \"The Doppler effect is the phenomenon where light waves change color due to variations in the temperature of the emitting source.\",\n            \"option2\": \"The Doppler effect describes how the intensity of a sound increases as the sound source moves away from the listener.\",\n            \"option3\": \"The change in frequency (pitch) of the sound detected by a listener because the sound source and the listener have different velocities relative to the medium of sound propagation. \",\n            \"option4\": \"The Doppler effect refers to the sensation of hearing echo sounds in a large empty space.\"\n        },\n        \"term\": 2,\n        \"explanation\": \"\",\n        \"active\": true,\n        \"year\": 2023,\n        \"answer_image\": \"679b625a5554d.png\",\n        \"capturer\": \"mnelisi079@gmail.com\",\n        \"status\": \"approved\",\n        \"reviewer\": \"\",\n        \"created\": \"2025-02-02T18:47:08+00:00\",\n        \"subject\": {\n            \"id\": 28,\n            \"name\": \"Physical Sciences P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        }\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "getRandomQuestionBySubjectId",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/question/random?subject_id=22&uid={{userUID}}&question_id=0",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"question",
+						"random"
+					],
+					"query": [
+						{
+							"key": "subject_id",
+							"value": "22"
+						},
+						{
+							"key": "uid",
+							"value": "{{userUID}}"
+						},
+						{
+							"key": "question_id",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "getRandomQuestionBySubjectId",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/question/random?subject_id=22&uid={{userUID}}&question_id=0",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"question",
+								"random"
+							],
+							"query": [
+								{
+									"key": "subject_id",
+									"value": "22"
+								},
+								{
+									"key": "uid",
+									"value": "{{userUID}}"
+								},
+								{
+									"key": "question_id",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "a4cf19"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "519"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:30:39 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": 250,\n    \"question\": \"Name the structure in the ear where the organ of Corti is located.\\n\\n\",\n    \"type\": \"single\",\n    \"context\": \"Workers in some factories are constantly exposed to loud noise for long periods. This can destroy the hair cells in the organ of Corti and damage the auditory nerve, resulting in hearing loss.\\nA survey was conducted in a developing country from 2014 to 2018, to establish the number of factory workers who suffered from hearing loss.\\n\\nThe results are shown in the table\\n\",\n    \"answer\": \"[\\\"Cochlea\\\"]\",\n    \"options\": {\n        \"option1\": \"\",\n        \"option2\": \"\",\n        \"option3\": \"\",\n        \"option4\": \"\"\n    },\n    \"term\": 2,\n    \"image_path\": \"679b3ee6d64cf.png\",\n    \"explanation\": \"\",\n    \"active\": true,\n    \"year\": 2023,\n    \"capturer\": \"mnelisi079@gmail.com\",\n    \"status\": \"approved\",\n    \"reviewer\": \"\",\n    \"created\": \"2025-02-02T18:47:08+00:00\",\n    \"subject\": {\n        \"id\": 22,\n        \"name\": \"Life Sciences P1\",\n        \"active\": true,\n        \"grade\": {\n            \"id\": 1,\n            \"number\": 12,\n            \"active\": 1\n        }\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "getSubjectsNotEnrolledByLearner",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/learner/subjects-not-enrolled?uid={{userUID}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"subjects-not-enrolled"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{userUID}}"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "getSubjectsNotEnrolledByLearner",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/learner/subjects-not-enrolled?uid={{userUID}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"subjects-not-enrolled"
+							],
+							"query": [
+								{
+									"key": "uid",
+									"value": "{{userUID}}"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "7ef7e1"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "217"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:10:10 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"subjects\": [\n        {\n            \"id\": 5,\n            \"name\": \"Agricultural Sciences P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 43,\n            \"name\": \"Agricultural Sciences P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 7,\n            \"name\": \"Business Studies P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 14,\n            \"name\": \"Economics P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 42,\n            \"name\": \"Economics P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 17,\n            \"name\": \"Geography P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 40,\n            \"name\": \"Geography P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 38,\n            \"name\": \"Life Sciences P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 34,\n            \"name\": \"Mathematical Literacy P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 37,\n            \"name\": \"Mathematics P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 28,\n            \"name\": \"Physical Sciences P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 35,\n            \"name\": \"Physical Sciences P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        }\n    ]\n}"
+				},
+				{
+					"name": "getSubjectsNotEnrolledByLearner",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/learner/subjects-not-enrolled?uid={{userUID}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"subjects-not-enrolled"
+							],
+							"query": [
+								{
+									"key": "uid",
+									"value": "{{userUID}}"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 05 Feb 2025 17:25:33 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "0313a8"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "366"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"subjects\": [\n        {\n            \"id\": 3,\n            \"name\": \"Agricultural Management Practices\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 3,\n                \"number\": 10,\n                \"active\": 1\n            },\n            \"totalQuestions\": 0\n        },\n        {\n            \"id\": 4,\n            \"name\": \"Agricultural Sciences\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 3,\n                \"number\": 10,\n                \"active\": 1\n            },\n            \"totalQuestions\": 0\n        },\n        {\n            \"id\": 17,\n            \"name\": \"History\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 3,\n                \"number\": 10,\n                \"active\": 1\n            },\n            \"totalQuestions\": 0\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "getLearnerSubjectPercentage",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/learner/subject-percentage?uid={{userUID}}&subject_id=4",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"subject-percentage"
+					],
+					"query": [
+						{
+							"key": "uid",
+							"value": "{{userUID}}"
+						},
+						{
+							"key": "subject_id",
+							"value": "4"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "getLearnerSubjectPercentage",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/learner/subject-percentage?uid={{userUID}}&subject_id=4",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"learner",
+								"subject-percentage"
+							],
+							"query": [
+								{
+									"key": "uid",
+									"value": "{{userUID}}"
+								},
+								{
+									"key": "subject_id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "383d50"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "32"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:10:41 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"percentage\": 0\n}"
+				}
+			]
+		},
+		{
+			"name": "getAllActiveSubjects",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/subjects/active?grade=12",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"subjects",
+						"active"
+					],
+					"query": [
+						{
+							"key": "grade",
+							"value": "12"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "getAllActiveSubjects",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/subjects/active?grade=12",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"subjects",
+								"active"
+							],
+							"query": [
+								{
+									"key": "grade",
+									"value": "12"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "cache-control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "access-control-allow-methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "x-debug-token",
+							"value": "ca2605"
+						},
+						{
+							"key": "x-robots-tag",
+							"value": "noindex"
+						},
+						{
+							"key": "content-length",
+							"value": "239"
+						},
+						{
+							"key": "content-encoding",
+							"value": "br"
+						},
+						{
+							"key": "vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "date",
+							"value": "Wed, 05 Feb 2025 15:31:04 GMT"
+						},
+						{
+							"key": "server",
+							"value": "LiteSpeed"
+						},
+						{
+							"key": "alt-svc",
+							"value": "h3=\":443\"; ma=2592000, h3-29=\":443\"; ma=2592000, h3-Q050=\":443\"; ma=2592000, h3-Q046=\":443\"; ma=2592000, h3-Q043=\":443\"; ma=2592000, quic=\":443\"; ma=2592000; v=\"43,46\""
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"subjects\": [\n        {\n            \"id\": 5,\n            \"name\": \"Agricultural Sciences P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 43,\n            \"name\": \"Agricultural Sciences P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 7,\n            \"name\": \"Business Studies P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 41,\n            \"name\": \"Business Studies P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 14,\n            \"name\": \"Economics P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 42,\n            \"name\": \"Economics P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 17,\n            \"name\": \"Geography P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 40,\n            \"name\": \"Geography P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 22,\n            \"name\": \"Life Sciences P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 38,\n            \"name\": \"Life Sciences P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 23,\n            \"name\": \"Mathematical Literacy P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 34,\n            \"name\": \"Mathematical Literacy P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 24,\n            \"name\": \"Mathematics P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 37,\n            \"name\": \"Mathematics P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 28,\n            \"name\": \"Physical Sciences P1\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 35,\n            \"name\": \"Physical Sciences P2\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Download File",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/learner/get-image?image=67a37f522dc3b.png",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"learner",
+						"get-image"
+					],
+					"query": [
+						{
+							"key": "image",
+							"value": "67a37f522dc3b.png"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getQuestionsByGradeAndSubject",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/questions/by-grade-subject?grade=12&subject=Mathematical Literacy",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"questions",
+						"by-grade-subject"
+					],
+					"query": [
+						{
+							"key": "grade",
+							"value": "12"
+						},
+						{
+							"key": "subject",
+							"value": "Mathematical Literacy"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllActiveIssues",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/issues/active",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"issues",
+						"active"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getLearnerByRole",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learners/by-role?role=admin",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learners",
+						"by-role"
+					],
+					"query": [
+						{
+							"key": "role",
+							"value": "admin"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learners/by-role?role=admin",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learners",
+								"by-role"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "admin"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 09 Feb 2025 08:05:32 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "3879a3"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "167"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"learners\": [\n        {\n            \"id\": 2,\n            \"uid\": \"pn2XIXBUQXfjyKRNC1EFNVq8h3B2\",\n            \"name\": \"Benedict\",\n            \"overide_term\": true,\n            \"role\": \"admin\",\n            \"grade\": {\n                \"id\": 1,\n                \"number\": 12,\n                \"active\": 1\n            }\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "get grade subject",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/subjects/by-grade?grade=10",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"subjects",
+						"by-grade"
+					],
+					"query": [
+						{
+							"key": "grade",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/subjects/by-grade?grade=10",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"subjects",
+								"by-grade"
+							],
+							"query": [
+								{
+									"key": "grade",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 09 Feb 2025 08:58:03 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "9f046d"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "394"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"subjects\": [\n        {\n            \"id\": 3,\n            \"name\": \"Agricultural Management Practices\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 3,\n                \"number\": 10,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 4,\n            \"name\": \"Agricultural Sciences\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 3,\n                \"number\": 10,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 17,\n            \"name\": \"History\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 3,\n                \"number\": 10,\n                \"active\": 1\n            }\n        },\n        {\n            \"id\": 33,\n            \"name\": \"Mathematics\",\n            \"active\": true,\n            \"grade\": {\n                \"id\": 3,\n                \"number\": 10,\n                \"active\": 1\n            }\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "get subject names",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/public/learn/subjects/names",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"public",
+						"learn",
+						"subjects",
+						"names"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/public/learn/subjects/names",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"public",
+								"learn",
+								"subjects",
+								"names"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Content-Type, Authorization"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, POST, PUT, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 09 Feb 2025 09:01:04 GMT"
+						},
+						{
+							"key": "X-Debug-Token",
+							"value": "15187f"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						},
+						{
+							"key": "Content-Length",
+							"value": "615"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"OK\",\n    \"subjects\": [\n        \"Agricultural Management Practices\",\n        \"Agricultural Sciences\",\n        \"Agricultural Technology\",\n        \"Business Studies\",\n        \"Civil Technology\",\n        \"Computer Application Technology\",\n        \"Consumer Studies\",\n        \"Dance Studies\",\n        \"Design\",\n        \"Dramatic Arts\",\n        \"Economics\",\n        \"Electrical Technology\",\n        \"Engineering Graphic and Design\",\n        \"Geography\",\n        \"History\",\n        \"Hospitality Studies\",\n        \"Information Technology\",\n        \"Life Orientation\",\n        \"Life Sciences\",\n        \"Marine Sciences\",\n        \"Mathematical Literacy\",\n        \"Mathematics\",\n        \"Mechanical Technology\",\n        \"Music\",\n        \"Physical Sciences\",\n        \"Religion Studies\",\n        \"Technical Mathematics\",\n        \"Technical Sciences\",\n        \"Tourism\",\n        \"Visual Arts\"\n    ]\n}"
+				}
+			]
+		}
+	]
+}
