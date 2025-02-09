@@ -32,7 +32,7 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
   const [approving, setApproving] = useState(false)
 
   const getImageUrl = (imageName: string) => {
-    return `${API_BASE_URL}/learner/get-image?image=${imageName}`
+    return `https://prices.aluvefarm.co.za/public/learn/learner/get-image?image=${imageName}`
   }
 
   const checkAnswer = async (userAnswer: string) => {

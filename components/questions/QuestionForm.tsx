@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import ImageUpload from './ImageUpload'
-import { createQuestion, uploadQuestionImage, type QuestionPayload, getGrades, getActiveSubjects, setQuestionImagePath, type DetailedQuestion } from '@/services/api'
+import {
+  API_BASE_URL,
+  createQuestion,
+  uploadQuestionImage,
+  type QuestionPayload,
+  getGrades,
+  getActiveSubjects,
+  setQuestionImagePath,
+  type DetailedQuestion
+} from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import AIOptionsGenerator from './AIOptionsGenerator'
@@ -32,7 +41,6 @@ interface FormData {
 interface QuestionFormProps {
   initialData?: DetailedQuestion
   mode?: 'create' | 'edit'
-  onSuccess?: () => void
 }
 
 interface Grade {
@@ -58,7 +66,7 @@ interface ApiResponse {
   question_id?: number
 }
 
-export default function QuestionForm({ initialData, mode = 'create', onSuccess }: QuestionFormProps) {
+export default function QuestionForm({ initialData, mode = 'create' }: QuestionFormProps) {
   const { user } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -68,6 +76,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [loadingGrades, setLoadingGrades] = useState(true)
   const [loadingSubjects, setLoadingSubjects] = useState(false)
+  const [lastContextImage, setLastContextImage] = useState<string | null>(null)
 
   const initialFormState = {
     questionText: '',
@@ -131,6 +140,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   })
 
   const resetForm = () => {
+    // Clear form data
     setFormData(prev => ({
       ...prev,
       questionText: '',
@@ -139,7 +149,14 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       options: ['', '', '', ''],
       questionImage: null,
       explanationImage: null,
+      // Keep contextImage if needed
     }))
+
+    // Force reset all file inputs
+    const fileInputs = document.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
+    fileInputs.forEach(input => {
+      input.value = '';
+    })
   }
 
   useEffect(() => {
@@ -201,21 +218,46 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const handleImageChange = (field: 'contextImage' | 'questionImage' | 'explanationImage') =>
     (file: File | null, imagePath?: string) => {
       if (field === 'contextImage') {
+        const newContextImage = file ? {
+          file,
+          path: imagePath || '',
+          isNew: !imagePath
+        } : null;
         setFormData({
           ...formData,
-          [field]: file ? {
-            file,
-            path: imagePath || '',
-            isNew: !imagePath
-          } : null
-        })
+          [field]: newContextImage
+        });
+        if (file) {
+          setLastContextImage(null); // Clear last used when new file selected
+        }
       } else {
         setFormData({
           ...formData,
           [field]: file
-        })
+        });
       }
     }
+
+  const handleReuseContextImage = () => {
+    if (lastContextImage) {
+      setFormData(prev => ({
+        ...prev,
+        contextImage: {
+          file: null,
+          path: lastContextImage,
+          isNew: false
+        }
+      }));
+    }
+  }
+
+  const handleResetContextImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      contextImage: null
+    }));
+    setLastContextImage(null);
+  }
 
   const isMultipleChoice = formData.questionType === 'multiple'
 
@@ -261,20 +303,20 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         context: formData.context || '',
         answer: formData.answer,
         options: {
-          option1: formData.options[0] || '',
-          option2: formData.options[1] || '',
-          option3: formData.options[2] || '',
-          option4: formData.options[3] || '',
+          option1: formData.options[0],
+          option2: formData.options[1],
+          option3: formData.options[2],
+          option4: formData.options[3],
         },
-        term: formData.term,
         explanation: formData.explanation || '',
         year: formData.examYear,
+        term: formData.term,
         capturer: user.email,
-        question_id: mode === 'edit' && initialData ? initialData.id : 0,
+        uid: user.uid,
+        question_id: mode === 'edit' && initialData ? initialData.id : 0  // Set proper question_id for updates
       }
 
-      // First create the question
-      const response: ApiResponse = await createQuestion(payload, user.uid)
+      const response: ApiResponse = await createQuestion(payload)
 
       if (response.status === 'NOK') {
         throw new Error(response.message || 'Failed to create question')
@@ -285,43 +327,45 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         throw new Error('Question ID not received from server')
       }
 
-      // Handle image uploads with UID
-      if (formData.contextImage?.file) {
+      // Handle context image - only upload if it's a new file
+      if (formData.contextImage?.file && formData.contextImage.isNew) {
         const fileName = await handleImageUpload(formData.contextImage.file, 'question_context', questionId.toString())
         if (fileName) {
+          setLastContextImage(fileName);
           await setQuestionImagePath({
             question_id: questionId.toString(),
             image_name: fileName,
-            image_type: 'question_context'
+            image_type: 'question_context',
+            uid: user.uid
           })
         }
+      } else if (formData.contextImage?.path) {
+        // Reuse existing context image
+        await fetch(`${API_BASE_URL}/question/set-image-path`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question_id: questionId.toString(),
+            image_name: formData.contextImage.path,
+            image_type: 'question_context',
+            uid: user.uid
+          })
+        })
       }
 
+      // Handle other images normally...
       if (formData.questionImage) {
-        const fileName = await handleImageUpload(formData.questionImage, 'question', questionId.toString())
-        if (fileName) {
-          await setQuestionImagePath({
-            question_id: questionId.toString(),
-            image_name: fileName,
-            image_type: 'question'
-          })
-        }
+        await handleImageUpload(formData.questionImage, 'question', questionId.toString())
       }
 
       if (formData.explanationImage) {
-        const fileName = await handleImageUpload(formData.explanationImage, 'answer', questionId.toString())
-        if (fileName) {
-          await setQuestionImagePath({
-            question_id: questionId.toString(),
-            image_name: fileName,
-            image_type: 'answer'
-          })
-        }
+        await handleImageUpload(formData.explanationImage, 'answer', questionId.toString())
       }
 
       setSuccess(true)
       resetForm()
-      onSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create question')
       console.error('Error creating question:', err)
@@ -347,7 +391,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <ImageUpload
               onFileSelect={handleImageChange('questionImage')}
               label="Upload Question Image"
-              imageName={initialData?.question_image_path}
+              imageName={formData.questionImage ? undefined : undefined}
             />
           </div>
 
@@ -460,7 +504,12 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <ImageUpload
               onFileSelect={handleImageChange('contextImage')}
               label="Upload Context Image (Optional)"
-              imageName={initialData?.image_path}
+              imageName={formData.contextImage?.path}
+              showReuseOption={true}
+              lastUsedImage={lastContextImage}
+              onReuseImage={handleReuseContextImage}
+              onResetImage={handleResetContextImage}
+              showResetButton={true}
             />
           </div>
 
@@ -527,7 +576,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <ImageUpload
               onFileSelect={handleImageChange('explanationImage')}
               label="Upload Explanation Image (Optional)"
-              imageName={initialData?.answer_image}
+              imageName={formData.explanationImage ? undefined : undefined}
             />
           </div>
         </div>

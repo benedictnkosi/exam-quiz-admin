@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://prices.aluvefarm.co.za/public/learn'
+export const API_BASE_URL = 'https://prices.aluvefarm.co.za/public/learn'
 
 const getHeaders = () => {
   return {
@@ -8,7 +8,7 @@ const getHeaders = () => {
 
 export interface QuestionPayload {
   question: string
-  type: 'single' | 'multiple_choice' | 'true_false'
+  type: string
   subject: string
   context: string
   answer: string
@@ -18,11 +18,12 @@ export interface QuestionPayload {
     option3: string
     option4: string
   }
-  term: string
   explanation: string
   year: number
+  term: string
   capturer: string
-  question_id: number
+  uid: string
+  question_id?: number
 }
 
 interface ApiResponse {
@@ -32,16 +33,20 @@ interface ApiResponse {
   fileName?: string
 }
 
-export async function createQuestion(data: any, uid: string): Promise<ApiResponse> {
+export async function createQuestion(data: QuestionPayload): Promise<ApiResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/question/create`, {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...data,
+        question_id: data.question_id || 0
+      }),
     })
 
     const result: ApiResponse = await response.json()
-
     if (!response.ok || result.status === 'NOK') {
       throw new Error(result.message || 'Failed to create question')
     }
@@ -68,7 +73,6 @@ export async function uploadQuestionImage(
   try {
     const response = await fetch(`${API_BASE_URL}/learner/upload-image`, {
       method: 'POST',
-      headers: { 'X-User-ID': uid },
       body: formData,
     })
 
@@ -148,7 +152,8 @@ export async function getActiveSubjects(grade: string) {
 interface SetImagePathPayload {
   question_id: string
   image_name: string  // Changed from image_path to image_name
-  image_type: 'question_context' | 'question' | 'answer'
+  image_type: 'question_context' | 'question' | 'answer',
+  uid: string
 }
 
 export async function setQuestionImagePath(data: SetImagePathPayload): Promise<ApiResponse> {

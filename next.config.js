@@ -6,7 +6,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'prices.aluvefarm.co.za',
         port: '',
-        pathname: '/public/learn/learner/get-image/**',
+        pathname: '/public/learn/learner/get-image',
       },
     ],
   },
