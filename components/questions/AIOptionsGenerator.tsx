@@ -54,7 +54,10 @@ export default function AIOptionsGenerator({
       }
 
       const generatedText = data.choices[0].message.content
-      const wrongOptions = generatedText.split('_').filter(Boolean)
+      // Split by underscore if present, otherwise split by comma
+      const wrongOptions = generatedText.includes('_')
+        ? generatedText.split('_').filter(Boolean)
+        : generatedText.split(',').filter(Boolean)
 
       // Always put correct answer as option 4
       const allOptions = [...wrongOptions.slice(0, 3), correctAnswer]
