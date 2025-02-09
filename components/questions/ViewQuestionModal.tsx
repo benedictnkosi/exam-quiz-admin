@@ -30,6 +30,7 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
+  const [hasCheckedAnswer, setHasCheckedAnswer] = useState(false)
 
   const getImageUrl = (imageName: string) => {
     return `https://prices.aluvefarm.co.za/public/learn/learner/get-image?image=${imageName}`
@@ -65,6 +66,7 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
       const correct = await checkAnswer(answer)
       setIsCorrect(correct)
       setShowAnswer(true)
+      setHasCheckedAnswer(true)
     } catch (error) {
       console.error('Error submitting answer:', error)
     } finally {
@@ -114,15 +116,14 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              {user?.email && user.email !== question.capturer && question.status !== 'approved' && (
+              {/* Only show approve button if answer has been checked */}
+              {hasCheckedAnswer && user?.email && question.status !== 'approved' && (
                 <button
                   onClick={handleApprove}
                   disabled={approving}
-                  className={`px-4 py-2 rounded text-white ${
-                    approving ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
-                  }`}
+                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                 >
-                  {approving ? 'Approving...' : 'Approve'}
+                  {approving ? 'Approving...' : 'Approve Question'}
                 </button>
               )}
               <button
