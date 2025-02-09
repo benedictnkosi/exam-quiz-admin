@@ -347,7 +347,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <ImageUpload
               onFileSelect={handleImageChange('questionImage')}
               label="Upload Question Image"
-              currentImage={formData.questionImage}
               imageName={initialData?.question_image_path}
             />
           </div>
@@ -461,7 +460,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <ImageUpload
               onFileSelect={handleImageChange('contextImage')}
               label="Upload Context Image (Optional)"
-              currentImage={formData.contextImage}
               imageName={initialData?.image_path}
             />
           </div>
@@ -529,7 +527,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <ImageUpload
               onFileSelect={handleImageChange('explanationImage')}
               label="Upload Explanation Image (Optional)"
-              currentImage={formData.explanationImage}
               imageName={initialData?.answer_image}
             />
           </div>
