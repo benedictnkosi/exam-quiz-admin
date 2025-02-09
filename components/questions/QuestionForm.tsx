@@ -40,6 +40,7 @@ interface FormData {
 interface QuestionFormProps {
   initialData?: DetailedQuestion
   mode?: 'create' | 'edit'
+  onSuccess?: () => void
 }
 
 interface Grade {
@@ -65,7 +66,7 @@ interface ApiResponse {
   question_id?: number
 }
 
-export default function QuestionForm({ initialData, mode = 'create' }: QuestionFormProps) {
+export default function QuestionForm({ initialData, mode = 'create', onSuccess }: QuestionFormProps) {
   const { user } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -359,6 +360,10 @@ export default function QuestionForm({ initialData, mode = 'create' }: QuestionF
 
       setSuccess(true)
       resetForm()
+      // Call onSuccess if provided (for edit mode)
+      if (mode === 'edit') {
+        onSuccess?.()
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create question')
       console.error('Error creating question:', err)
