@@ -507,7 +507,10 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               {formData.contextImage && (
                 <button
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, contextImage: null }))}
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, contextImage: null }))
+                    setLastContextImage(null) // Also clear the last used image
+                  }}
                   className="ml-4 text-sm text-red-600 hover:text-red-700"
                 >
                   Reset Context Image
