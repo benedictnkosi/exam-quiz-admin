@@ -87,7 +87,8 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
         body: JSON.stringify({
           question_id: question.id,
           status: 'approved',
-          email: user.email
+          email: user.email,
+          uid: user.uid
         }),
       })
 
