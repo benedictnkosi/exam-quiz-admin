@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://prices.aluvefarm.co.za/public/learn'
+import { API_BASE_URL } from '../config/constants.js'
 
 const getHeaders = () => {
   return {

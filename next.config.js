@@ -1,10 +1,12 @@
+const { API_HOST } = require('./config/constants.js')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'prices.aluvefarm.co.za',
+        hostname: API_HOST.replace('https://', ''),
         port: '',
         pathname: '/public/learn/learner/get-image',
       },

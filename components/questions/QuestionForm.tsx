@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import ImageUpload from './ImageUpload'
 import {
-  API_BASE_URL,
   createQuestion,
   uploadQuestionImage,
   type QuestionPayload,
@@ -11,6 +10,7 @@ import {
   getActiveSubjects,
   type DetailedQuestion
 } from '@/services/api'
+import { API_BASE_URL } from '../../config/constants.js'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import AIOptionsGenerator from './AIOptionsGenerator'

@@ -11,7 +11,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '@/services/api';
+import { API_BASE_URL } from '../../config/constants.js'
 
 ChartJS.register(
   CategoryScale,
