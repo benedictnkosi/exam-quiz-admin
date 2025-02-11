@@ -31,11 +31,12 @@ export default function ImageUpload({
     setPreviewUrl(null)
   }
 
-  // Expose resetPreview through onResetImage
+  // Only override if onResetImage is provided
   if (onResetImage) {
+    const originalReset = onResetImage
     onResetImage = () => {
       resetPreview()
-      onResetImage()
+      originalReset?.()
     }
   }
 
