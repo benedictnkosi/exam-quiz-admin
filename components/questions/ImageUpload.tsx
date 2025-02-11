@@ -26,6 +26,19 @@ export default function ImageUpload({
   const dropZoneRef = useRef<HTMLDivElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
+  // Add a method to reset the preview
+  const resetPreview = () => {
+    setPreviewUrl(null)
+  }
+
+  // Expose resetPreview through onResetImage
+  if (onResetImage) {
+    onResetImage = () => {
+      resetPreview()
+      onResetImage()
+    }
+  }
+
   return (
     <div className="mt-2">
       <div

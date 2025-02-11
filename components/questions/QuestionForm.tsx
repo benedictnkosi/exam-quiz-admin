@@ -77,6 +77,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [loadingGrades, setLoadingGrades] = useState(true)
   const [loadingSubjects, setLoadingSubjects] = useState(false)
   const [lastContextImage, setLastContextImage] = useState<string | null>(null)
+  const [resetKey, setResetKey] = useState(0)
 
   const initialFormState = {
     questionText: '',
@@ -138,26 +139,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }
     return initialFormState
   })
-
-  const resetForm = () => {
-    // Clear form data
-    setFormData(prev => ({
-      ...prev,
-      questionText: '',
-      answer: '',
-      explanation: '',
-      options: ['', '', '', ''],
-      questionImage: null,
-      explanationImage: null,
-      // Keep contextImage if needed
-    }))
-
-    // Force reset all file inputs
-    const fileInputs = document.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
-    fileInputs.forEach(input => {
-      input.value = '';
-    })
-  }
 
   useEffect(() => {
     const fetchGrades = async () => {
@@ -280,7 +261,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user?.uid) return;
+    if (!user?.uid) return
 
     setLoading(true)
     setError('')
@@ -359,7 +340,19 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       }
 
       setSuccess(true)
-      resetForm()
+      // Only reset question-specific fields
+      setFormData(prev => ({
+        ...prev,
+        questionText: '',
+        context: '',
+        answer: '',
+        explanation: '',
+        options: ['', '', '', ''],
+        contextImage: null,
+        questionImage: null,
+        explanationImage: null,
+      }))
+      setResetKey(prev => prev + 1) // Still reset images
       // Call onSuccess if provided (for edit mode)
       if (mode === 'edit') {
         onSuccess?.()
@@ -387,6 +380,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               required
             />
             <ImageUpload
+              key={`question-image-${resetKey}`}
               onFileSelect={handleImageChange('questionImage')}
               label="Upload Question Image"
               imageName={formData.questionImage ? undefined : undefined}
@@ -500,6 +494,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             />
             <ImageUpload
+              key={`context-image-${resetKey}`}
               onFileSelect={handleImageChange('contextImage')}
               label="Upload Context Image (Optional)"
               imageName={formData.contextImage?.path}
@@ -572,6 +567,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             />
             <ImageUpload
+              key={`explanation-image-${resetKey}`}
               onFileSelect={handleImageChange('explanationImage')}
               label="Upload Explanation Image (Optional)"
               imageName={formData.explanationImage ? undefined : undefined}
