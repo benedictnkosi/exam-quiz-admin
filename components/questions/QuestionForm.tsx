@@ -348,7 +348,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         answer: '',
         explanation: '',
         options: ['', '', '', ''],
-        contextImage: null,
         questionImage: null,
         explanationImage: null,
       }))
@@ -493,17 +492,28 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               onChange={(e) => setFormData({ ...formData, context: e.target.value })}
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             />
-            <ImageUpload
-              key={`context-image-${resetKey}`}
-              onFileSelect={handleImageChange('contextImage')}
-              label="Upload Context Image (Optional)"
-              imageName={formData.contextImage?.path}
-              showReuseOption={true}
-              lastUsedImage={lastContextImage}
-              onReuseImage={handleReuseContextImage}
-              onResetImage={handleResetContextImage}
-              showResetButton={true}
-            />
+            <div className="flex justify-between items-center mt-2">
+              <ImageUpload
+                key={`context-image-${resetKey}`}
+                onFileSelect={handleImageChange('contextImage')}
+                label="Upload Context Image (Optional)"
+                imageName={formData.contextImage?.path}
+                showReuseOption={true}
+                lastUsedImage={lastContextImage}
+                onReuseImage={handleReuseContextImage}
+                onResetImage={handleResetContextImage}
+                showResetButton={true}
+              />
+              {formData.contextImage && (
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, contextImage: null }))}
+                  className="ml-4 text-sm text-red-600 hover:text-red-700"
+                >
+                  Reset Context Image
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="md:col-span-2">
