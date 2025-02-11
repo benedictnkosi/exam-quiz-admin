@@ -178,14 +178,6 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
               <h3 className="text-lg font-medium text-gray-900 mb-2">Question</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-800">{question.question}</p>
-
-                {/* Math Formula */}
-                <div className="mt-4 p-3 bg-white rounded border border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Formula:</h4>
-                  <MathJax dynamic>
-                    {`$$\\frac{4}{12}$$`}
-                  </MathJax>
-                </div>
               </div>
             </div>
 
