@@ -191,7 +191,6 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
                   <button
                     key={key}
                     onClick={async () => {
-                      // Call handleSubmit directly with the value instead of using state
                       try {
                         setLoading(true)
                         const correct = await checkAnswer(value)
@@ -206,12 +205,14 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
                       }
                     }}
                     className={`w-full p-3 text-left rounded-lg border ${showAnswer
-                      ? value === question.answer
-                        ? 'bg-green-50 border-green-500'
-                        : answer === value
-                          ? 'bg-red-50 border-red-500'
-                          : 'border-gray-200'
-                      : 'border-gray-200 hover:bg-gray-50'
+                        ? value === question.answer
+                          ? 'bg-green-50 border-green-500'
+                          : value === answer
+                            ? isCorrect
+                              ? 'bg-green-50 border-green-500'
+                              : 'bg-red-50 border-red-500'
+                            : 'border-gray-200'
+                        : 'border-gray-200 hover:bg-gray-50'
                       }`}
                     disabled={showAnswer || loading}
                   >

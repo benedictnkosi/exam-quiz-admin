@@ -1,9 +1,11 @@
 'use client'
 
+import { useRef, useState } from 'react'
+
 interface ImageUploadProps {
-  onFileSelect: (file: File | null, imagePath?: string) => void
+  onFileSelect: (file: File) => void
   label: string
-  imageName?: string | null
+  imageName?: string
   showReuseOption?: boolean
   lastUsedImage?: string | null
   onReuseImage?: () => void
@@ -17,37 +19,90 @@ export default function ImageUpload({
   imageName,
   showReuseOption,
   lastUsedImage,
-  onResetImage }: ImageUploadProps) {
+  onReuseImage,
+  onResetImage,
+  showResetButton
+}: ImageUploadProps) {
+  const dropZoneRef = useRef<HTMLDivElement>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
   return (
     <div className="mt-2">
-      <label className="block text-sm text-gray-700 mb-1">
-        {label}
-      </label>
-      <div className="flex items-center space-x-4">
-        <input
-          type="file"
-          onChange={(e) => {
-            const file = e.target.files?.[0] || null
-            onFileSelect(file)
-          }}
-          accept="image/*"
-          className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-        {showReuseOption && lastUsedImage && (
-          <button
-            type="button"
-            onClick={onResetImage}
-            className="px-4 py-2 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50"
-          >
-            Reset Image
-          </button>
+      <div
+        ref={dropZoneRef}
+        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors"
+        tabIndex={0}
+        onFocus={() => {
+          console.log('Element focused')
+        }}
+        onPaste={(e) => {
+          console.log('Paste event triggered')
+          const items = e.clipboardData?.items
+          if (!items) {
+            console.log('No clipboard data')
+            return
+          }
+
+          console.log('Clipboard items:', items.length)
+          for (let i = 0; i < items.length; i++) {
+            console.log('Item type:', items[i].type)
+            if (items[i].type.indexOf('image') !== -1) {
+              const file = items[i].getAsFile()
+              if (file) {
+                console.log('Image file found:', file.name)
+                onFileSelect(file)
+                // Create preview URL
+                const url = URL.createObjectURL(file)
+                setPreviewUrl(url)
+              }
+              break
+            }
+          }
+        }}
+      >
+        <p className="text-sm text-gray-600">{label}</p>
+        <p className="text-xs text-gray-500 mt-1">
+          Click here and paste image from clipboard (Ctrl+V)
+        </p>
+        {previewUrl && (
+          <div className="mt-4 relative h-48 w-full">
+            <img
+              src={previewUrl}
+              alt="Pasted preview"
+              className="h-full mx-auto object-contain"
+              onLoad={() => {
+                // Clean up the URL after the image loads
+                URL.revokeObjectURL(previewUrl)
+              }}
+            />
+          </div>
         )}
         {imageName && (
-          <span className="text-sm text-gray-600">
-            Current: {imageName}
-          </span>
+          <p className="text-sm text-blue-600 mt-2">
+            Selected: {imageName}
+          </p>
         )}
       </div>
+
+      {showReuseOption && lastUsedImage && (
+        <button
+          type="button"
+          onClick={onReuseImage}
+          className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+        >
+          Reuse last image: {lastUsedImage}
+        </button>
+      )}
+
+      {showResetButton && imageName && (
+        <button
+          type="button"
+          onClick={onResetImage}
+          className="mt-2 ml-4 text-sm text-red-600 hover:text-red-700"
+        >
+          Reset image
+        </button>
+      )}
     </div>
   )
 } 
