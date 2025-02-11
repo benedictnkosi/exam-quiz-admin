@@ -96,6 +96,9 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
 
       if (data.status === 'OK') {
         onClose() // Close modal after successful approval
+      } else {
+        console.error('Error approving question:', data.message)
+        alert(data.message || 'Failed to approve question')
       }
     } catch (error) {
       console.error('Error approving question:', error)
@@ -166,6 +169,16 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-800">{question.question}</p>
             </div>
+            {question.question_image_path && (
+              <div className="relative h-64 w-full">
+                <Image
+                  src={getImageUrl(question.question_image_path)}
+                  alt="Question Image"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            )}
           </div>
 
           {/* Answer Form */}
