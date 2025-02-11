@@ -13,7 +13,7 @@ interface ViewQuestionModalProps {
 
 interface CheckAnswerResponse {
   status: string
-  correct: boolean
+  is_correct: boolean
   message?: string
 }
 
@@ -51,7 +51,7 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
       })
 
       const data: CheckAnswerResponse = await response.json()
-      return data.correct
+      return data.is_correct
     } catch (error) {
       console.error('Error checking answer:', error)
       return false
@@ -107,8 +107,9 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
     }
   }
 
-  return (
+  const isMultipleChoice = question.type === 'multiple_choice'
 
+  return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 space-y-6">
@@ -181,31 +182,70 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
             )}
           </div>
 
-          {/* Answer Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="answer" className="block text-sm font-medium text-gray-700">
-                Your Answer
-              </label>
-              <input
-                type="text"
-                id="answer"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter your answer"
-                required
-              />
+          {/* Answer Section */}
+          {isMultipleChoice ? (
+            <div className="space-y-4">
+              <h3 className="font-medium text-gray-900">Choose an Answer</h3>
+              <div className="space-y-2">
+                {Object.entries(question.options || {}).map(([key, value]) => (
+                  <button
+                    key={key}
+                    onClick={async () => {
+                      // Call handleSubmit directly with the value instead of using state
+                      try {
+                        setLoading(true)
+                        const correct = await checkAnswer(value)
+                        setAnswer(value)
+                        setIsCorrect(correct)
+                        setShowAnswer(true)
+                        setHasCheckedAnswer(true)
+                      } catch (error) {
+                        console.error('Error submitting answer:', error)
+                      } finally {
+                        setLoading(false)
+                      }
+                    }}
+                    className={`w-full p-3 text-left rounded-lg border ${showAnswer
+                      ? value === question.answer
+                        ? 'bg-green-50 border-green-500'
+                        : answer === value
+                          ? 'bg-red-50 border-red-500'
+                          : 'border-gray-200'
+                      : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                    disabled={showAnswer || loading}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
             </div>
-            <button
-              type="submit"
-              className={`w-full py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
-                } text-white`}
-              disabled={loading}
-            >
-              {loading ? 'Checking...' : 'Check Answer'}
-            </button>
-          </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="answer" className="block text-sm font-medium text-gray-700">
+                  Your Answer
+                </label>
+                <input
+                  type="text"
+                  id="answer"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your answer"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className={`w-full py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+                  } text-white`}
+                disabled={loading}
+              >
+                {loading ? 'Checking...' : 'Check Answer'}
+              </button>
+            </form>
+          )}
 
           {/* Show result and explanation */}
           {showAnswer && (
@@ -246,6 +286,5 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
         </div>
       </div>
     </div>
-
   )
 } 
