@@ -344,7 +344,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       setFormData(prev => ({
         ...prev,
         questionText: '',
-        context: '',
         answer: '',
         explanation: '',
         options: ['', '', '', ''],
