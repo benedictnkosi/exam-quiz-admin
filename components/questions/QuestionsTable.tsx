@@ -64,6 +64,9 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               ID
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -81,14 +84,35 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Capturer
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
+
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {questions.map((question) => (
             <tr key={question.id}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleView(question)}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => handleEdit(question)}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(question.id)}
+                    disabled={deleting === question.id}
+                    className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                  >
+                    {deleting === question.id ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {question.id}
               </td>
@@ -118,29 +142,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {question.capturer}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleView(question)}
-                    className="text-indigo-600 hover:text-indigo-900"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => handleEdit(question)}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(question.id)}
-                    disabled={deleting === question.id}
-                    className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                  >
-                    {deleting === question.id ? 'Deleting...' : 'Delete'}
-                  </button>
-                </div>
-              </td>
+
             </tr>
           ))}
         </tbody>
