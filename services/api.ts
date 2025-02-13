@@ -296,7 +296,11 @@ export async function getQuestionById(id: string): Promise<DetailedQuestion> {
       throw new Error('Question not found')
     }
 
-    return data[0]
+    // Clean up the answer by removing brackets and quotes
+    const question = data[0]
+    question.answer = question.answer.replace(/[\[\]"]/g, '')
+    
+    return question
   } catch (error) {
     console.error('Error fetching question:', error)
     throw error
