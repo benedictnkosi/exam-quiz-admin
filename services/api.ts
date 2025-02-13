@@ -218,14 +218,14 @@ export async function getQuestions(grade: string, subject: string, status?: stri
   }
 }
 
-export async function setQuestionInactive(questionId: string): Promise<ApiResponse> {
+export async function setQuestionInactive(questionId: string, uid: string): Promise<ApiResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/question/set-inactive`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ question_id: questionId }),
+      body: JSON.stringify({ question_id: questionId, uid }),
     })
 
     const result: ApiResponse = await response.json()

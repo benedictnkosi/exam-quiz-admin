@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { setQuestionInactive, getQuestionById, type Question, type DetailedQuestion } from '@/services/api'
 import ViewQuestionModal from './ViewQuestionModal'
 import EditQuestionModal from './EditQuestionModal'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface QuestionsTableProps {
   questions: Question[]
@@ -11,6 +12,7 @@ interface QuestionsTableProps {
 }
 
 export default function QuestionsTable({ questions, onDelete }: QuestionsTableProps) {
+  const { user } = useAuth()
   const [deleting, setDeleting] = useState<number | null>(null)
   const [viewingQuestion, setViewingQuestion] = useState<DetailedQuestion | null>(null)
   const [editingQuestion, setEditingQuestion] = useState<DetailedQuestion | null>(null)
@@ -27,10 +29,11 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
 
   const handleDelete = async (questionId: number) => {
     if (!confirm('Are you sure you want to delete this question?')) return
+    if (!user) return
 
     setDeleting(questionId)
     try {
-      await setQuestionInactive(questionId.toString())
+      await setQuestionInactive(questionId.toString(), user.uid)
       onDelete(questionId)
     } catch (error) {
       alert(`Failed to delete question ${error}`)
