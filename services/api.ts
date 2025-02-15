@@ -443,4 +443,24 @@ export async function getSubjectNames(): Promise<string[]> {
     console.error('Error fetching subject names:', error)
     throw error
   }
+}
+
+export async function getNextNewQuestion(questionId: string): Promise<DetailedQuestion> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/question/next-new?question_id=${questionId}`)
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch next question')
+    }
+
+    const data = await response.json()
+    if (data.status !== 'OK' || !data.question) {
+      throw new Error('No more questions to review')
+    }
+
+    return data.question
+  } catch (error) {
+    console.error('Error fetching next question:', error)
+    throw error
+  }
 } 

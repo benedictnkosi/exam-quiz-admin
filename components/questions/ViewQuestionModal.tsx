@@ -5,10 +5,12 @@ import Image from 'next/image'
 import { type DetailedQuestion } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL, IMAGE_BASE_URL } from '../../config/constants.js'
+import { getNextNewQuestion } from '@/services/api'
 
 interface ViewQuestionModalProps {
   question: DetailedQuestion
   onClose: () => void
+  onQuestionUpdate?: (newQuestion: DetailedQuestion) => void
 }
 
 interface CheckAnswerResponse {
@@ -22,14 +24,30 @@ interface ApproveResponse {
   message?: string
 }
 
-export default function ViewQuestionModal({ question, onClose }: ViewQuestionModalProps) {
+interface RejectResponse {
+  status: string
+  message?: string
+}
+
+export default function ViewQuestionModal({
+  question: initialQuestion,
+  onClose,
+  onQuestionUpdate
+}: ViewQuestionModalProps) {
   const { user } = useAuth()
+  const [question, setQuestion] = useState({
+    ...initialQuestion,
+    answer: initialQuestion.answer.replace(/[\[\]"]/g, '').trim()
+  })
   const [answer, setAnswer] = useState('')
   const [showAnswer, setShowAnswer] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
   const [hasCheckedAnswer, setHasCheckedAnswer] = useState(false)
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [rejectComment, setRejectComment] = useState('')
+  const [rejecting, setRejecting] = useState(false)
 
   const getImageUrl = (imageName: string) => {
     return `${IMAGE_BASE_URL}?image=${imageName}`
@@ -71,6 +89,26 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
     }
   }
 
+  const loadNextQuestion = async () => {
+    try {
+      const nextQuestion = await getNextNewQuestion(question.id.toString())
+      setQuestion({
+        ...nextQuestion,
+        answer: nextQuestion.answer.replace(/[\[\]"]/g, '').trim()
+      })
+      // Reset states for new question
+      setAnswer('')
+      setShowAnswer(false)
+      setIsCorrect(null)
+      setHasCheckedAnswer(false)
+      onQuestionUpdate?.(nextQuestion)
+    } catch (error) {
+      console.error('Error loading next question:', error)
+      alert('No more questions to review')
+      onClose()
+    }
+  }
+
   const handleApprove = async () => {
     if (!user?.email) return
     setApproving(true)
@@ -82,22 +120,57 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
           question_id: question.id,
           status: 'approved',
           email: user.email,
-          uid: user.uid
+          uid: user.uid,
+          comment: ''
         }),
       })
 
       const data: ApproveResponse = await response.json()
 
       if (data.status === 'OK') {
-        onClose() // Close modal after successful approval
+        await loadNextQuestion()
       } else {
         console.error('Error approving question:', data.message)
         alert(data.message || 'Failed to approve question')
       }
     } catch (error) {
       console.error('Error approving question:', error)
+      alert('Failed to approve question')
     } finally {
       setApproving(false)
+    }
+  }
+
+  const handleReject = async () => {
+    if (!user?.email) return
+    setRejecting(true)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/question/set-status`, {
+        method: 'POST',
+        body: JSON.stringify({
+          question_id: question.id,
+          status: 'rejected',
+          comment: rejectComment,
+          email: user.email,
+          uid: user.uid
+        }),
+      })
+
+      const data: RejectResponse = await response.json()
+
+      if (data.status === 'OK') {
+        setShowRejectModal(false)
+        await loadNextQuestion()
+      } else {
+        console.error('Error rejecting question:', data.message)
+        alert(data.message || 'Failed to reject question')
+      }
+    } catch (error) {
+      console.error('Error rejecting question:', error)
+      alert('Failed to reject question')
+    } finally {
+      setRejecting(false)
     }
   }
 
@@ -110,7 +183,7 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
           {/* Header with Approve Button */}
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-medium text-gray-900">Question</h2>
+              <h2 className="text-xl font-medium text-gray-900">Question - {question.id}</h2>
               <p className="text-sm text-gray-500 mt-1">
                 Grade {question.subject.grade.number} • {question.subject.name} • Term {question.term}
               </p>
@@ -118,14 +191,25 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
             <div className="flex items-center space-x-4">
               {/* Only show approve button if answer has been checked */}
               {hasCheckedAnswer && user?.email && question.status !== 'approved' && (
-                <button
-                  onClick={handleApprove}
-                  disabled={approving}
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                >
-                  {approving ? 'Approving...' : 'Approve Question'}
-                </button>
+                <>
+                  <button
+                    onClick={handleApprove}
+                    disabled={approving}
+                    className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {approving ? 'Approving...' : 'Approve Question'}
+                  </button>
+
+                </>
               )}
+
+              <button
+                onClick={() => setShowRejectModal(true)}
+                disabled={rejecting}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              >
+                {rejecting ? 'Rejecting...' : 'Reject Question'}
+              </button>
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-500"
@@ -199,14 +283,14 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
                       }
                     }}
                     className={`w-full p-3 text-left rounded-lg border ${showAnswer
-                        ? value === question.answer
-                          ? 'bg-green-50 border-green-500'
-                          : value === answer
-                            ? isCorrect
-                              ? 'bg-green-50 border-green-500'
-                              : 'bg-red-50 border-red-500'
-                            : 'border-gray-200'
-                        : 'border-gray-200 hover:bg-gray-50'
+                      ? value === question.answer
+                        ? 'bg-green-50 border-green-500'
+                        : value === answer
+                          ? isCorrect
+                            ? 'bg-green-50 border-green-500'
+                            : 'bg-red-50 border-red-500'
+                          : 'border-gray-200'
+                      : 'border-gray-200 hover:bg-gray-50'
                       }`}
                     disabled={showAnswer || loading}
                   >
@@ -276,6 +360,45 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Add Reject Modal */}
+          {showRejectModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg p-6 w-96">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Reject Question</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="rejectComment" className="block text-sm font-medium text-gray-700">
+                      Rejection Comment
+                    </label>
+                    <textarea
+                      id="rejectComment"
+                      value={rejectComment}
+                      onChange={(e) => setRejectComment(e.target.value)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      rows={4}
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => setShowRejectModal(false)}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleReject}
+                      disabled={!rejectComment.trim() || rejecting}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {rejecting ? 'Rejecting...' : 'Reject'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
