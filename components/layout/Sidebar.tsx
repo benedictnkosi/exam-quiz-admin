@@ -1,19 +1,30 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { auth } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
+import { getRejectedQuestionsCount } from '@/services/api'
 
 const menuItems = [
   { path: '/', label: 'Dashboard' },
-  { path: '/questions', label: 'Questions' },
+  { path: '/questions', label: 'Questions', showRejected: true },
   { path: '/subjects', label: 'Manage Subjects' }
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
+  const [rejectedCount, setRejectedCount] = useState(0)
+
+  useEffect(() => {
+    if (user?.email) {
+      getRejectedQuestionsCount(user.email)
+        .then(count => setRejectedCount(count))
+        .catch(console.error)
+    }
+  }, [user?.email])
 
   const handleLogout = async () => {
     try {
@@ -39,7 +50,14 @@ export default function Sidebar() {
                 className={`block p-2 rounded hover:bg-gray-700 ${pathname === item.path ? 'bg-gray-700' : ''
                   }`}
               >
-                {item.label}
+                <div className="flex items-center justify-between">
+                  <span>{item.label}</span>
+                  {item.showRejected && rejectedCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      {rejectedCount}
+                    </span>
+                  )}
+                </div>
               </Link>
             </li>
           ))}

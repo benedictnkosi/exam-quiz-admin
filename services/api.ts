@@ -243,6 +243,7 @@ export interface DetailedQuestion {
   year: number
   capturer: string
   status: string
+  comment?: string
   reviewer: string
   created: string
   subject: {
@@ -462,5 +463,32 @@ export async function getNextNewQuestion(questionId: string): Promise<DetailedQu
   } catch (error) {
     console.error('Error fetching next question:', error)
     throw error
+  }
+}
+
+export async function getRejectedQuestions(email: string): Promise<Question[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch rejected questions')
+    }
+
+    const data = await response.json()
+    return data.questions || []
+  } catch (error) {
+    console.error('Error fetching rejected questions:', error)
+    throw error
+  }
+}
+
+export async function getRejectedQuestionsCount(email: string): Promise<number> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
+    const data = await response.json()
+    return data.count || 0
+  } catch (error) {
+    console.error('Error fetching rejected count:', error)
+    return 0
   }
 } 

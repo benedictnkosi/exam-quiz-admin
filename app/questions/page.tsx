@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import QuestionsTable from '@/components/questions/QuestionsTable'
 import QuestionsFilter from '@/components/questions/QuestionsFilter'
 import CreateQuestionModal from '@/components/questions/CreateQuestionModal'
-import { getQuestions, type Question } from '@/services/api'
+import { getQuestions, type Question, getRejectedQuestions } from '@/services/api'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function QuestionsPage() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function QuestionsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const { user } = useAuth()
 
   // Get filters from URL parameters
   const filters = {
@@ -50,6 +52,23 @@ export default function QuestionsPage() {
     }
   }
 
+  const handleFetchRejected = async () => {
+    if (!user?.email) return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const rejectedQuestions = await getRejectedQuestions(user.email)
+      setQuestions(rejectedQuestions)
+    } catch (err) {
+      console.error('Failed to fetch rejected questions:', err)
+      setError('Failed to load rejected questions')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch questions when URL parameters change
   useEffect(() => {
     if (filters.grade && filters.subject) {
@@ -73,6 +92,7 @@ export default function QuestionsPage() {
         filters={filters}
         setFilters={updateFilters}
         onSearch={handleSearch}
+        onFetchRejected={handleFetchRejected}
       />
 
       <QuestionsTable

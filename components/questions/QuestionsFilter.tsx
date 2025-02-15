@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getGrades, getActiveSubjects, type Grade, type Subject } from '@/services/api'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface QuestionsFilterProps {
   filters: {
@@ -11,9 +12,11 @@ interface QuestionsFilterProps {
   }
   setFilters: (filters: { grade: string; subject: string; status: string }) => void
   onSearch: () => void
+  onFetchRejected: () => void
 }
 
-export default function QuestionsFilter({ filters, setFilters, onSearch }: QuestionsFilterProps) {
+export default function QuestionsFilter({ filters, setFilters, onSearch, onFetchRejected }: QuestionsFilterProps) {
+  const { user } = useAuth()
   const [grades, setGrades] = useState<Grade[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [loading, setLoading] = useState(true)
@@ -131,7 +134,7 @@ export default function QuestionsFilter({ filters, setFilters, onSearch }: Quest
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center space-x-4">
           <button
             type="submit"
             disabled={loading}
@@ -139,6 +142,16 @@ export default function QuestionsFilter({ filters, setFilters, onSearch }: Quest
           >
             {loading ? 'Searching...' : 'Search Questions'}
           </button>
+
+          {user?.email && (
+            <button
+              type="button"
+              onClick={onFetchRejected}
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-w-[200px]"
+            >
+              My Rejected Questions
+            </button>
+          )}
         </div>
       </form>
     </div>

@@ -180,36 +180,43 @@ export default function ViewQuestionModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 space-y-6">
-          {/* Header with Approve Button */}
+          {/* Header with Status and Buttons */}
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-xl font-medium text-gray-900">Question - {question.id}</h2>
               <p className="text-sm text-gray-500 mt-1">
                 Grade {question.subject.grade.number} • {question.subject.name} • Term {question.term}
               </p>
+              {question.status === 'rejected' && question.comment && (
+                <div className="mt-2 p-3 bg-red-50 rounded-md">
+                  <p className="text-sm font-medium text-red-800">Rejection Comment:</p>
+                  <p className="text-sm text-red-700">{question.comment}</p>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-4">
               {/* Only show approve button if answer has been checked */}
               {hasCheckedAnswer && user?.email && question.status !== 'approved' && (
-                <>
-                  <button
-                    onClick={handleApprove}
-                    disabled={approving}
-                    className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {approving ? 'Approving...' : 'Approve Question'}
-                  </button>
-
-                </>
+                <button
+                  onClick={handleApprove}
+                  disabled={approving}
+                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {approving ? 'Approving...' : 'Approve Question'}
+                </button>
               )}
 
-              <button
-                onClick={() => setShowRejectModal(true)}
-                disabled={rejecting}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-              >
-                {rejecting ? 'Rejecting...' : 'Reject Question'}
-              </button>
+              {/* Only show reject button if status is not rejected */}
+              {question.status !== 'rejected' && (
+                <button
+                  onClick={() => setShowRejectModal(true)}
+                  disabled={rejecting}
+                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                >
+                  {rejecting ? 'Rejecting...' : 'Reject Question'}
+                </button>
+              )}
+
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-500"
