@@ -202,9 +202,7 @@ export async function getQuestions(grade: string, subject: string, status?: stri
       url += `&status=${status}`
     }
 
-    const response = await fetch(url, {
-      headers: getHeaders()
-    })
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error('Failed to fetch questions')
@@ -299,7 +297,7 @@ export async function getQuestionById(id: string): Promise<DetailedQuestion> {
     // Clean up the answer by removing brackets and quotes
     const question = data[0]
     question.answer = question.answer.replace(/[\[\]"]/g, '')
-    
+
     return question
   } catch (error) {
     console.error('Error fetching question:', error)
