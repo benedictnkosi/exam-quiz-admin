@@ -39,7 +39,7 @@ export default function ViewQuestionModal({
     ...initialQuestion,
     answer: initialQuestion.answer.replace(/[\[\]"]/g, '').trim()
   })
-  const [answer, setAnswer] = useState('')
+  const [answer, setAnswer] = useState('test')
   const [showAnswer, setShowAnswer] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
