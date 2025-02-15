@@ -318,9 +318,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         // Reuse existing context image
         await fetch(`${API_BASE_URL}/question/set-image-path`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: JSON.stringify({
             question_id: questionId.toString(),
             image_name: formData.contextImage.path,

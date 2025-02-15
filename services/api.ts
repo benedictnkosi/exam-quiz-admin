@@ -1,10 +1,5 @@
 import { API_BASE_URL } from '../config/constants.js'
 
-const getHeaders = () => {
-  return {
-    'Content-Type': 'application/json',
-  }
-}
 
 export interface QuestionPayload {
   question: string
@@ -37,9 +32,6 @@ export async function createQuestion(data: QuestionPayload): Promise<ApiResponse
   try {
     const response = await fetch(`${API_BASE_URL}/question/create`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         ...data,
         question_id: data.question_id || 0
@@ -160,9 +152,6 @@ export async function setQuestionImagePath(data: SetImagePathPayload): Promise<A
   try {
     const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     })
 
@@ -220,9 +209,6 @@ export async function setQuestionInactive(questionId: string, uid: string): Prom
   try {
     const response = await fetch(`${API_BASE_URL}/question/set-inactive`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ question_id: questionId, uid }),
     })
 
@@ -308,9 +294,6 @@ export async function getQuestionById(id: string): Promise<DetailedQuestion> {
 export async function requestAdminAccess(uid: string) {
   const response = await fetch(`${API_BASE_URL}/public/learner/role/update`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({
       role: 'admin_pending',
       uid
@@ -327,9 +310,6 @@ export async function getPendingAdminRequests() {
 export async function approveAdminRequest(userId: string, uid: string) {
   const response = await fetch(`${API_BASE_URL}/public/learner/role/update`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({
       user_id: userId,
       role: 'admin',
@@ -343,9 +323,6 @@ export async function createLearner(uid: string, email: string, displayName?: st
   try {
     const response = await fetch(`${API_BASE_URL}/learner/create`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         uid,
         email,
@@ -374,9 +351,6 @@ export async function addSubjectToGrade(data: SubjectGradePayload, uid: string):
   try {
     const response = await fetch(`${API_BASE_URL}/subject/add-to-grade`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         ...data,
         uid
@@ -399,9 +373,6 @@ export async function updateSubjectGradeStatus(data: SubjectGradePayload, uid: s
   try {
     const response = await fetch(`${API_BASE_URL}/subject/update-active`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         subject_id: data.subject_id,
         active: data.active,
@@ -423,11 +394,7 @@ export async function updateSubjectGradeStatus(data: SubjectGradePayload, uid: s
 
 export async function getSubjectsForGrade(gradeId: string, uid: string) {
   try {
-    const response = await fetch(`${API_BASE_URL}/subjects/by-grade?grade=${gradeId}&uid=${uid}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
+    const response = await fetch(`${API_BASE_URL}/subjects/by-grade?grade=${gradeId}&uid=${uid}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch subjects')
@@ -444,9 +411,6 @@ export async function addSubject(data: { name: string, grade: number }, uid: str
   try {
     const response = await fetch(`${API_BASE_URL}/subject/create`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         ...data,
         uid

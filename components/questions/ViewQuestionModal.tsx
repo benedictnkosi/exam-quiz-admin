@@ -39,9 +39,6 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
     try {
       const response = await fetch(`${API_BASE_URL}/learner/check-answer`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           question_id: question.id,
           answer: userAnswer,
@@ -81,9 +78,6 @@ export default function ViewQuestionModal({ question, onClose }: ViewQuestionMod
     try {
       const response = await fetch(`${API_BASE_URL}/question/set-status`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           question_id: question.id,
           status: 'approved',
