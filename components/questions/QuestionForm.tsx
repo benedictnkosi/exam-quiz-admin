@@ -84,7 +84,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     examYear: new Date().getFullYear(),
     grade: '',
     subject: '',
-    questionType: 'single',
+    questionType: 'multiple',
     term: '',
     context: '',
     answer: '',
