@@ -171,6 +171,7 @@ export async function setQuestionImagePath(data: SetImagePathPayload): Promise<A
 export interface Question {
   id: number
   question: string
+  type: 'multiple_choice' | 'single' | 'true_false'
   answer: string
   status: string
   capturer: string

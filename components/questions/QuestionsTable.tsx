@@ -76,10 +76,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               Question
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Grade
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Subject
+              type
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Status
@@ -125,10 +122,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {getGradeDisplay(question.subject)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {getSubjectDisplay(question.subject)}
+                {question.type}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 

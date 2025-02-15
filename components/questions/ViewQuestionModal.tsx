@@ -6,6 +6,8 @@ import { type DetailedQuestion } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL, IMAGE_BASE_URL } from '../../config/constants.js'
 import { getNextNewQuestion } from '@/services/api'
+import 'katex/dist/katex.min.css'
+import { InlineMath, BlockMath } from 'react-katex'
 
 interface ViewQuestionModalProps {
   question: DetailedQuestion
@@ -15,7 +17,7 @@ interface ViewQuestionModalProps {
 
 interface CheckAnswerResponse {
   status: string
-  is_correct: boolean
+  result: 'correct' | 'incorrect'
   message?: string
 }
 
@@ -66,7 +68,7 @@ export default function ViewQuestionModal({
       })
 
       const data: CheckAnswerResponse = await response.json()
-      return data.is_correct
+      return data.result == 'correct'
     } catch (error) {
       console.error('Error checking answer:', error)
       return false
@@ -176,6 +178,16 @@ export default function ViewQuestionModal({
 
   const isMultipleChoice = question.type === 'multiple_choice'
 
+  const renderLatex = (text: string) => {
+    return text.split(/(\$.*?\$)/).map((chunk, index) => {
+      if (chunk.startsWith('$') && chunk.endsWith('$')) {
+        const latex = chunk.slice(1, -1)
+        return <InlineMath key={index} math={latex} />
+      }
+      return <span key={index}>{chunk}</span>
+    })
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -234,7 +246,8 @@ export default function ViewQuestionModal({
             <div className="space-y-2">
               <h3 className="font-medium text-gray-900">Context</h3>
               {question.context && (
-                <p className="text-gray-700">{question.context}</p>
+
+                <p className="text-gray-700">{renderLatex(question.context)}</p>
               )}
               {question.image_path && (
                 <div className="relative h-64 w-full">
@@ -253,7 +266,9 @@ export default function ViewQuestionModal({
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Question</h3>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-800">{question.question}</p>
+              <p className="text-gray-800">
+                {renderLatex(question.question)}
+              </p>
             </div>
             {question.question_image_path && (
               <div className="relative h-64 w-full">
@@ -301,7 +316,7 @@ export default function ViewQuestionModal({
                       }`}
                     disabled={showAnswer || loading}
                   >
-                    {value}
+                    {renderLatex(value)}
                   </button>
                 ))}
               </div>
@@ -345,7 +360,7 @@ export default function ViewQuestionModal({
               {/* Correct Answer */}
               <div className="p-4 rounded-md bg-gray-50">
                 <h3 className="font-medium text-gray-900">Correct Answer</h3>
-                <p className="mt-1 text-gray-700">{question.answer}</p>
+                <p className="mt-1 text-gray-700">{renderLatex(question.answer)}</p>
               </div>
 
               {/* Explanation */}
@@ -353,7 +368,7 @@ export default function ViewQuestionModal({
                 <div className="space-y-2">
                   <h3 className="font-medium text-gray-900">Explanation</h3>
                   {question.explanation && (
-                    <p className="text-gray-700">{question.explanation}</p>
+                    <p className="text-gray-700">{renderLatex(question.explanation)}</p>
                   )}
                   {question.answer_image && (
                     <div className="relative h-64 w-full">
