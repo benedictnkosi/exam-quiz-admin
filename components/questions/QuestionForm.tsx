@@ -14,6 +14,8 @@ import { API_BASE_URL } from '../../config/constants.js'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import AIOptionsGenerator from './AIOptionsGenerator'
+import 'katex/dist/katex.min.css'
+import { InlineMath } from 'react-katex'
 
 interface ImageInfo {
   file: File | null
@@ -78,6 +80,10 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [loadingSubjects, setLoadingSubjects] = useState(false)
   const [lastContextImage, setLastContextImage] = useState<string | null>(null)
   const [resetKey, setResetKey] = useState(0)
+  const [showLatex, setShowLatex] = useState(false)
+  const [showLatexContext, setShowLatexContext] = useState(false)
+  const [showLatexAnswer, setShowLatexAnswer] = useState(false)
+  const [showLatexExplanation, setShowLatexExplanation] = useState(false)
 
   const initialFormState = {
     questionText: '',
@@ -360,6 +366,16 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }
   }
 
+  const renderLatex = (text: string) => {
+    return text.split(/(\$.*?\$)/).map((chunk, index) => {
+      if (chunk.startsWith('$') && chunk.endsWith('$')) {
+        const latex = chunk.slice(1, -1)
+        return <InlineMath key={index} math={latex} />
+      }
+      return <span key={index}>{chunk}</span>
+    })
+  }
+
   return (
     <div className="bg-white">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -371,9 +387,23 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <textarea
               value={formData.questionText}
               onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
+              onBlur={() => {
+                const text = formData.questionText
+                const dollarCount = (text.match(/\$/g) || []).length
+                if (dollarCount >= 2) {
+                  setShowLatex(true)
+                }
+              }}
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
               required
             />
+            {showLatex && formData.questionText && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                <p className="text-sm text-gray-700">
+                  {renderLatex(formData.questionText)}
+                </p>
+              </div>
+            )}
             <ImageUpload
               key={`question-image-${resetKey}`}
               onFileSelect={handleImageChange('questionImage')}
@@ -486,8 +516,22 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <textarea
               value={formData.context}
               onChange={(e) => setFormData({ ...formData, context: e.target.value })}
+              onBlur={() => {
+                const text = formData.context
+                const dollarCount = (text.match(/\$/g) || []).length
+                if (dollarCount >= 2) {
+                  setShowLatexContext(true)
+                }
+              }}
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             />
+            {showLatexContext && formData.context && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                <p className="text-sm text-gray-700">
+                  {renderLatex(formData.context)}
+                </p>
+              </div>
+            )}
             <div className="flex justify-between items-center mt-2">
               <ImageUpload
                 key={`context-image-${resetKey}`}
@@ -523,9 +567,23 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               type="text"
               value={formData.answer}
               onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+              onBlur={() => {
+                const text = formData.answer
+                const dollarCount = (text.match(/\$/g) || []).length
+                if (dollarCount >= 2) {
+                  setShowLatexAnswer(true)
+                }
+              }}
               className="w-full border border-gray-300 rounded p-2"
               required
             />
+            {showLatexAnswer && formData.answer && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                <p className="text-sm text-gray-700">
+                  {renderLatex(formData.answer)}
+                </p>
+              </div>
+            )}
           </div>
 
           {formData.questionType === 'multiple' && (
@@ -573,8 +631,22 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <textarea
               value={formData.explanation}
               onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
+              onBlur={() => {
+                const text = formData.explanation
+                const dollarCount = (text.match(/\$/g) || []).length
+                if (dollarCount >= 2) {
+                  setShowLatexExplanation(true)
+                }
+              }}
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             />
+            {showLatexExplanation && formData.explanation && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                <p className="text-sm text-gray-700">
+                  {renderLatex(formData.explanation)}
+                </p>
+              </div>
+            )}
             <ImageUpload
               key={`explanation-image-${resetKey}`}
               onFileSelect={handleImageChange('explanationImage')}
