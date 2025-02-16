@@ -17,15 +17,6 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
   const [viewingQuestion, setViewingQuestion] = useState<DetailedQuestion | null>(null)
   const [editingQuestion, setEditingQuestion] = useState<DetailedQuestion | null>(null)
 
-  const getSubjectDisplay = (subject: Question['subject']) => {
-    if (typeof subject === 'string') return subject
-    return subject.name
-  }
-
-  const getGradeDisplay = (subject: Question['subject']) => {
-    if (typeof subject === 'string') return ''
-    return `Grade ${subject.grade.number}`
-  }
 
   const handleDelete = async (questionId: number) => {
     if (!confirm('Are you sure you want to delete this question?')) return

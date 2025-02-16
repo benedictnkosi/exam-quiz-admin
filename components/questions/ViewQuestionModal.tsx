@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL, IMAGE_BASE_URL } from '../../config/constants.js'
 import { getNextNewQuestion } from '@/services/api'
 import 'katex/dist/katex.min.css'
-import { InlineMath, BlockMath } from 'react-katex'
+import { InlineMath } from 'react-katex'
 
 interface ViewQuestionModalProps {
   question: DetailedQuestion
