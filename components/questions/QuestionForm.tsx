@@ -503,7 +503,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="single">Single Answer</option>
               <option value="multiple">Multiple Choice</option>
               <option value="true_false">True/False</option>
             </select>
