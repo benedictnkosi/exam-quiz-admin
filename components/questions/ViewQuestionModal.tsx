@@ -208,15 +208,7 @@ export default function ViewQuestionModal({
             </div>
             <div className="flex items-center space-x-4">
               {/* Only show approve button if answer has been checked */}
-              {hasCheckedAnswer && user?.email && question.status !== 'approved' && (
-                <button
-                  onClick={handleApprove}
-                  disabled={approving}
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                >
-                  {approving ? 'Approving...' : 'Approve Question'}
-                </button>
-              )}
+
 
               {/* Only show reject button if status is not rejected */}
               {question.status !== 'rejected' && (
@@ -226,6 +218,16 @@ export default function ViewQuestionModal({
                   className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                 >
                   {rejecting ? 'Rejecting...' : 'Reject Question'}
+                </button>
+              )}
+
+              {question.status !== 'rejected' && (
+                <button
+                  onClick={handleApprove}
+                  disabled={approving}
+                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {approving ? 'Approving...' : 'Approve Question'}
                 </button>
               )}
 

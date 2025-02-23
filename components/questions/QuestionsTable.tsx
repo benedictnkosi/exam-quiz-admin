@@ -117,14 +117,14 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                  ${question.status === 'approved'
+                  ${(question.status === 'approved' && question.comment === 'approved')
                     ? 'bg-green-100 text-green-800'
-                    : question.status === 'new'
-                      ? 'bg-yellow-100 text-yellow-800'
+                    : (question.status === 'approved' && (question.comment === 'new' || question.comment === ''))
+                      ? 'bg-orange-100 text-orange-800'
                       : 'bg-red-100 text-red-800'
                   }`}
                 >
-                  {question.status}
+                  {question.status === 'approved' && question.comment === 'new' ? 'new' : question.status}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

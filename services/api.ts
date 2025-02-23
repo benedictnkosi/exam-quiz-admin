@@ -179,6 +179,7 @@ export interface Question {
   grade: string
   subject: string | { id: number; name: string; active: boolean; grade: any }
   createdAt: string
+  comment?: string
 }
 
 interface QuestionsResponse {
