@@ -46,7 +46,6 @@ export default function ViewQuestionModal({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
-  const [hasCheckedAnswer, setHasCheckedAnswer] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectComment, setRejectComment] = useState('')
   const [rejecting, setRejecting] = useState(false)
@@ -83,7 +82,6 @@ export default function ViewQuestionModal({
       const correct = await checkAnswer(answer)
       setIsCorrect(correct)
       setShowAnswer(true)
-      setHasCheckedAnswer(true)
     } catch (error) {
       console.error('Error submitting answer:', error)
     } finally {
@@ -102,7 +100,6 @@ export default function ViewQuestionModal({
       setAnswer('')
       setShowAnswer(false)
       setIsCorrect(null)
-      setHasCheckedAnswer(false)
       onQuestionUpdate?.(nextQuestion)
     } catch (error) {
       console.error('Error loading next question:', error)
@@ -299,7 +296,6 @@ export default function ViewQuestionModal({
                         setAnswer(value)
                         setIsCorrect(correct)
                         setShowAnswer(true)
-                        setHasCheckedAnswer(true)
                       } catch (error) {
                         console.error('Error submitting answer:', error)
                       } finally {
