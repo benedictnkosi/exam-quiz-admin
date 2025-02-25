@@ -22,6 +22,7 @@ export interface QuestionPayload {
   grade: string
 }
 
+
 interface ApiResponse {
   status: 'OK' | 'NOK'
   message?: string
@@ -180,6 +181,8 @@ export interface Question {
   subject: string | { id: number; name: string; active: boolean; grade: any }
   createdAt: string
   comment?: string
+  posted: boolean
+  image_path: string
 }
 
 interface QuestionsResponse {
@@ -187,11 +190,14 @@ interface QuestionsResponse {
   questions: Question[]
 }
 
-export async function getQuestions(grade: string, subject: string, status?: string, uid?: string) {
+export async function getQuestions(grade: string, subject: string, status?: string, uid?: string, social?: boolean) {
   try {
     let url = `${API_BASE_URL}/questions/by-grade-subject?grade=${grade}&subject=${subject}`
     if (status) {
       url += `&status=${status}`
+    }
+    if (social) {
+      url += `&social=${social}`
     }
 
     const response = await fetch(url);
@@ -493,5 +499,35 @@ export async function getRejectedQuestionsCount(email: string): Promise<number> 
   } catch (error) {
     console.error('Error fetching rejected count:', error)
     return 0
+  }
+}
+
+export async function getSocialMediaQuestions(email: string): Promise<number> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
+    const data = await response.json()
+    return data.count || 0
+  } catch (error) {
+    console.error('Error fetching rejected count:', error)
+    return 0
+  }
+}
+
+export async function updatePostedStatus(questionId: string, posted: boolean): Promise<ApiResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/question/update-posted-status?questionId=${questionId}&posted=${posted}`, {
+      method: 'POST'
+
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to update posted status')
+    }
+
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.error('Error updating posted status:', error)
+    throw error
   }
 } 

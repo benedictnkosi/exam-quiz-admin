@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { setQuestionInactive, getQuestionById, type Question, type DetailedQuestion } from '@/services/api'
+import { setQuestionInactive, getQuestionById, type Question, type DetailedQuestion, updatePostedStatus } from '@/services/api'
 import ViewQuestionModal from './ViewQuestionModal'
 import EditQuestionModal from './EditQuestionModal'
 import { useAuth } from '@/contexts/AuthContext'
@@ -16,6 +16,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
   const [deleting, setDeleting] = useState<number | null>(null)
   const [viewingQuestion, setViewingQuestion] = useState<DetailedQuestion | null>(null)
   const [editingQuestion, setEditingQuestion] = useState<DetailedQuestion | null>(null)
+  const [posting, setPosting] = useState<number | null>(null)
 
 
   const handleDelete = async (questionId: number) => {
@@ -52,6 +53,20 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
     }
   }
 
+  const handleUpdatePosted = async (questionId: number) => {
+    try {
+      setPosting(questionId)
+      await updatePostedStatus(questionId.toString(), true)
+      // Refresh the page to show updated status
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to update posted status:', error)
+      alert('Failed to update posted status')
+    } finally {
+      setPosting(null)
+    }
+  }
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -67,7 +82,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               Question
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              type
+              Social
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Status
@@ -102,6 +117,15 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                   >
                     {deleting === question.id ? 'Deleting...' : 'Delete'}
                   </button>
+                  {!question.posted && (
+                    <button
+                      onClick={() => handleUpdatePosted(question.id)}
+                      disabled={posting === question.id}
+                      className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                    >
+                      {posting === question.id ? 'Posting...' : 'Post'}
+                    </button>
+                  )}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -113,7 +137,21 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {question.type}
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                  ${question.posted === true
+                    ? 'bg-green-100 text-green-800'
+                    : question.image_path
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-purple-100 text-purple-800'
+                  }`}
+                >
+                  {question.posted === true
+                    ? 'Posted'
+                    : question.image_path
+                      ? 'Image'
+                      : 'Social'
+                  }
+                </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
