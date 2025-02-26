@@ -564,8 +564,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <div className="flex justify-between items-center mb-1">
               <label className="block text-sm text-gray-700">Answer</label>
             </div>
-            <input
-              type="text"
+            <textarea
               value={formData.answer}
               onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
               onBlur={() => {
@@ -577,6 +576,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               }}
               className="w-full border border-gray-300 rounded p-2"
               required
+              rows={2}
             />
             {showLatexAnswer && formData.answer && (
               <div className="mt-2 p-3 bg-gray-50 rounded-md">
@@ -595,6 +595,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                   questionText={formData.questionText}
                   context={formData.context}
                   correctAnswer={formData.answer}
+                  length={formData.answer.length}
                   disabled={!formData.questionText || !formData.answer}
                   onOptionsGenerated={(options) => {
                     setFormData(prev => ({
@@ -604,20 +605,20 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                   }}
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1  gap-4">
                 {formData.options.map((option, index) => (
                   <div key={index}>
                     <label className="block text-xs text-gray-500 mb-1">
                       Option {index + 1}
                       {index === 3 && ' (Correct Answer)'}
                     </label>
-                    <input
-                      type="text"
+                    <textarea
                       value={option}
                       onChange={(e) => handleOptionChange(index, e.target.value)}
                       placeholder={`Option ${index + 1}`}
                       className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required={isMultipleChoice}
+                      rows={2}
                     />
                   </div>
                 ))}
