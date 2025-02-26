@@ -149,7 +149,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                     ? 'Posted'
                     : question.image_path
                       ? 'Image'
-                      : 'Social'
+                      : question.answer.length > 50 ? 'Too Long' : 'Social'
                   }
                 </span>
               </td>
