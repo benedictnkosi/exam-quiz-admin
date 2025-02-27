@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { type DetailedQuestion } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -49,6 +49,15 @@ export default function ViewQuestionModal({
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectComment, setRejectComment] = useState('')
   const [rejecting, setRejecting] = useState(false)
+  const [canApprove, setCanApprove] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCanApprove(true)
+    }, 30000) // 30 seconds
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const getImageUrl = (imageName: string) => {
     return `${IMAGE_BASE_URL}?image=${imageName}`
@@ -209,10 +218,11 @@ export default function ViewQuestionModal({
               {question.status !== 'rejected' && (
                 <button
                   onClick={handleApprove}
-                  disabled={approving}
+                  disabled={approving || !canApprove}
                   className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                 >
-                  {approving ? 'Approving...' : 'Approve Question'}
+                  {approving ? 'Approving...' :
+                    !canApprove ? 'Please review for 30s' : 'Approve Question'}
                 </button>
               )}
 

@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation'
 import AIOptionsGenerator from './AIOptionsGenerator'
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
+import ImageToLatex from './ImageToLatex'
 
 interface ImageInfo {
   file: File | null
@@ -385,6 +386,11 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <label className="block text-sm text-gray-700 mb-1">
               Question Text
             </label>
+            <ImageToLatex
+              onLatexGenerated={(latex) => {
+                console.log(latex);
+              }}
+            />
             <textarea
               value={formData.questionText}
               onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
@@ -605,7 +611,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                   }}
                 />
               </div>
-              <div className="grid grid-cols-1  gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {formData.options.map((option, index) => (
                   <div key={index}>
                     <label className="block text-xs text-gray-500 mb-1">
@@ -620,6 +626,13 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                       required={isMultipleChoice}
                       rows={2}
                     />
+                    {option && option.includes('$') && (
+                      <div className="mt-1 p-2 bg-gray-50 rounded">
+                        <p className="text-sm text-gray-700">
+                          {renderLatex(option)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
