@@ -302,7 +302,8 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         capturer: user.email,
         uid: user.uid,
         question_id: mode === 'edit' && initialData ? initialData.id : 0,  // Set proper question_id for updates
-        grade: formData.grade
+        grade: formData.grade,
+        curriculum: 'CAPS'
       }
 
       const response: ApiResponse = await createQuestion(payload)

@@ -19,7 +19,8 @@ export interface QuestionPayload {
   capturer: string
   uid: string
   question_id?: number
-  grade: string
+  grade: string,
+  curriculum: string
 }
 
 
