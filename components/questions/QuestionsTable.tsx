@@ -140,14 +140,14 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                   ${question.posted === true
                     ? 'bg-green-100 text-green-800'
-                    : question.image_path
+                    : question.image_path || question.question_image_path
                       ? 'bg-blue-100 text-blue-800'
                       : 'bg-purple-100 text-purple-800'
                   }`}
                 >
                   {question.posted === true
                     ? 'Posted'
-                    : question.image_path
+                    : question.image_path || question.question_image_path
                       ? 'Image'
                       : question.answer.length > 50 ? 'Too Long' : 'Social'
                   }

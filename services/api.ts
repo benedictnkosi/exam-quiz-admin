@@ -184,6 +184,7 @@ export interface Question {
   comment?: string
   posted: boolean
   image_path: string
+  question_image_path: string
 }
 
 interface QuestionsResponse {
