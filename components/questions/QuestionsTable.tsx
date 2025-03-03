@@ -129,11 +129,11 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {question.id}
+                {question.id.toString()}
               </td>
               <td className="px-6 py-4">
                 <div className="text-sm text-gray-900 max-w-md truncate">
-                  {question.question}
+                  {String(question.question)}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -166,7 +166,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {question.capturer}
+                {String(question.capturer)}
               </td>
 
             </tr>

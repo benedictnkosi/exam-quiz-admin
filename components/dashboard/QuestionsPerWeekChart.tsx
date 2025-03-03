@@ -23,9 +23,8 @@ ChartJS.register(
 );
 
 interface CapturedQuestion {
-  capturer: string;
+  name: string;
   count: number;
-  week: string;
 }
 
 interface ApiResponse {
@@ -42,7 +41,7 @@ export default function QuestionsPerWeekChart() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/questions/captured-per-week`);
+        const response = await fetch(`${API_BASE_URL}/questions/captured`);
         const data: ApiResponse = await response.json();
         if (data.status === 'OK') {
           setChartData(data.data);
@@ -73,23 +72,23 @@ export default function QuestionsPerWeekChart() {
     },
   };
 
-  const data = {
-    labels: chartData.map(item => item.capturer.split('@')[0]), // Show only username part
-    datasets: [
-      {
-        label: 'Questions Captured',
-        data: chartData.map(item => item.count),
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-      },
-    ],
-  };
+  // const data = {
+  //   labels: chartData.map(item => item.capturer.split('@')[0]), // Show only username part
+  //   datasets: [
+  //     {
+  //       label: 'Questions Captured',
+  //       data: chartData.map(item => item.count),
+  //       backgroundColor: 'rgba(53, 162, 235, 0.5)',
+  //     },
+  //   ],
+  // };
 
   if (loading) return <div>Loading chart...</div>;
   if (error) return <div>Error loading chart: {error}</div>;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <Bar options={options} data={data} />
+      {/* <Bar options={options} data={data} /> */}
     </div>
   );
 } 

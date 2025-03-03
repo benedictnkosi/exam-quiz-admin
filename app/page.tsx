@@ -28,10 +28,10 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <QuestionsPerWeekChart />
         <LearnersPerWeekChart />
-      </div>
+      </div> */}
 
       <div className="mt-6">
         <TopIncorrectQuestions />
