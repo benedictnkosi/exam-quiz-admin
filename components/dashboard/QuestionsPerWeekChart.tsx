@@ -9,7 +9,6 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../config/constants.js'
 
@@ -34,7 +33,6 @@ interface ApiResponse {
 }
 
 export default function QuestionsPerWeekChart() {
-  const [chartData, setChartData] = useState<CapturedQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -44,7 +42,7 @@ export default function QuestionsPerWeekChart() {
         const response = await fetch(`${API_BASE_URL}/questions/captured`);
         const data: ApiResponse = await response.json();
         if (data.status === 'OK') {
-          setChartData(data.data);
+          //setChartData(data.data);
         } else {
           setError('Failed to load data');
         }
@@ -59,18 +57,18 @@ export default function QuestionsPerWeekChart() {
     fetchData();
   }, []);
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: true,
-        text: 'Questions Captured Per Week',
-      },
-    },
-  };
+  // const options = {
+  //   responsive: true,
+  //   plugins: {
+  //     legend: {
+  //       position: 'top' as const,
+  //     },
+  //     title: {
+  //       display: true,
+  //       text: 'Questions Captured Per Week',
+  //     },
+  //   },
+  // };
 
   // const data = {
   //   labels: chartData.map(item => item.capturer.split('@')[0]), // Show only username part

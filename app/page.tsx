@@ -1,7 +1,5 @@
 import StatsCard from '@/components/dashboard/StatsCard'
-import QuestionsPerWeekChart from '@/components/dashboard/QuestionsPerWeekChart'
 import TopIncorrectQuestions from '@/components/dashboard/TopIncorrectQuestions'
-import LearnersPerWeekChart from '@/components/dashboard/LearnersPerWeekChart'
 import PendingApprovalsCard from '@/components/dashboard/PendingApprovalsCard'
 
 export default function Dashboard() {
