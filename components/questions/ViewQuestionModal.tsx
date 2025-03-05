@@ -45,7 +45,6 @@ export default function ViewQuestionModal({
   const [showAnswer, setShowAnswer] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
-  // const [approving, setApproving] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectComment, setRejectComment] = useState('')
   const [rejecting, setRejecting] = useState(false)
@@ -119,35 +118,6 @@ export default function ViewQuestionModal({
 
   const handleApprove = async () => {
     alert('Use the mobile app to approve questions')
-    // if (!user?.email) return
-    // setApproving(true)
-
-    // try {
-    //   const response = await fetch(`${API_BASE_URL}/question/set-status`, {
-    //     method: 'POST',
-    //     body: JSON.stringify({
-    //       question_id: question.id,
-    //       status: 'approved',
-    //       email: user.email,
-    //       uid: user.uid,
-    //       comment: ''
-    //     }),
-    //   })
-
-    //   const data: ApproveResponse = await response.json()
-
-    //   if (data.status === 'OK') {
-    //     await loadNextQuestion()
-    //   } else {
-    //     console.error('Error approving question:', data.message)
-    //     alert(data.message || 'Failed to approve question')
-    //   }
-    // } catch (error) {
-    //   console.error('Error approving question:', error)
-    //   alert('Failed to approve question')
-    // } finally {
-    //   setApproving(false)
-    // }
   }
 
   const handleReject = async () => {
@@ -219,11 +189,10 @@ export default function ViewQuestionModal({
               {question.status !== 'rejected' && (
                 <button
                   onClick={handleApprove}
-                  disabled={approving || !canApprove}
+                  disabled={!canApprove}
                   className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                 >
-                  {approving ? 'Approving...' :
-                    !canApprove ? 'Please review for 30s' : 'Approve Question'}
+                  {!canApprove ? 'Please review for 30s' : 'Approve Question'}
                 </button>
               )}
 
