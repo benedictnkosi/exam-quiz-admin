@@ -272,6 +272,7 @@ export interface DetailedQuestion {
   image_path?: string          // For question context image
   question_image_path?: string // For question image
   answer_image?: string        // For answer explanation image
+  curriculum: string
 }
 
 interface QuestionResponse {
