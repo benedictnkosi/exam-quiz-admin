@@ -118,35 +118,36 @@ export default function ViewQuestionModal({
   }
 
   const handleApprove = async () => {
-    if (!user?.email) return
-    setApproving(true)
+    alert('Use the mobile app to approve questions')
+    // if (!user?.email) return
+    // setApproving(true)
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/question/set-status`, {
-        method: 'POST',
-        body: JSON.stringify({
-          question_id: question.id,
-          status: 'approved',
-          email: user.email,
-          uid: user.uid,
-          comment: ''
-        }),
-      })
+    // try {
+    //   const response = await fetch(`${API_BASE_URL}/question/set-status`, {
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //       question_id: question.id,
+    //       status: 'approved',
+    //       email: user.email,
+    //       uid: user.uid,
+    //       comment: ''
+    //     }),
+    //   })
 
-      const data: ApproveResponse = await response.json()
+    //   const data: ApproveResponse = await response.json()
 
-      if (data.status === 'OK') {
-        await loadNextQuestion()
-      } else {
-        console.error('Error approving question:', data.message)
-        alert(data.message || 'Failed to approve question')
-      }
-    } catch (error) {
-      console.error('Error approving question:', error)
-      alert('Failed to approve question')
-    } finally {
-      setApproving(false)
-    }
+    //   if (data.status === 'OK') {
+    //     await loadNextQuestion()
+    //   } else {
+    //     console.error('Error approving question:', data.message)
+    //     alert(data.message || 'Failed to approve question')
+    //   }
+    // } catch (error) {
+    //   console.error('Error approving question:', error)
+    //   alert('Failed to approve question')
+    // } finally {
+    //   setApproving(false)
+    // }
   }
 
   const handleReject = async () => {
