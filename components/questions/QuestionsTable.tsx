@@ -166,7 +166,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {String(question.capturer)}
+                {String(question.capturer.name)}
               </td>
 
             </tr>
