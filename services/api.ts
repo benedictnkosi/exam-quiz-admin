@@ -177,7 +177,9 @@ export interface Question {
   type: 'multiple_choice' | 'single' | 'true_false'
   answer: string
   status: string
-  capturer: string
+  capturer: {
+    name: string
+  }
   grade: string
   subject: string | { id: number; name: string; active: boolean; grade: any }
   createdAt: string
