@@ -21,10 +21,10 @@ interface CheckAnswerResponse {
   message?: string
 }
 
-interface ApproveResponse {
-  status: string
-  message?: string
-}
+// interface ApproveResponse {
+//   status: string
+//   message?: string
+// }
 
 interface RejectResponse {
   status: string
@@ -45,7 +45,7 @@ export default function ViewQuestionModal({
   const [showAnswer, setShowAnswer] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
-  const [approving, setApproving] = useState(false)
+  // const [approving, setApproving] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [rejectComment, setRejectComment] = useState('')
   const [rejecting, setRejecting] = useState(false)

@@ -174,7 +174,7 @@ export async function setQuestionImagePath(data: SetImagePathPayload): Promise<A
 export interface Question {
   id: number
   question: string
-  type: 'multiple_choice' | 'single' | 'true_false'
+  type: 'multiple_choice'
   answer: string
   status: string
   capturer: {
@@ -241,7 +241,7 @@ export async function setQuestionInactive(questionId: string, uid: string): Prom
 export interface DetailedQuestion {
   id: number
   question: string
-  type: 'multiple_choice' | 'single' | 'true_false'
+  type: 'multiple_choice'
   context: string
   answer: string
   options: {

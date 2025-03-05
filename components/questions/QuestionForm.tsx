@@ -29,15 +29,14 @@ interface FormData {
   examYear: number
   grade: string
   subject: string
-  questionType: string
   term: string
   context: string
   answer: string
   explanation: string
   options: string[]
   contextImage: ImageInfo | null
-  questionImage: File | null  // Simplified to just File
-  explanationImage: File | null  // Simplified to just File
+  questionImage: File | null
+  explanationImage: File | null
 }
 
 interface QuestionFormProps {
@@ -91,7 +90,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     examYear: new Date().getFullYear(),
     grade: '',
     subject: '',
-    questionType: 'multiple',
     term: '',
     context: '',
     answer: '',
@@ -104,30 +102,14 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
   const [formData, setFormData] = useState<FormData>(() => {
     if (initialData) {
-      // Convert API question type to form question type
-      const questionType = initialData.type === 'multiple_choice' ? 'multiple' :
-        initialData.type === 'true_false' ? 'true_false' : 'single'
-
-      // Parse the answer if it's a string representation of an array
-      let parsedAnswer = initialData.answer
-      try {
-        if (typeof initialData.answer === 'string' && initialData.answer.startsWith('[')) {
-          const parsed = JSON.parse(initialData.answer)
-          parsedAnswer = Array.isArray(parsed) ? parsed[0] : parsed
-        }
-      } catch (e) {
-        console.error('Error parsing answer:', e)
-      }
-
       return {
         questionText: initialData.question || '',
         examYear: initialData.year || new Date().getFullYear(),
         grade: initialData.subject?.grade?.number?.toString() || '',
         subject: initialData.subject?.id?.toString() || '',
-        questionType: questionType, // Use the converted question type
         term: initialData.term?.toString() || '',
         context: initialData.context || '',
-        answer: parsedAnswer || '',
+        answer: initialData.answer || '',
         explanation: initialData.explanation || '',
         options: [
           initialData.options?.option1 || '',
@@ -247,8 +229,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     setLastContextImage(null);
   }
 
-  const isMultipleChoice = formData.questionType === 'multiple'
-
   const handleImageUpload = async (file: File, type: 'question_context' | 'question' | 'answer', qId: string) => {
     if (!user?.uid) return null;
 
@@ -279,14 +259,13 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         throw new Error('User email not found')
       }
 
-      if (isMultipleChoice && formData.options.some(option => !option.trim())) {
+      if (formData.options.some(option => !option.trim())) {
         throw new Error('All options are required for multiple choice questions')
       }
 
       const payload: QuestionPayload = {
         question: formData.questionText,
-        type: formData.questionType === 'single' ? 'single' :
-          formData.questionType === 'multiple' ? 'multiple_choice' : 'true_false',
+        type: 'multiple_choice',
         subject: formData.subject,
         context: formData.context || '',
         answer: formData.answer,
@@ -503,22 +482,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-700 mb-1">
-              Question Type
-            </label>
-            <select
-              value={formData.questionType}
-              onChange={(e) => setFormData({ ...formData, questionType: e.target.value })}
-              className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="sinlge">Single</option>
-              <option value="multiple">Multiple Choice</option>
-              <option value="true_false">True/False</option>
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm text-gray-700 mb-1">
               Question Context (Optional)
             </label>
             <textarea
@@ -594,51 +557,49 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             )}
           </div>
 
-          {formData.questionType === 'multiple' && (
-            <div className="md:col-span-2 space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="block text-sm text-gray-700">Answer Options</label>
-                <AIOptionsGenerator
-                  questionText={formData.questionText}
-                  context={formData.context}
-                  correctAnswer={formData.answer}
-                  length={formData.answer.length}
-                  disabled={!formData.questionText || !formData.answer}
-                  onOptionsGenerated={(options) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      options: options // No need to filter or shuffle, correct answer is always last
-                    }))
-                  }}
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                {formData.options.map((option, index) => (
-                  <div key={index}>
-                    <label className="block text-xs text-gray-500 mb-1">
-                      Option {index + 1}
-                      {index === 3 && ' (Correct Answer)'}
-                    </label>
-                    <textarea
-                      value={option}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      placeholder={`Option ${index + 1}`}
-                      className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required={isMultipleChoice}
-                      rows={2}
-                    />
-                    {option && option.includes('$') && (
-                      <div className="mt-1 p-2 bg-gray-50 rounded">
-                        <p className="text-sm text-gray-700">
-                          {renderLatex(option)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+          <div className="md:col-span-2 space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="block text-sm text-gray-700">Answer Options</label>
+              <AIOptionsGenerator
+                questionText={formData.questionText}
+                context={formData.context}
+                correctAnswer={formData.answer}
+                length={formData.answer.length}
+                disabled={!formData.questionText || !formData.answer}
+                onOptionsGenerated={(options) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    options: options
+                  }))
+                }}
+              />
             </div>
-          )}
+            <div className="grid grid-cols-1 gap-4">
+              {formData.options.map((option, index) => (
+                <div key={index}>
+                  <label className="block text-xs text-gray-500 mb-1">
+                    Option {index + 1}
+                    {index === 3 && ' (Correct Answer)'}
+                  </label>
+                  <textarea
+                    value={option}
+                    onChange={(e) => handleOptionChange(index, e.target.value)}
+                    placeholder={`Option ${index + 1}`}
+                    className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    rows={2}
+                  />
+                  {option && option.includes('$') && (
+                    <div className="mt-1 p-2 bg-gray-50 rounded">
+                      <p className="text-sm text-gray-700">
+                        {renderLatex(option)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-700 mb-1">
