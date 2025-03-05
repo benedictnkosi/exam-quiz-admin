@@ -52,7 +52,7 @@ export default function StatusCountsTable() {
                     <span className="text-sm text-gray-600">From Date:</span>
                     <DatePicker
                         selected={selectedDate}
-                        onChange={(date: Date) => setSelectedDate(date)}
+                        onChange={(date: Date | null) => setSelectedDate(date || selectedDate)}
                         className="border rounded-md p-2 text-sm"
                         dateFormat="yyyy-MM-dd"
                     />

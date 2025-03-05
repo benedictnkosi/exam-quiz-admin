@@ -37,6 +37,7 @@ interface FormData {
   contextImage: ImageInfo | null
   questionImage: File | null
   explanationImage: File | null
+  curriculum: string
 }
 
 interface QuestionFormProps {
@@ -98,6 +99,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     contextImage: null,
     questionImage: null,
     explanationImage: null,
+    curriculum: 'CAPS'
   }
 
   const [formData, setFormData] = useState<FormData>(() => {
@@ -124,6 +126,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         } : null,
         questionImage: null,
         explanationImage: null,
+        curriculum: initialData.curriculum || 'CAPS'
       }
     }
     return initialFormState
@@ -282,7 +285,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         uid: user.uid,
         question_id: mode === 'edit' && initialData ? initialData.id : 0,  // Set proper question_id for updates
         grade: formData.grade,
-        curriculum: 'CAPS'
+        curriculum: formData.curriculum
       }
 
       const response: ApiResponse = await createQuestion(payload)
@@ -477,6 +480,21 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                   Term {term}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">
+              Curriculum
+            </label>
+            <select
+              value={formData.curriculum}
+              onChange={(e) => setFormData({ ...formData, curriculum: e.target.value })}
+              className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="CAPS">CAPS</option>
+              <option value="IEB">IEB</option>
             </select>
           </div>
 
