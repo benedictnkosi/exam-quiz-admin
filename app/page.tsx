@@ -5,6 +5,7 @@ import TopIncorrectQuestions from '@/components/dashboard/TopIncorrectQuestions'
 import PendingApprovalsCard from '@/components/dashboard/PendingApprovalsCard'
 import StatusCountsTable from '@/components/dashboard/StatusCountsTable'
 import ReviewerStatsTable from '@/components/dashboard/ReviewerStatsTable'
+import LearnerSubjectStatsTable from '@/components/dashboard/LearnerSubjectStatsTable'
 
 export default function Dashboard() {
   return (
@@ -42,6 +43,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 mt-6">
         <StatusCountsTable />
         <ReviewerStatsTable />
+        <LearnerSubjectStatsTable />
       </div>
     </div>
   );
