@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@supabase/supabase-js": "^2.49.1",
     "@types/js-cookie": "^3.0.6",
     "@types/react-datepicker": "^6.2.0",
     "better-react-mathjax": "^2.1.0",
