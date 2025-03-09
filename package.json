@@ -9,7 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "tsc --noEmit && next lint",
+    "lint:fix": "tsc --noEmit && next lint --fix"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
