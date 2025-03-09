@@ -5,10 +5,11 @@ import "react-datepicker/dist/react-datepicker.css";
 
 interface ReviewerStats {
     reviewer: string;
+    reviewer_name: string;
     approved: number;
     rejected: number;
-    total: number;
     new: number;
+    total: number;
 }
 
 interface ReviewerStatsResponse {
@@ -18,6 +19,8 @@ interface ReviewerStatsResponse {
 
 export default function ReviewerStatsTable() {
     const [reviewerStats, setReviewerStats] = useState<ReviewerStats[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date>(() => {
         const date = new Date();
         // Get previous Saturday
@@ -29,15 +32,26 @@ export default function ReviewerStatsTable() {
 
     useEffect(() => {
         const fetchReviewerStats = async () => {
+            setLoading(true);
+            setError(null);
+
             try {
                 const formattedDate = selectedDate.toISOString().split('T')[0];
-                const response = await fetch(`${API_BASE_URL}/questions-reviewed?from_date=${formattedDate}`);
+                const response = await fetch(`${API_BASE_URL}/learner/reviewed-questions?from_date=${formattedDate}`);
                 const data: ReviewerStatsResponse = await response.json();
-                if (data.status === 'OK') {
+
+                if (data.status === 'OK' && Array.isArray(data.data)) {
                     setReviewerStats(data.data);
+                } else {
+                    setError(data.status === 'OK' ? 'Invalid response format' : (data.status || 'Error fetching data'));
+                    setReviewerStats([]);
                 }
             } catch (error) {
                 console.error('Failed to fetch reviewer stats:', error);
+                setError('Failed to fetch data. Please try again.');
+                setReviewerStats([]);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -52,7 +66,7 @@ export default function ReviewerStatsTable() {
                     <span className="text-sm text-gray-600">From Date:</span>
                     <DatePicker
                         selected={selectedDate}
-                        onChange={(date: Date | null) => setSelectedDate(date || new Date())}
+                        onChange={(date: Date | null) => setSelectedDate(date || selectedDate)}
                         className="border rounded-md p-2 text-sm"
                         dateFormat="yyyy-MM-dd"
                     />
@@ -60,67 +74,73 @@ export default function ReviewerStatsTable() {
             </div>
 
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Reviewer
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Approved
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Rejected
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                New
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Total Reviewed
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {reviewerStats.map((stat, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
+                {loading ? (
+                    <div className="text-center py-4">Loading...</div>
+                ) : error ? (
+                    <div className="text-center py-4 text-red-500">{error}</div>
+                ) : reviewerStats.length === 0 ? (
+                    <div className="text-center py-4">No data available for the selected date.</div>
+                ) : (
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Reviewer
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Approved
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Rejected
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    New
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total Reviewed
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {reviewerStats.map((stat, index) => (
+                                <tr key={index}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {stat.reviewer_name || stat.reviewer}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {stat.approved}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {stat.rejected}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {stat.new}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {stat.total}
+                                    </td>
+                                </tr>
+                            ))}
+                            <tr className="bg-gray-50 font-medium">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {stat.reviewer}
+                                    Total
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <span className="text-green-600">{stat.approved}</span>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {reviewerStats.reduce((sum, stat) => sum + stat.approved, 0)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <span className="text-red-600">{stat.rejected}</span>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {reviewerStats.reduce((sum, stat) => sum + stat.rejected, 0)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <span className="text-blue-600">{stat.new}</span>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {reviewerStats.reduce((sum, stat) => sum + stat.new, 0)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {stat.total}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {reviewerStats.reduce((sum, stat) => sum + stat.total, 0)}
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
-                    <tfoot className="bg-gray-50">
-                        <tr>
-                            <td className="px-6 py-3 text-sm font-medium text-gray-900">
-                                Total
-                            </td>
-                            <td className="px-6 py-3 text-sm text-green-600 font-medium">
-                                {reviewerStats.reduce((sum, stat) => sum + stat.approved, 0)}
-                            </td>
-                            <td className="px-6 py-3 text-sm text-red-600 font-medium">
-                                {reviewerStats.reduce((sum, stat) => sum + stat.rejected, 0)}
-                            </td>
-                            <td className="px-6 py-3 text-sm text-blue-600 font-medium">
-                                {reviewerStats.reduce((sum, stat) => sum + stat.new, 0)}
-                            </td>
-                            <td className="px-6 py-3 text-sm text-gray-900 font-medium">
-                                {reviewerStats.reduce((sum, stat) => sum + stat.total, 0)}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );

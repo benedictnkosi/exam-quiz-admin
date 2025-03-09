@@ -1,8 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getGrades, getActiveSubjects, type Grade, type Subject } from '@/services/api'
+import { getGrades, getActiveSubjects, type Grade } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { API_BASE_URL } from '@/config/constants'
+
+// Define interfaces for the new nested subject response format
+interface Paper {
+  id: number;
+  name: string;
+}
+
+interface SubjectCategory {
+  name: string;
+  papers: Paper[];
+}
+
+interface GradeSubjects {
+  grade: number;
+  subjects: SubjectCategory[];
+}
+
+interface SubjectsResponse {
+  status: string;
+  subjects: GradeSubjects[];
+}
 
 interface QuestionsFilterProps {
   filters: {
@@ -18,7 +40,8 @@ interface QuestionsFilterProps {
 export default function QuestionsFilter({ filters, setFilters, onSearch, onFetchRejected }: QuestionsFilterProps) {
   const { user } = useAuth()
   const [grades, setGrades] = useState<Grade[]>([])
-  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [subjectGroups, setSubjectGroups] = useState<GradeSubjects[]>([])
+  const [papers, setPapers] = useState<Paper[]>([])
   const [loading, setLoading] = useState(true)
   const statuses = ['New', 'Approved', 'Rejected']
 
@@ -52,15 +75,34 @@ export default function QuestionsFilter({ filters, setFilters, onSearch, onFetch
     if (filters.grade) {
       const fetchSubjects = async () => {
         try {
-          const subjectsData = await getActiveSubjects(filters.grade)
-          setSubjects(subjectsData)
+          const response = await fetch(`${API_BASE_URL}/subjects/active?grade=${filters.grade}`);
+          const data: SubjectsResponse = await response.json();
+
+          if (data.status === 'OK' && data.subjects && data.subjects.length > 0) {
+            setSubjectGroups(data.subjects);
+
+            // Flatten all papers into a single array for the dropdown
+            const allPapers: Paper[] = [];
+            data.subjects.forEach(gradeSubject => {
+              gradeSubject.subjects.forEach(subject => {
+                subject.papers.forEach(paper => {
+                  allPapers.push(paper);
+                });
+              });
+            });
+
+            setPapers(allPapers);
+          } else {
+            setPapers([]);
+          }
         } catch (err) {
           console.error('Failed to fetch subjects:', err)
+          setPapers([]);
         }
       }
       fetchSubjects()
     } else {
-      setSubjects([])
+      setPapers([])
     }
   }, [filters.grade])
 
@@ -107,10 +149,14 @@ export default function QuestionsFilter({ filters, setFilters, onSearch, onFetch
               disabled={!filters.grade}
             >
               <option value="">Select Subject</option>
-              {subjects.map(subject => (
-                <option key={subject.id} value={subject.name}>
-                  {subject.name}
-                </option>
+              {subjectGroups.length > 0 && subjectGroups[0].subjects.map(category => (
+                <optgroup key={category.name} label={category.name}>
+                  {category.papers.map(paper => (
+                    <option key={paper.id} value={paper.id.toString()}>
+                      {paper.name}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>

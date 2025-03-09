@@ -33,7 +33,7 @@ interface ApiResponse {
 
 export async function createQuestion(data: QuestionPayload): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question/create`, {
+    const response = await fetch(`${API_BASE_URL}/question`, {
       method: 'POST',
       body: JSON.stringify({
         ...data,
@@ -66,7 +66,7 @@ export async function uploadQuestionImage(
   formData.append('uid', uid)
 
   try {
-    const response = await fetch(`${API_BASE_URL}/learner/upload-image`, {
+    const response = await fetch(`${API_BASE_URL}/question/image/upload`, {
       method: 'POST',
       body: formData,
     })
@@ -153,7 +153,7 @@ interface SetImagePathPayload {
 
 export async function setQuestionImagePath(data: SetImagePathPayload): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
+    const response = await fetch(`${API_BASE_URL}/question/image/update`, {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -220,9 +220,8 @@ export async function getQuestions(grade: string, subject: string, status?: stri
 
 export async function setQuestionInactive(questionId: string, uid: string): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question/set-inactive`, {
-      method: 'POST',
-      body: JSON.stringify({ question_id: questionId, uid }),
+    const response = await fetch(`${API_BASE_URL}/question/delete?question_id=${questionId}&uid=${uid}`, {
+      method: 'DELETE'
     })
 
     const result: ApiResponse = await response.json()
@@ -283,56 +282,21 @@ interface QuestionResponse {
 
 export async function getQuestionById(id: string): Promise<DetailedQuestion> {
   try {
-    const response = await fetch(`${API_BASE_URL}/questions?id=${id}`)
+    const response = await fetch(`${API_BASE_URL}/question?id=${id}`);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch question')
+      throw new Error('Failed to fetch question');
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('Question not found')
-    }
-
-    // Clean up the answer by removing brackets and quotes
-    const question = data[0]
-    question.answer = question.answer.replace(/[\[\]"]/g, '')
-
-    return question
+    return data;
   } catch (error) {
-    console.error('Error fetching question:', error)
-    throw error
+    console.error(`Error fetching question ID ${id}:`, error);
+    throw error;
   }
 }
 
-export async function requestAdminAccess(uid: string) {
-  const response = await fetch(`${API_BASE_URL}/public/learner/role/update`, {
-    method: 'POST',
-    body: JSON.stringify({
-      role: 'admin_pending',
-      uid
-    }),
-  })
-  return response.json()
-}
-
-export async function getPendingAdminRequests() {
-  const response = await fetch(`${API_BASE_URL}/public/learners/by-role?role=admin_pending`)
-  return response.json()
-}
-
-export async function approveAdminRequest(userId: string, uid: string) {
-  const response = await fetch(`${API_BASE_URL}/public/learner/role/update`, {
-    method: 'POST',
-    body: JSON.stringify({
-      user_id: userId,
-      role: 'admin',
-      uid
-    }),
-  })
-  return response.json()
-}
 
 export async function createLearner(uid: string, email: string, displayName?: string | null) {
   try {
@@ -362,54 +326,10 @@ interface SubjectGradePayload {
   grade?: number  // Made optional since it's not needed for status updates
 }
 
-export async function addSubjectToGrade(data: SubjectGradePayload, uid: string): Promise<ApiResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/subject/add-to-grade`, {
-      method: 'POST',
-      body: JSON.stringify({
-        ...data,
-        uid
-      }),
-    })
-
-    const result = await response.json()
-    if (!response.ok || result.status === 'NOK') {
-      throw new Error(result.message || 'Failed to add subject to grade')
-    }
-
-    return result
-  } catch (error) {
-    console.error('Error adding subject to grade:', error)
-    throw error
-  }
-}
-
-export async function updateSubjectGradeStatus(data: SubjectGradePayload, uid: string): Promise<ApiResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/subject/update-active`, {
-      method: 'POST',
-      body: JSON.stringify({
-        subject_id: data.subject_id,
-        active: data.active,
-        uid
-      }),
-    })
-
-    const result = await response.json()
-    if (!response.ok || result.status === 'NOK') {
-      throw new Error(result.message || 'Failed to update subject status')
-    }
-
-    return result
-  } catch (error) {
-    console.error('Error updating subject status:', error)
-    throw error
-  }
-}
 
 export async function getSubjectsForGrade(gradeId: string, uid: string) {
   try {
-    const response = await fetch(`${API_BASE_URL}/subjects/by-grade?grade=${gradeId}&uid=${uid}`)
+    const response = await fetch(`${API_BASE_URL}/subjects/active?grade=${gradeId}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch subjects')
@@ -422,117 +342,218 @@ export async function getSubjectsForGrade(gradeId: string, uid: string) {
   }
 }
 
-export async function addSubject(data: { name: string, grade: number }, uid: string): Promise<ApiResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/subject/create`, {
-      method: 'POST',
-      body: JSON.stringify({
-        ...data,
-        uid
-      }),
-    })
 
-    const result = await response.json()
-    if (!response.ok || result.status === 'NOK') {
-      throw new Error(result.message || 'Failed to add subject')
+interface RejectedCountResponse {
+  status: 'OK' | 'NOK'
+  count: number
+}
+
+export async function getRejectedQuestionsCount(uid: string): Promise<number> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/questions/rejected-count?uid=${uid}`)
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch rejected questions count')
+    }
+
+    const result: RejectedCountResponse = await response.json()
+    if (result.status === 'NOK') {
+      throw new Error('Failed to fetch rejected questions count')
+    }
+
+    return result.count
+  } catch (error) {
+    console.error('Error fetching rejected count:', error)
+    return 0
+  }
+}
+
+
+export async function updatePostedStatus(questionId: string, posted: boolean, uid: string): Promise<ApiResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/question/posted-status?question_id=${questionId}&posted=${posted}&uid=${uid}`,
+      { method: 'PUT' }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to update posted status')
+    }
+
+    const result: ApiResponse = await response.json()
+    if (result.status === 'NOK') {
+      throw new Error(result.message || 'Failed to update posted status')
     }
 
     return result
   } catch (error) {
-    console.error('Error adding subject:', error)
+    console.error('Error updating posted status:', error)
     throw error
   }
 }
 
-export async function getSubjectNames(): Promise<string[]> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/subjects/names`)
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch subject names')
-    }
-
-    const result = await response.json()
-    return result.subjects || []
-  } catch (error) {
-    console.error('Error fetching subject names:', error)
-    throw error
-  }
+interface RejectedQuestionsResponse {
+  status: 'OK' | 'NOK'
+  questions: Question[]
+  count: number
 }
 
-export async function getNextNewQuestion(questionId: string): Promise<DetailedQuestion> {
+export async function getRejectedQuestionsByUid(uid: string): Promise<RejectedQuestionsResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question/next-new?question_id=${questionId}`)
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch next question')
-    }
-
-    const data = await response.json()
-    if (data.status !== 'OK' || !data.question) {
-      throw new Error('No more questions to review')
-    }
-
-    return data.question
-  } catch (error) {
-    console.error('Error fetching next question:', error)
-    throw error
-  }
-}
-
-export async function getRejectedQuestions(email: string): Promise<Question[]> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
+    const response = await fetch(`${API_BASE_URL}/questions/rejected-by-uid?uid=${uid}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch rejected questions')
     }
 
-    const data = await response.json()
-    return data.questions || []
+    const result = await response.json()
+    if (result.status === 'NOK') {
+      throw new Error(result.message || 'Failed to fetch rejected questions')
+    }
+
+    return result
   } catch (error) {
     console.error('Error fetching rejected questions:', error)
     throw error
   }
 }
 
-export async function getRejectedQuestionsCount(email: string): Promise<number> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
-    const data = await response.json()
-    return data.count || 0
-  } catch (error) {
-    console.error('Error fetching rejected count:', error)
-    return 0
-  }
+interface CheckAnswerPayload {
+  uid: string
+  question_id: number | string
+  answer: string
 }
 
-export async function getSocialMediaQuestions(email: string): Promise<number> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
-    const data = await response.json()
-    return data.count || 0
-  } catch (error) {
-    console.error('Error fetching rejected count:', error)
-    return 0
-  }
+interface CheckAnswerResponse {
+  status: 'OK' | 'NOK'
+  correct: boolean
+  explanation?: string
+  correctAnswer?: string | string[]
+  message: string
+  subject?: string
 }
 
-export async function updatePostedStatus(questionId: string, posted: boolean): Promise<ApiResponse> {
+export async function checkLearnerAnswer(data: CheckAnswerPayload): Promise<CheckAnswerResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question/update-posted-status?questionId=${questionId}&posted=${posted}`, {
-      method: 'POST'
-
+    const response = await fetch(`${API_BASE_URL}/learner/check-answer`, {
+      method: 'POST',
+      body: JSON.stringify(data),
     })
 
     if (!response.ok) {
-      throw new Error('Failed to update posted status')
+      throw new Error('Failed to check answer')
     }
 
     const result = await response.json()
+    if (result.status === 'NOK') {
+      throw new Error(result.message || 'Failed to check answer')
+    }
+
     return result
   } catch (error) {
-    console.error('Error updating posted status:', error)
+    console.error('Error checking answer:', error)
     throw error
+  }
+}
+
+interface StatusCountResponse {
+  status: 'OK' | 'NOK'
+  count: number
+}
+
+export async function getNewQuestionsCount(): Promise<number> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/questions/new-count`)
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch new questions count')
+    }
+
+    const result: StatusCountResponse = await response.json()
+    if (result.status === 'NOK') {
+      throw new Error('Failed to fetch new questions count')
+    }
+
+    return result.count
+  } catch (error) {
+    console.error('Error fetching new questions count:', error)
+    return 0
+  }
+}
+
+interface ReviewedQuestion {
+  id: number
+  question: string
+  answer: string
+  correct_answer: string | string[]
+  is_correct: boolean
+  answered_at: string
+  subject: string
+  grade: number
+  question_status: string
+  type: string
+}
+
+interface ReviewedQuestionsResponse {
+  status: 'OK' | 'NOK'
+  questions: {
+    items: ReviewedQuestion[]
+    total: number
+    page: number
+    limit: number
+    total_pages: number
+  }
+}
+
+export async function getQuestionsReviewedByLearner(
+  uid: string,
+  page: number = 1,
+  limit: number = 20
+): Promise<ReviewedQuestionsResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/learner/reviewed-questions?uid=${uid}&page=${page}&limit=${limit}`
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch reviewed questions')
+    }
+
+    const result: ReviewedQuestionsResponse = await response.json()
+    if (result.status === 'NOK') {
+      throw new Error('Failed to fetch reviewed questions')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Error fetching reviewed questions:', error)
+    throw error
+  }
+}
+
+export async function getNextNewQuestion(currentQuestionId: string): Promise<DetailedQuestion> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/question/next-new?current_question_id=${currentQuestionId}`);
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch next question');
+    }
+
+    const data = await response.json();
+
+    if (data.status === 'NOK' || !data.question) {
+      throw new Error(data.message || 'No more questions available');
+    }
+
+    // Clean up the answer by removing brackets and quotes if needed
+    const question = data.question;
+    if (question.answer) {
+      question.answer = question.answer.replace(/[\[\]"]/g, '');
+    }
+
+    return question;
+  } catch (error) {
+    console.error('Error fetching next question:', error);
+    throw error;
   }
 } 

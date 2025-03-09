@@ -10,6 +10,12 @@ const nextConfig = {
         port: '',
         pathname: '/public/learn/learner/get-image',
       },
+      {
+        protocol: 'https',
+        hostname: 'ozhhkdhtddoznswtplbx.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/question_images/**',
+      },
     ],
   },
   webpack: (config, { isServer }) => {

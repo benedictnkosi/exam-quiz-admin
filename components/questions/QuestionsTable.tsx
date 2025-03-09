@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { setQuestionInactive, getQuestionById, type Question, type DetailedQuestion, updatePostedStatus } from '@/services/api'
 import ViewQuestionModal from './ViewQuestionModal'
 import EditQuestionModal from './EditQuestionModal'
@@ -17,7 +17,13 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
   const [viewingQuestion, setViewingQuestion] = useState<DetailedQuestion | null>(null)
   const [editingQuestion, setEditingQuestion] = useState<DetailedQuestion | null>(null)
   const [posting, setPosting] = useState<number | null>(null)
+  const [loadingView, setLoadingView] = useState<number | null>(null)
 
+  useEffect(() => {
+    if (viewingQuestion) {
+      console.log('Opening view modal with question:', viewingQuestion);
+    }
+  }, [viewingQuestion]);
 
   const handleDelete = async (questionId: number) => {
     if (!confirm('Are you sure you want to delete this question?')) return
@@ -37,10 +43,20 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
 
   const handleView = async (question: Question) => {
     try {
-      const detailedQuestion = await getQuestionById(question.id.toString())
-      setViewingQuestion(detailedQuestion)
+      setLoadingView(question.id);
+      const detailedQuestion = await getQuestionById(question.id.toString());
+
+      if (detailedQuestion) {
+        setViewingQuestion(detailedQuestion);
+      } else {
+        console.error('Failed to fetch question details: Question data not found');
+        alert('Failed to fetch question details. Please try again.');
+      }
     } catch (error) {
-      console.error('Failed to fetch question details:', error)
+      console.error('Failed to fetch question details:', error);
+      alert('Error loading question details. Please try again.');
+    } finally {
+      setLoadingView(null);
     }
   }
 
@@ -56,7 +72,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
   const handleUpdatePosted = async (questionId: number) => {
     try {
       setPosting(questionId)
-      await updatePostedStatus(questionId.toString(), true)
+      await updatePostedStatus(questionId.toString(), true, user?.uid || '')
       // Refresh the page to show updated status
       window.location.reload()
     } catch (error) {
@@ -100,9 +116,10 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleView(question)}
-                    className="text-indigo-600 hover:text-indigo-900"
+                    disabled={loadingView === question.id}
+                    className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
                   >
-                    View
+                    {loadingView === question.id ? 'Loading...' : 'View'}
                   </button>
                   <button
                     onClick={() => handleEdit(question)}
@@ -174,10 +191,12 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
         </tbody>
       </table>
       {viewingQuestion && (
-        <ViewQuestionModal
-          question={viewingQuestion}
-          onClose={() => setViewingQuestion(null)}
-        />
+        <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex">
+          <ViewQuestionModal
+            question={viewingQuestion}
+            onClose={() => setViewingQuestion(null)}
+          />
+        </div>
       )}
 
       {editingQuestion && (

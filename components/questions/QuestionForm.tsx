@@ -4,19 +4,19 @@ import { useState, useEffect } from 'react'
 import ImageUpload from './ImageUpload'
 import {
   createQuestion,
+  getGrades,
   uploadQuestionImage,
   type QuestionPayload,
-  getGrades,
-  getActiveSubjects,
   type DetailedQuestion
 } from '@/services/api'
-import { API_BASE_URL } from '../../config/constants.js'
+import { API_BASE_URL } from '@/config/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import AIOptionsGenerator from './AIOptionsGenerator'
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 import ImageToLatex from './ImageToLatex'
+
 
 interface ImageInfo {
   file: File | null
@@ -69,6 +69,27 @@ interface ApiResponse {
   question_id?: number
 }
 
+// Add the new interfaces for the nested subject structure
+interface Paper {
+  id: number;
+  name: string;
+}
+
+interface SubjectCategory {
+  name: string;
+  papers: Paper[];
+}
+
+interface GradeSubjects {
+  grade: number;
+  subjects: SubjectCategory[];
+}
+
+interface SubjectsResponse {
+  status: string;
+  subjects: GradeSubjects[];
+}
+
 export default function QuestionForm({ initialData, mode = 'create', onSuccess }: QuestionFormProps) {
   const { user } = useAuth()
   const router = useRouter()
@@ -104,11 +125,16 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
   const [formData, setFormData] = useState<FormData>(() => {
     if (initialData) {
+      // Get grade as a string to ensure consistency
+      const gradeValue = initialData.subject?.grade?.number?.toString() || '';
+      console.log('Initializing form with data:', initialData);
+      console.log('Grade from initialData:', gradeValue);
+
       return {
         questionText: initialData.question || '',
         examYear: initialData.year || new Date().getFullYear(),
-        grade: initialData.subject?.grade?.number?.toString() || '',
-        subject: initialData.subject?.id?.toString() || '',
+        grade: gradeValue,
+        subject: initialData.subject?.name || '',
         term: initialData.term?.toString() || '',
         context: initialData.context || '',
         answer: initialData.answer || '',
@@ -133,10 +159,41 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   })
 
   useEffect(() => {
+    // Log initial data to see the structure
+    if (initialData) {
+      console.log('Initial data loaded:', initialData);
+      console.log('Subject structure:', initialData.subject);
+      console.log('Grade structure:', initialData.subject?.grade);
+    }
+
     const fetchGrades = async () => {
       try {
         const gradesData = await getGrades()
         setGrades(gradesData)
+
+        // Log grades for debugging
+        console.log('Grades loaded:', gradesData);
+        console.log('Current form grade:', formData.grade);
+
+        // If we have initialData but grade is not set, try to set it now
+        if (initialData?.subject) {
+          // Handle both grade formats - direct number or object with number property
+          let gradeValue: string | undefined;
+
+          if (typeof initialData.subject.grade === 'object' && initialData.subject.grade?.number !== undefined) {
+            gradeValue = initialData.subject.grade.number.toString();
+          } else if (initialData.subject.grade !== undefined) {
+            gradeValue = String(initialData.subject.grade);
+          }
+
+          if (gradeValue) {
+            console.log('Setting grade from initialData:', gradeValue);
+            setFormData(prev => ({
+              ...prev,
+              grade: gradeValue
+            }));
+          }
+        }
       } catch (err) {
         console.error('Failed to fetch grades:', err)
         setError('Failed to load grades')
@@ -146,7 +203,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }
 
     fetchGrades()
-  }, [])
+  }, [initialData?.subject?.grade])
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -155,30 +212,105 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         return
       }
 
+      console.log(`Fetching subjects for grade ${formData.grade}, current selected subject: ${formData.subject}`);
       setLoadingSubjects(true)
-      try {
-        const subjectsData = await getActiveSubjects(formData.grade)
-        setSubjects(subjectsData)
 
-        // Only set subject if in edit mode and we have initialData
-        if (initialData && mode === 'edit') {
-          setFormData(prev => ({
-            ...prev,
-            subject: initialData.subject.name
-          }))
+      try {
+        // The API still returns a nested structure
+        const response = await fetch(`${API_BASE_URL}/subjects/active?grade=${formData.grade}`);
+        const data = await response.json();
+
+        if (data.status === 'OK' && data.subjects && data.subjects.length > 0) {
+          // Convert the nested structure to a flat list of subjects
+          const flattenedSubjects: Subject[] = [];
+
+          data.subjects.forEach((gradeData: any) => {
+            if (gradeData.subjects && Array.isArray(gradeData.subjects)) {
+              gradeData.subjects.forEach((category: any) => {
+                if (category.papers && Array.isArray(category.papers)) {
+                  category.papers.forEach((paper: any) => {
+                    flattenedSubjects.push({
+                      id: paper.id,
+                      name: paper.name,
+                      active: true,
+                      grade: {
+                        id: parseInt(formData.grade),
+                        number: parseInt(formData.grade),
+                        active: 1
+                      }
+                    });
+                  });
+                }
+              });
+            }
+          });
+
+          setSubjects(flattenedSubjects);
+          console.log('Subjects loaded:', flattenedSubjects);
+
+          // In edit mode, if we don't have a subject set yet, but have initialData, set it now
+          if (mode === 'edit' && !formData.subject && initialData?.subject?.name) {
+            console.log('Setting subject to:', initialData.subject.name);
+            setFormData(prev => ({
+              ...prev,
+              subject: initialData.subject.name
+            }));
+          }
         } else {
-          setFormData(prev => ({ ...prev, subject: '' }))
+          setSubjects([]);
+          console.error('Invalid or empty subjects data', data);
         }
       } catch (err) {
         console.error('Failed to fetch subjects:', err)
         setError('Failed to load subjects')
+        setSubjects([]);
       } finally {
         setLoadingSubjects(false)
       }
     }
 
     fetchSubjects()
-  }, [formData.grade, initialData, mode])
+  }, [formData.grade, mode, initialData])
+
+  // Improve the edit mode effect to handle grade selection
+  useEffect(() => {
+    // Define a function to ensure the grade is set
+    const ensureGradeSet = () => {
+      // First, check if we're in edit mode and have initialData
+      if (mode === 'edit' && initialData?.subject) {
+        // Handle both grade formats - direct number or object with number property
+        let initialGradeValue: string | undefined;
+
+        if (typeof initialData.subject.grade === 'object' && initialData.subject.grade?.number !== undefined) {
+          initialGradeValue = initialData.subject.grade.number.toString();
+        } else if (initialData.subject.grade !== undefined) {
+          initialGradeValue = String(initialData.subject.grade);
+        }
+
+        if (initialGradeValue) {
+          console.log('EditMode effect - Initial grade value:', initialGradeValue);
+          console.log('EditMode effect - Current form grade:', formData.grade);
+
+          // Make sure the grade is set in the form
+          if (!formData.grade || formData.grade !== initialGradeValue) {
+            console.log('EditMode effect - Setting grade to:', initialGradeValue);
+
+            // Force a new value, even if it appears the same, to trigger re-rendering
+            setFormData(prev => ({
+              ...prev,
+              grade: initialGradeValue
+            }));
+          }
+        }
+      }
+    };
+
+    // Call immediately and also after a short delay to ensure it runs after any other state updates
+    ensureGradeSet();
+    const timer = setTimeout(ensureGradeSet, 300); // Increased timeout for more reliability
+
+    return () => clearTimeout(timer);
+  }, [mode, initialData?.subject?.grade, formData.grade]);
 
   const terms = ['1', '2', '3', '4']
 
@@ -187,6 +319,20 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     newOptions[index] = value
     setFormData({ ...formData, options: newOptions })
   }
+
+  useEffect(() => {
+    // Update option 4 to match the answer
+    const newOptions = [...formData.options];
+    newOptions[3] = formData.answer;
+
+    // Only update if option 4 is different from the answer
+    if (newOptions[3] !== formData.options[3]) {
+      setFormData(prev => ({
+        ...prev,
+        options: newOptions
+      }));
+    }
+  }, [formData.answer]);
 
   const handleImageChange = (field: 'contextImage' | 'questionImage' | 'explanationImage') =>
     (file: File | null, imagePath?: string) => {
@@ -262,8 +408,23 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         throw new Error('User email not found')
       }
 
-      if (formData.options.some(option => !option.trim())) {
+      // Create a copy of the options array
+      const options = [...formData.options];
+
+      // Check if options are filled
+      if (options.some(option => !option.trim())) {
         throw new Error('All options are required for multiple choice questions')
+      }
+
+      // Check if there are duplicate options
+      const uniqueOptions = new Set(options.map(opt => opt.trim()));
+      if (uniqueOptions.size !== options.length) {
+        throw new Error('All options must be unique')
+      }
+
+      // Ensure answer is the same as option 4
+      if (options[3] !== formData.answer) {
+        throw new Error('Option 4 must be the same as the answer')
       }
 
       const payload: QuestionPayload = {
@@ -273,10 +434,10 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         context: formData.context || '',
         answer: formData.answer,
         options: {
-          option1: formData.options[0],
-          option2: formData.options[1],
-          option3: formData.options[2],
-          option4: formData.options[3],
+          option1: options[0],
+          option2: options[1],
+          option3: options[2],
+          option4: options[3], // This is now guaranteed to be the same as the answer
         },
         explanation: formData.explanation || '',
         year: formData.examYear,
@@ -417,21 +578,32 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
           <div>
             <label className="block text-sm text-gray-700 mb-1">
-              Grade
+              Grade {formData.grade ? `(Selected: ${formData.grade})` : '(None selected)'}
             </label>
             <select
               value={formData.grade}
-              onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
+              onChange={(e) => {
+                console.log('Grade changed to:', e.target.value);
+                setFormData({ ...formData, grade: e.target.value });
+              }}
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               disabled={loadingGrades}
             >
               <option value="">Select Grade</option>
-              {grades.map((grade) => (
-                <option key={grade.id} value={grade.number}>
-                  Grade {grade.number}
-                </option>
-              ))}
+              {grades.map((grade) => {
+                const gradeValue = grade.number.toString();
+                const isSelected = gradeValue === formData.grade;
+                console.log(`Grade option: ${gradeValue}, selected: ${isSelected}, formData.grade: ${formData.grade}`);
+                return (
+                  <option
+                    key={grade.id}
+                    value={gradeValue}
+                  >
+                    Grade {grade.number}
+                  </option>
+                );
+              })}
             </select>
             {loadingGrades && (
               <p className="text-sm text-gray-500 mt-1">Loading grades...</p>
@@ -450,11 +622,27 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               disabled={loadingSubjects || !formData.grade}
             >
               <option value="">Select Subject</option>
-              {subjects.map((subject) => (
-                <option key={subject.id} value={subject.name}>
-                  {subject.name}
-                </option>
-              ))}
+              {subjects.length > 0 ? (
+                // Create category groups
+                Object.entries(
+                  subjects.reduce((acc: Record<string, Subject[]>, subject) => {
+                    const category = subject.name.split(' ')[0];
+                    if (!acc[category]) {
+                      acc[category] = [];
+                    }
+                    acc[category].push(subject);
+                    return acc;
+                  }, {})
+                ).map(([category, categorySubjects]) => (
+                  <optgroup key={category} label={category}>
+                    {categorySubjects.map(subject => (
+                      <option key={subject.id} value={subject.name}>
+                        {subject.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))
+              ) : null}
             </select>
             {loadingSubjects && (
               <p className="text-sm text-gray-500 mt-1">Loading subjects...</p>
@@ -585,10 +773,13 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                 length={formData.answer.length}
                 disabled={!formData.questionText || !formData.answer}
                 onOptionsGenerated={(options) => {
+                  // Ensure option 4 is the answer
+                  const newOptions = [...options];
+                  newOptions[3] = formData.answer;
                   setFormData(prev => ({
                     ...prev,
-                    options: options
-                  }))
+                    options: newOptions
+                  }));
                 }}
               />
             </div>
@@ -603,9 +794,10 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                     value={option}
                     onChange={(e) => handleOptionChange(index, e.target.value)}
                     placeholder={`Option ${index + 1}`}
-                    className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${index === 3 ? 'bg-gray-100' : ''}`}
                     required
                     rows={2}
+                    disabled={index === 3} // Disable option 4 since it's automatically set to the answer
                   />
                   {option && option.includes('$') && (
                     <div className="mt-1 p-2 bg-gray-50 rounded">
@@ -613,6 +805,11 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                         {renderLatex(option)}
                       </p>
                     </div>
+                  )}
+                  {index === 3 && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      This option is automatically set to match your answer
+                    </p>
                   )}
                 </div>
               ))}

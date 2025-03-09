@@ -9,9 +9,7 @@ import { getRejectedQuestionsCount } from '@/services/api'
 
 const menuItems = [
   { path: '/', label: 'Dashboard' },
-  { path: '/questions', label: 'Questions', showRejected: true },
-  { path: '/subjects', label: 'Manage Subjects' }
-]
+  { path: '/questions', label: 'Questions', showRejected: true }]
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -19,12 +17,12 @@ export default function Sidebar() {
   const [rejectedCount, setRejectedCount] = useState(0)
 
   useEffect(() => {
-    if (user?.email) {
-      getRejectedQuestionsCount(user.email)
+    if (user?.uid) {
+      getRejectedQuestionsCount(user.uid)
         .then(count => setRejectedCount(count))
         .catch(console.error)
     }
-  }, [user?.email])
+  }, [user?.uid])
 
   const handleLogout = async () => {
     try {

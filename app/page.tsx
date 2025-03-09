@@ -1,7 +1,6 @@
 'use client'
 import React from 'react'
 import StatsCard from '@/components/dashboard/StatsCard'
-import TopIncorrectQuestions from '@/components/dashboard/TopIncorrectQuestions'
 import PendingApprovalsCard from '@/components/dashboard/PendingApprovalsCard'
 import StatusCountsTable from '@/components/dashboard/StatusCountsTable'
 import ReviewerStatsTable from '@/components/dashboard/ReviewerStatsTable'
@@ -36,14 +35,10 @@ export default function Dashboard() {
         <LearnersPerWeekChart />
       </div> */}
 
-      <div className="mt-6">
-        <TopIncorrectQuestions />
-      </div>
 
       <div className="grid grid-cols-1 gap-6 mt-6">
         <StatusCountsTable />
         <ReviewerStatsTable />
-        <LearnerSubjectStatsTable />
       </div>
     </div>
   );

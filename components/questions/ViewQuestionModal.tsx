@@ -59,7 +59,15 @@ export default function ViewQuestionModal({
   }, [])
 
   const getImageUrl = (imageName: string) => {
-    return `${IMAGE_BASE_URL}?image=${imageName}`
+    if (!imageName) return '';
+
+    // If the URL already includes the full path, return it as is
+    if (imageName.startsWith('http')) {
+      return imageName;
+    }
+
+    // Direct path to the image in the bucket
+    return `${IMAGE_BASE_URL}${imageName}`;
   }
 
   const checkAnswer = async (userAnswer: string) => {
@@ -235,7 +243,12 @@ export default function ViewQuestionModal({
                     src={getImageUrl(question.image_path)}
                     alt="Question context"
                     fill
+                    unoptimized
                     className="object-contain"
+                    onError={(e) => {
+                      console.error('Failed to load context image:', question.image_path);
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
               )}
@@ -251,12 +264,17 @@ export default function ViewQuestionModal({
               </p>
             </div>
             {question.question_image_path && (
-              <div className="relative h-64 w-full">
+              <div className="relative h-64 w-full mt-2">
                 <Image
                   src={getImageUrl(question.question_image_path)}
-                  alt="Question Image"
+                  alt="Question"
                   fill
+                  unoptimized
                   className="object-contain"
+                  onError={(e) => {
+                    console.error('Failed to load question image:', question.question_image_path);
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
               </div>
             )}
@@ -350,12 +368,17 @@ export default function ViewQuestionModal({
                     <p className="text-gray-700">{renderLatex(question.explanation)}</p>
                   )}
                   {question.answer_image && (
-                    <div className="relative h-64 w-full">
+                    <div className="relative h-64 w-full mt-2">
                       <Image
                         src={getImageUrl(question.answer_image)}
                         alt="Answer explanation"
                         fill
+                        unoptimized
                         className="object-contain"
+                        onError={(e) => {
+                          console.error('Failed to load answer image:', question.answer_image);
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     </div>
                   )}

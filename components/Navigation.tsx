@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation'
 
 const adminNavigationItems = [
   { name: 'Dashboard', href: '/' },
-  { name: 'Questions', href: '/questions' },
-  { name: 'Manage Subjects', href: '/subjects' },
+  { name: 'Questions', href: '/questions' }
 ]
 
 const userNavigationItems = [
