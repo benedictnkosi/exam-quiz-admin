@@ -16,7 +16,6 @@ export async function GET(request: Request) {
         const subjectName = searchParams.get('subject_name');
         const paperName = searchParams.get('paper_name');
         const uid = searchParams.get('uid');
-        const questionId = searchParams.get('question_id');
 
         if (!subjectName || !paperName || !uid) {
             return NextResponse.json({
@@ -92,43 +91,22 @@ export async function GET(request: Request) {
             }, { status: 404 });
         }
 
-        // Get learner's terms and curriculum
-        const learnerTerms = learner.terms ? learner.terms.split(',').map((t: string) => t.trim()) : [];
-        const learnerCurriculum = learner.curriculum ? learner.curriculum.split(',').map((c: string) => c.trim()) : [];
-
-        // Get mastered questions (answered correctly 3 times in a row)
-        const { data: results } = await supabase
-            .from('result')
-            .select('question, created')
-            .eq('learner', learner.id)
-            .eq('outcome', 'correct');
-
-        // Process results to find mastered questions
-        const masteredQuestionIds = getMasteredQuestionIds(results || []);
+        // Get results for mastered questions check
+        // Since we're not using the results currently, let's comment this out
+        // const { data: results } = await supabase
+        //     .from('result')
+        //     .select('question, created')
+        //     .eq('learner', learner.id)
+        //     .eq('outcome', 'correct');
 
         // Build query for regular learner
-        let query = supabase
+        const query = supabase
             .from('question')
             .select('*, subject(*)')
             .eq('subject.name', `${subjectName} ${paperName}`)
             .eq('subject.grade', learner.grade.id)
             .eq('active', true)
             .eq('status', 'approved');
-
-        // // Add filters for mastered questions
-        // if (masteredQuestionIds.length > 0) {
-        //     query = query.not('id', 'in', masteredQuestionIds);
-        // }
-
-        // // Add term filter if specified
-        // if (learnerTerms.length > 0) {
-        //     query = query.in('term', learnerTerms);
-        // }
-
-        // // Add curriculum filter if specified
-        // if (learnerCurriculum.length > 0) {
-        //     query = query.in('curriculum', learnerCurriculum);
-        // }
 
         // Get questions
         const { data: questions, error: questionsError } = await query;
@@ -191,8 +169,17 @@ function shuffleArray<T>(array: T[]): T[] {
     return newArray;
 }
 
+// Since we're not using the getMasteredQuestionIds function, let's comment it out
+/*
+// Define an interface for the result object
+interface QuestionResult {
+    question: number;
+    created: string;
+    [key: string]: unknown; // For any other properties
+}
+
 // Helper function to get mastered question IDs
-function getMasteredQuestionIds(results: any[]): number[] {
+function getMasteredQuestionIds(results: QuestionResult[]): number[] {
     const questionAttempts: { [key: string]: Date[] } = {};
 
     // Group attempts by question
@@ -205,7 +192,7 @@ function getMasteredQuestionIds(results: any[]): number[] {
 
     // Find questions with 3 consecutive correct answers
     return Object.entries(questionAttempts)
-        .filter(([_, attempts]) => {
+        .filter(([_questionId, attempts]) => { // Prefix with underscore to indicate it's not used
             if (attempts.length < 3) return false;
 
             // Sort attempts by date
@@ -220,4 +207,5 @@ function getMasteredQuestionIds(results: any[]): number[] {
             return false;
         })
         .map(([questionId]) => parseInt(questionId));
-} 
+}
+*/ 

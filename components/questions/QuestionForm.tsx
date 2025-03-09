@@ -75,20 +75,17 @@ interface Paper {
   name: string;
 }
 
+// Define nested subject data structure interfaces
+interface GradeData {
+  grade: number;
+  subjects: SubjectCategory[];
+}
+
 interface SubjectCategory {
   name: string;
   papers: Paper[];
 }
 
-interface GradeSubjects {
-  grade: number;
-  subjects: SubjectCategory[];
-}
-
-interface SubjectsResponse {
-  status: string;
-  subjects: GradeSubjects[];
-}
 
 export default function QuestionForm({ initialData, mode = 'create', onSuccess }: QuestionFormProps) {
   const { user } = useAuth()
@@ -203,7 +200,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }
 
     fetchGrades()
-  }, [initialData?.subject?.grade])
+  }, [initialData, initialData?.subject?.grade, formData.grade])
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -224,11 +221,11 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           // Convert the nested structure to a flat list of subjects
           const flattenedSubjects: Subject[] = [];
 
-          data.subjects.forEach((gradeData: any) => {
+          data.subjects.forEach((gradeData: GradeData) => {
             if (gradeData.subjects && Array.isArray(gradeData.subjects)) {
-              gradeData.subjects.forEach((category: any) => {
+              gradeData.subjects.forEach((category: SubjectCategory) => {
                 if (category.papers && Array.isArray(category.papers)) {
-                  category.papers.forEach((paper: any) => {
+                  category.papers.forEach((paper: Paper) => {
                     flattenedSubjects.push({
                       id: paper.id,
                       name: paper.name,
@@ -270,7 +267,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }
 
     fetchSubjects()
-  }, [formData.grade, mode, initialData])
+  }, [formData.grade, mode, initialData, formData.subject])
 
   // Improve the edit mode effect to handle grade selection
   useEffect(() => {
@@ -310,7 +307,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     const timer = setTimeout(ensureGradeSet, 300); // Increased timeout for more reliability
 
     return () => clearTimeout(timer);
-  }, [mode, initialData?.subject?.grade, formData.grade]);
+  }, [mode, initialData, initialData?.subject, initialData?.subject?.grade, formData.grade]);
 
   const terms = ['1', '2', '3', '4']
 
@@ -332,7 +329,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         options: newOptions
       }));
     }
-  }, [formData.answer]);
+  }, [formData.answer, formData.options]);
 
   const handleImageChange = (field: 'contextImage' | 'questionImage' | 'explanationImage') =>
     (file: File | null, imagePath?: string) => {

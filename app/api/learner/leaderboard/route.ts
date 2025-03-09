@@ -81,8 +81,33 @@ export async function GET(request: Request) {
             }, { status: 500 });
         }
 
+        // Define interfaces for learner statistics
+        interface LearnerStats {
+            id: number | string;
+            name: string;
+            grade: number;
+            total_questions: number;
+            correct_answers: number;
+            subjects: Set<string>;
+            last_active: Date | null;
+        }
+
+        // Interface for leaderboard entries (after processing)
+        interface LeaderboardEntry {
+            id: number | string;
+            name: string;
+            grade: number;
+            total_questions: number;
+            correct_answers: number;
+            accuracy: number;
+            unique_subjects: number;
+            subjects: string[];
+            last_active: string | null;
+            score: number;
+        }
+
         // Process results to calculate leaderboard
-        const learnerStats: { [key: string]: any } = {};
+        const learnerStats: { [key: string]: LearnerStats } = {};
 
         results.forEach(result => {
             const learnerId = result.learner.id;
@@ -109,7 +134,7 @@ export async function GET(request: Request) {
 
         // Convert to array and calculate scores
         const leaderboard = Object.values(learnerStats)
-            .map((stats: any) => ({
+            .map((stats: LearnerStats): LeaderboardEntry => ({
                 id: stats.id,
                 name: stats.name,
                 grade: stats.grade,
@@ -117,7 +142,8 @@ export async function GET(request: Request) {
                 correct_answers: stats.correct_answers,
                 accuracy: Math.round((stats.correct_answers / stats.total_questions) * 100),
                 unique_subjects: stats.subjects.size,
-                last_active: stats.last_active,
+                subjects: Array.from(stats.subjects),
+                last_active: stats.last_active ? stats.last_active.toISOString() : null,
                 score: Math.round(
                     (stats.correct_answers / stats.total_questions) * 100 +
                     (stats.subjects.size * 10) +

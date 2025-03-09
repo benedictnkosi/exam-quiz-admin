@@ -6,6 +6,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define an interface for the update data
+interface QuestionUpdateData {
+    status: string;
+    updated: string;
+    feedback?: string;
+    active?: boolean;
+    reviewer?: number;
+    reviewed_at?: string;
+}
+
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
@@ -57,7 +67,7 @@ export async function PUT(request: Request) {
         }
 
         // Update question status
-        const updateData: any = {
+        const updateData: QuestionUpdateData = {
             status,
             updated: new Date().toISOString()
         };

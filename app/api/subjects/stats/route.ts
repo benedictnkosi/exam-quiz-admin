@@ -88,8 +88,18 @@ export async function GET(request: Request) {
         const activeQuestions = questions.filter(q => q.active && q.status === 'approved').length;
         const pendingQuestions = questions.filter(q => q.status === 'new').length;
 
+        // Define an interface for term statistics
+        interface TermStats {
+            total: number;
+            active: number;
+            results: {
+                total: number;
+                correct: number;
+            };
+        }
+
         // Stats by term
-        const termStats = questions.reduce((acc: { [key: string]: any }, q) => {
+        const termStats = questions.reduce((acc: { [key: string]: TermStats }, q) => {
             if (!acc[q.term]) {
                 acc[q.term] = {
                     total: 0,

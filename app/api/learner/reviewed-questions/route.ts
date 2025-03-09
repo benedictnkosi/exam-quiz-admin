@@ -70,10 +70,21 @@ export async function GET(request: Request) {
             // Get reviewer name from the joined data
             let reviewerName = 'Unknown';
             if (question.reviewer_info) {
-                if (Array.isArray(question.reviewer_info) && question.reviewer_info.length > 0) {
-                    reviewerName = question.reviewer_info[0].name || 'Unknown';
-                } else if (typeof question.reviewer_info === 'object') {
-                    reviewerName = (question.reviewer_info as any).name || 'Unknown';
+                try {
+                    if (Array.isArray(question.reviewer_info) && question.reviewer_info.length > 0) {
+                        // Access the name property safely for array type
+                        const firstReviewer = question.reviewer_info[0];
+                        if (firstReviewer && typeof firstReviewer === 'object' && 'name' in firstReviewer) {
+                            reviewerName = String(firstReviewer.name || 'Unknown');
+                        }
+                    } else if (question.reviewer_info && typeof question.reviewer_info === 'object') {
+                        // Access the name property safely for object type
+                        if ('name' in question.reviewer_info) {
+                            reviewerName = String(question.reviewer_info.name || 'Unknown');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error processing reviewer info:', error);
                 }
             }
 

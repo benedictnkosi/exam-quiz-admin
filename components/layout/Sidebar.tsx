@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { auth } from '@/lib/firebase'
 import { useAuth } from '@/contexts/AuthContext'
 import { getRejectedQuestionsCount } from '@/services/api'
+import { signOut } from 'firebase/auth'
+import Image from 'next/image'
 
 const menuItems = [
   { path: '/', label: 'Dashboard' },
@@ -13,6 +15,7 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user } = useAuth()
   const [rejectedCount, setRejectedCount] = useState(0)
 
@@ -26,7 +29,8 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      await auth.signOut()
+      await signOut(auth)
+      router.push('/login')
     } catch (error) {
       console.error('Error signing out:', error)
     }
@@ -64,15 +68,18 @@ export default function Sidebar() {
         <div className="pt-6 border-t border-gray-700">
           <div className="flex items-center mb-4">
             {user.photoURL && (
-              <img
+              <Image
                 src={user.photoURL}
                 alt={user.displayName || ''}
-                className="w-8 h-8 rounded-full mr-2"
+                width={32}
+                height={32}
+                className="rounded-full mr-2"
+                unoptimized={user.photoURL.startsWith('data:')}
               />
             )}
             <div className="text-sm">
-              <div className="font-medium">{user.displayName}</div>
-              <div className="text-gray-400">{user.email}</div>
+              <div className="font-medium text-white">{user.displayName || ''}</div>
+              <div className="text-gray-400">{user.email || ''}</div>
             </div>
           </div>
           <button

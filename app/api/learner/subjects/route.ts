@@ -6,6 +6,15 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define interfaces for the subject data structure
+interface Subject {
+    id: number;
+    name: string;
+    grade: number;
+    curriculum?: string;
+    [key: string]: unknown; // For any other properties we might access
+}
+
 export async function GET(request: Request) {
     try {
         // Get query parameters
@@ -62,7 +71,7 @@ export async function GET(request: Request) {
         }
 
         // Group subjects by name (to combine different papers)
-        const groupedSubjects = filteredSubjects.reduce((acc: { [key: string]: any[] }, subject: any) => {
+        const groupedSubjects = filteredSubjects.reduce((acc: { [key: string]: Subject[] }, subject: Subject) => {
             const name = subject.name.split(' ')[0]; // Get base subject name without paper
             if (!acc[name]) {
                 acc[name] = [];

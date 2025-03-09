@@ -100,7 +100,17 @@ export async function GET(request: Request) {
         }
 
         // Process subject statistics
-        const subjectStats = subjects.reduce((acc: { [key: string]: any }, subject) => {
+        interface SubjectStatistics {
+            id: number | string;
+            name: string;
+            total_questions: number;
+            active_questions: number;
+            total_attempts: number;
+            correct_attempts: number;
+            accuracy?: number; // Added later in the mapping
+        }
+
+        const subjectStats = subjects.reduce((acc: { [key: string]: SubjectStatistics }, subject) => {
             const subjectQuestions = questions.filter(q => q.subject_id === subject.id);
             const activeQuestions = subjectQuestions.filter(q => q.active && q.status === 'approved').length;
             const subjectResults = results.filter(r =>

@@ -35,14 +35,32 @@ export async function POST(request: Request) {
 
         // Clean and prepare the data
         const cleanCommaString = (value: string | null | undefined) => {
-            if (!value || typeof value !== 'string') return null;
-            return value.split(',')
+            if (!value) return '';
+            return value
+                .split(',')
                 .map(item => item.trim().replace(/^["']|["']$/g, ''))
                 .filter(item => item.length > 0)
                 .join(',');
         };
 
-        const updateData: any = {};
+        // Define an interface for the updateData object
+        interface LearnerUpdateData {
+            terms?: string;
+            curriculum?: string;
+            name?: string;
+            grade?: number;
+            grade_changed?: boolean;
+            email?: string;
+            uid?: string;
+            school_name?: string;
+            school_address?: string;
+            school_latitude?: number;
+            school_longitude?: number;
+            notification_hour?: number;
+            private_school?: boolean;
+        }
+
+        const updateData: LearnerUpdateData = {};
 
         // Update terms if provided
         if (data.terms !== undefined) {

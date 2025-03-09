@@ -73,8 +73,9 @@ export async function GET(request: Request) {
         // Return the question data
         return NextResponse.json(formattedQuestion);
 
-    } catch (error: any) {
-        console.error('Server error:', error.message);
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Server error:', errorMessage);
         return NextResponse.json({
             status: 'NOK',
             message: 'Internal Server Error'
@@ -168,7 +169,7 @@ export async function POST(request: Request) {
             .eq('number', data.grade)
             .single();
 
-        const { data: subject, error: subjectError } = await supabase
+        const { data: subject } = await supabase
             .from('subject')
             .select('*')
             .eq('name', data.subject)
@@ -183,7 +184,7 @@ export async function POST(request: Request) {
         }
 
         // Check for duplicate questions
-        const { data: existingQuestion, error: existingError } = await supabase
+        const { data: existingQuestion } = await supabase
             .from('question')
             .select('*')
             .eq('subject', subject.id)

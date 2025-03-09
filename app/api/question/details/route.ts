@@ -6,6 +6,39 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define interface for the question response
+interface QuestionResponse {
+    id: number;
+    question: string;
+    options: Record<string, string>;
+    subject: {
+        id: number;
+        name: string;
+        grade: number;
+    };
+    term: number | string | null;
+    curriculum: string | null;
+    attempts: Array<{
+        id: number;
+        outcome: string;
+        created: string;
+    }>;
+    // Optional fields for admin/capturer
+    answer?: string | null;
+    explanation?: string | null;
+    status?: string;
+    active?: boolean;
+    capturer?: number;
+    created?: string;
+    updated?: string;
+    image_path?: string;
+    reviewer?: number;
+    reviewed_at?: string;
+    question_image_path?: string;
+    answer_image?: string;
+    explanation_image?: string;
+}
+
 export async function GET(request: Request) {
     try {
         // Get query parameters
@@ -93,7 +126,7 @@ export async function GET(request: Request) {
         }
 
         // Format response based on role
-        const response: any = {
+        const response: QuestionResponse = {
             id: question.id,
             question: question.question,
             options: options,
@@ -120,6 +153,12 @@ export async function GET(request: Request) {
             response.capturer = question.capturer;
             response.created = question.created;
             response.updated = question.updated;
+            response.image_path = question.image_path;
+            response.reviewer = question.reviewer;
+            response.reviewed_at = question.reviewed_at;
+            response.question_image_path = question.question_image_path;
+            response.answer_image = question.answer_image;
+            response.explanation_image = question.explanation_image;
         }
 
         return NextResponse.json({

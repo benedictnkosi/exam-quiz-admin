@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
         if (streakError && streakError.code === 'PGRST116') {
             // Streak doesn't exist, create new one
-            const { data: newStreak, error: createError } = await supabase
+            const { error: createError } = await supabase
                 .from('learner_streak')
                 .insert([{
                     learner_id: learner.id,

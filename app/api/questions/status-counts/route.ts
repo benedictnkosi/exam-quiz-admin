@@ -6,6 +6,17 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define a type for the stats object structure
+interface StatEntry {
+    capturer: unknown;
+    counts: {
+        new: number;
+        approved: number;
+        rejected: number;
+        total: number;
+    };
+}
+
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -41,14 +52,28 @@ export async function GET(request: Request) {
             }, { status: 500 });
         }
 
-        // Process the data to group by capturer and count statuses
-        const capturerStats = statusCounts.reduce((acc: any, question: any) => {
-            const capturerId = question.capturer?.id;
-            if (!capturerId) return acc;
+        // Use a plain object as the accumulator to avoid type issues
+        type Accumulator = { [key: string]: StatEntry };
 
-            if (!acc[capturerId]) {
-                acc[capturerId] = {
-                    capturer: question.capturer,
+        // Process the data to group by capturer and count statuses
+        const capturerStats: Accumulator = {};
+
+        // Manually iterate instead of using reduce to avoid TypeScript complexity
+        for (const question of statusCounts || []) {
+            // Skip items without a valid capturer
+            if (!question || typeof question !== 'object') continue;
+            if (!('capturer' in question) || !question.capturer) continue;
+
+            const capturer = question.capturer;
+            if (!capturer || typeof capturer !== 'object') continue;
+            if (!('id' in capturer) || typeof capturer.id === 'undefined') continue;
+
+            const capturerId = String(capturer.id);
+
+            // Initialize capturer stats if needed
+            if (!capturerStats[capturerId]) {
+                capturerStats[capturerId] = {
+                    capturer: capturer,
                     counts: {
                         new: 0,
                         approved: 0,
@@ -58,20 +83,27 @@ export async function GET(request: Request) {
                 };
             }
 
-            // Increment the appropriate status count
-            const status = question.status?.toLowerCase() || 'new';
-            if (acc[capturerId].counts.hasOwnProperty(status)) {
-                acc[capturerId].counts[status]++;
-            }
-            acc[capturerId].counts.total++;
+            // Update counts
+            const stats = capturerStats[capturerId] as StatEntry;
 
-            return acc;
-        }, {});
+            // Handle status
+            const status = typeof question.status === 'string'
+                ? question.status.toLowerCase()
+                : 'new';
+
+            if (status === 'new' || status === 'approved' || status === 'rejected') {
+                stats.counts[status]++;
+            }
+
+            // Always increment total
+            stats.counts.total++;
+        }
 
         // Convert to array and sort by total questions
-        const result = Object.values(capturerStats).sort((a: any, b: any) =>
-            b.counts.total - a.counts.total
-        );
+        const result = Object.values(capturerStats)
+            .sort((a, b) => {
+                return b.counts.total - a.counts.total;
+            });
 
         return NextResponse.json({
             status: 'OK',

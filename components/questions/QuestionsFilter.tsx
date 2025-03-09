@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getGrades, getActiveSubjects, type Grade } from '@/services/api'
+import { getGrades, type Grade } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL } from '@/config/constants'
 
@@ -41,7 +41,6 @@ export default function QuestionsFilter({ filters, setFilters, onSearch, onFetch
   const { user } = useAuth()
   const [grades, setGrades] = useState<Grade[]>([])
   const [subjectGroups, setSubjectGroups] = useState<GradeSubjects[]>([])
-  const [papers, setPapers] = useState<Paper[]>([])
   const [loading, setLoading] = useState(true)
   const statuses = ['New', 'Approved', 'Rejected']
 
@@ -91,18 +90,12 @@ export default function QuestionsFilter({ filters, setFilters, onSearch, onFetch
               });
             });
 
-            setPapers(allPapers);
-          } else {
-            setPapers([]);
           }
         } catch (err) {
           console.error('Failed to fetch subjects:', err)
-          setPapers([]);
         }
       }
       fetchSubjects()
-    } else {
-      setPapers([])
     }
   }, [filters.grade])
 

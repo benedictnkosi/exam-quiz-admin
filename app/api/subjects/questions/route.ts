@@ -110,15 +110,34 @@ export async function GET(request: Request) {
             // Process options
             let options = question.options;
             try {
-                if (typeof options === 'string') {
-                    options = JSON.parse(options);
-                }
+                options = JSON.parse(question.options || '{}');
             } catch (e) {
                 console.error('Error parsing options:', e);
             }
 
+            // Define interface for question response
+            interface QuestionResponse {
+                id: number;
+                question: string;
+                options: Record<string, string>;
+                term: number | string | null;
+                curriculum: string | null;
+                subject: number | string;
+                attempts: number;
+                correct_attempts: number;
+                last_attempt: string | null;
+                // Fields for admin/capturer
+                answer?: string | null;
+                explanation?: string | null;
+                status?: string;
+                active?: boolean;
+                capturer?: number;
+                created?: string;
+                updated?: string;
+            }
+
             // Base response
-            const response: any = {
+            const response: QuestionResponse = {
                 id: question.id,
                 question: question.question,
                 options: options,

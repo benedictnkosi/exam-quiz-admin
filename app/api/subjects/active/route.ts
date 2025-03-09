@@ -6,6 +6,34 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define interfaces for the subject data structure
+interface Grade {
+    id: number;
+    number: number;
+    active: number;
+}
+
+interface SubjectData {
+    id: number;
+    name: string;
+    grade: Grade;
+    curriculum?: string;
+    terms?: string;
+    [key: string]: unknown; // For any other properties
+}
+
+interface Paper {
+    id: number;
+    name: string;
+    curriculum?: string;
+    terms?: string;
+}
+
+interface GroupedSubject {
+    name: string;
+    papers: Paper[];
+}
+
 export async function GET(request: Request) {
     try {
         // Extract parameters from URL
@@ -35,7 +63,7 @@ export async function GET(request: Request) {
         }
 
         // Group subjects by grade
-        const groupedSubjects = subjects.reduce((acc: { [key: string]: any[] }, subject: any) => {
+        const groupedSubjects = subjects.reduce((acc: { [key: string]: GroupedSubject[] }, subject: SubjectData) => {
             const gradeKey = subject.grade.number;
             if (!acc[gradeKey]) {
                 acc[gradeKey] = [];
@@ -45,7 +73,7 @@ export async function GET(request: Request) {
             const baseName = subject.name.split(' ')[0];
 
             // Check if we already have this base subject
-            const existingSubject = acc[gradeKey].find((s: any) => s.name === baseName);
+            const existingSubject = acc[gradeKey].find((s: GroupedSubject) => s.name === baseName);
 
             if (existingSubject) {
                 // Add this as a paper to existing subject

@@ -6,6 +6,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Define an interface for the status change log entry
+interface StatusChangeLog {
+    created: string;
+    status?: string;
+    feedback?: string;
+    [key: string]: unknown; // For any other properties
+}
+
 export async function GET(request: Request) {
     try {
         // Get query parameters
@@ -126,7 +134,7 @@ export async function GET(request: Request) {
             // Get latest status change
             const statusChanges = question.question_status_log;
             const latestChange = statusChanges?.length
-                ? statusChanges.sort((a: any, b: any) =>
+                ? statusChanges.sort((a: StatusChangeLog, b: StatusChangeLog) =>
                     new Date(b.created).getTime() - new Date(a.created).getTime()
                 )[0]
                 : null;

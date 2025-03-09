@@ -55,7 +55,7 @@ export async function GET(
         let lastScore: number | null = null;
         let skipPositions = 0;
 
-        allLearners.forEach((learner, index) => {
+        allLearners.forEach((learner) => {
             const score = Math.round((learner.score || 0) * 100) / 100; // Round to 2 decimal places
 
             if (lastScore !== null && lastScore !== score) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import Image from 'next/image'
 
 interface ImageUploadProps {
   onFileSelect: (file: File) => void
@@ -25,6 +26,7 @@ export default function ImageUpload({
 }: ImageUploadProps) {
   const dropZoneRef = useRef<HTMLDivElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Add a method to reset the preview
   const resetPreview = () => {
@@ -80,13 +82,18 @@ export default function ImageUpload({
         </p>
         {previewUrl && (
           <div className="mt-4 relative h-48 w-full">
-            <img
+            <Image
               src={previewUrl}
               alt="Pasted preview"
-              className="h-full mx-auto object-contain"
+              fill
+              style={{ objectFit: 'contain' }}
               onLoad={() => {
                 // Clean up the URL after the image loads
-                URL.revokeObjectURL(previewUrl)
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
+                // Revoke object URL to free memory
+                URL.revokeObjectURL(previewUrl);
               }}
             />
           </div>

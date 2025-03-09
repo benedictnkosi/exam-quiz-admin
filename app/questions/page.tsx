@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import QuestionsTable from '@/components/questions/QuestionsTable'
 import QuestionsFilter from '@/components/questions/QuestionsFilter'
@@ -32,7 +32,8 @@ export default function QuestionsPage() {
     router.push(`/questions?${params.toString()}`)
   }
 
-  const handleSearch = async () => {
+  // Wrap handleSearch in useCallback to prevent unnecessary re-renders
+  const handleSearch = useCallback(async () => {
     if (!filters.grade || !filters.subject) {
       setError('Please select grade and subject')
       return
@@ -50,7 +51,7 @@ export default function QuestionsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters.grade, filters.subject, filters.status, setError, setQuestions, setLoading])
 
   const handleFetchRejected = async () => {
     if (!user?.uid) return
@@ -74,7 +75,7 @@ export default function QuestionsPage() {
     if (filters.grade && filters.subject) {
       handleSearch()
     }
-  }, [searchParams])
+  }, [searchParams, filters.grade, filters.subject, handleSearch])
 
   return (
     <div className="container mx-auto px-4 py-8">
