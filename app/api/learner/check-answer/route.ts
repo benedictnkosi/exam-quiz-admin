@@ -116,7 +116,11 @@ export async function POST(request: Request) {
             explanation: question.explanation,
             correctAnswer: question.answer,
             message: isCorrect ? 'Correct answer!' : 'Incorrect answer',
-            subject: question.subject?.name
+            subject: question.subject && typeof question.subject === 'object' ?
+                // If it's an array, get first element, otherwise use the object itself
+                (Array.isArray(question.subject) ?
+                    question.subject[0]?.name :
+                    (question.subject as { name: string }).name) : null
         });
 
     } catch (error) {

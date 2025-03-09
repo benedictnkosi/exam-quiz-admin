@@ -63,7 +63,7 @@ export async function GET(request: Request) {
             }, { status: 500 });
         }
 
-        const achievements = [];
+        const achievements: string[] = [];
         const subjectMastery: { [key: string]: number } = {};
         const dailyStats: { [key: string]: { total: number, correct: number } } = {};
         let lastAttemptDate: Date | null = null;

@@ -110,12 +110,21 @@ export async function GET(request: Request) {
         const learnerStats: { [key: string]: LearnerStats } = {};
 
         results.forEach(result => {
-            const learnerId = result.learner.id;
+            // Handle case where learner might be an array
+            const learner = Array.isArray(result.learner) ? result.learner[0] : result.learner;
+            if (!learner) return;
+
+            const learnerId = learner.id;
+
+            // Handle case where grade might be an array
+            const grade = Array.isArray(learner.grade) ? learner.grade[0] : learner.grade;
+            const gradeNumber = grade?.number;
+
             if (!learnerStats[learnerId]) {
                 learnerStats[learnerId] = {
                     id: learnerId,
-                    name: result.learner.name,
-                    grade: result.learner.grade.number,
+                    name: learner.name,
+                    grade: gradeNumber,
                     total_questions: 0,
                     correct_answers: 0,
                     subjects: new Set(),
@@ -128,7 +137,17 @@ export async function GET(request: Request) {
             if (result.outcome === 'correct') {
                 stats.correct_answers++;
             }
-            stats.subjects.add(result.question.subject.name.split(' ')[0]);
+
+            // Handle case where question might be an array
+            const question = Array.isArray(result.question) ? result.question[0] : result.question;
+            if (!question) return;
+
+            // Handle case where subject might be an array
+            const subject = Array.isArray(question.subject) ? question.subject[0] : question.subject;
+            if (subject && subject.name) {
+                stats.subjects.add(subject.name.split(' ')[0]);
+            }
+
             stats.last_active = new Date(result.created);
         });
 

@@ -69,14 +69,14 @@ export async function GET(request: Request) {
         }
 
         // Process learner's terms and curriculum
-        const learnerTerms = learner.terms ? learner.terms.split(',').map(t => t.trim()) : [];
-        const learnerCurriculum = learner.curriculum ? learner.curriculum.split(',').map(c => c.trim()) : [];
+        const learnerTerms = learner.terms ? learner.terms.split(',').map((t: string) => t.trim()) : [];
+        const learnerCurriculum = learner.curriculum ? learner.curriculum.split(',').map((c: string) => c.trim()) : [];
 
         // Filter questions by term and curriculum if specified
         const filteredQuestions = questions.filter(question => {
             const matchesTerm = learnerTerms.length === 0 || learnerTerms.includes(question.term);
             const matchesCurriculum = learnerCurriculum.length === 0 ||
-                (question.curriculum && learnerCurriculum.some(c => question.curriculum.includes(c)));
+                (question.curriculum && learnerCurriculum.some((c: string) => question.curriculum.includes(c)));
             return matchesTerm && matchesCurriculum;
         });
 
