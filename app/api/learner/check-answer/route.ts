@@ -123,7 +123,7 @@ export async function POST(request: Request) {
                     (question.subject as { name: string }).name) : null
         });
 
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Error in checkLearnerAnswer:', error);
         return NextResponse.json({
             status: 'NOK',

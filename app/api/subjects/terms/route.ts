@@ -61,12 +61,12 @@ export async function GET(request: Request) {
         }
 
         // Process terms
-        const terms = subject.terms ? subject.terms.split(',').map(t => t.trim()) : [];
-        const curriculum = subject.curriculum ? subject.curriculum.split(',').map(c => c.trim()) : [];
+        const terms = subject.terms ? subject.terms.split(',').map((t: string) => t.trim()) : [];
+        const curriculum = subject.curriculum ? subject.curriculum.split(',').map((c: string) => c.trim()) : [];
 
         // Count questions per term
-        const termStats = terms.reduce((acc: { [key: string]: number }, term) => {
-            acc[term] = questions.filter(q => q.term === term).length;
+        const termStats = terms.reduce((acc: { [key: string]: number }, term: string) => {
+            acc[term] = questions.filter((q) => q.term === term).length;
             return acc;
         }, {});
 
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
                 name: subject.name,
                 grade: subject.grade,
                 curriculum: curriculum,
-                terms: terms.map(term => ({
+                terms: terms.map((term: string) => ({
                     term,
                     question_count: termStats[term] || 0
                 }))

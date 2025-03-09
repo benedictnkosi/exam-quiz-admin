@@ -65,8 +65,8 @@ export async function GET(request: Request) {
         let filteredSubjects = subjects;
         if (learnerCurriculum.length > 0) {
             filteredSubjects = subjects.filter(subject => {
-                const subjectCurriculum = subject.curriculum ? subject.curriculum.split(',').map(c => c.trim()) : [];
-                return learnerCurriculum.some(c => subjectCurriculum.includes(c));
+                const subjectCurriculum = subject.curriculum ? subject.curriculum.split(',').map((c: string) => c.trim()) : [];
+                return learnerCurriculum.some((c: string) => subjectCurriculum.includes(c));
             });
         }
 
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
         // Format response
         const formattedSubjects = Object.entries(groupedSubjects).map(([name, papers]) => ({
             name,
-            papers: papers.map(paper => ({
+            papers: (papers as Subject[]).map((paper: Subject) => ({
                 id: paper.id,
                 name: paper.name,
                 curriculum: paper.curriculum,
