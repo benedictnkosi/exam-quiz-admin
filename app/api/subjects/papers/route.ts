@@ -48,18 +48,23 @@ export async function GET(request: Request) {
         }
 
         // Process papers
-        const processedPapers = papers.map(paper => ({
-            id: paper.id,
-            name: paper.name.replace(`${subjectName} `, ''), // Remove subject name prefix
-            full_name: paper.name,
-            curriculum: paper.curriculum ? paper.curriculum.split(',').map((c: string) => c.trim()) : [],
-            terms: paper.terms ? paper.terms.split(',').map((t: string) => parseInt(t.trim())) : [],
-            grade: {
-                id: paper.grade.id,
-                number: paper.grade.number,
-                name: paper.grade.name
-            }
-        }));
+        const processedPapers = papers.map(paper => {
+            // Handle grade which might be an array
+            const grade = Array.isArray(paper.grade) ? paper.grade[0] : paper.grade;
+
+            return {
+                id: paper.id,
+                name: paper.name.replace(`${subjectName} `, ''), // Remove subject name prefix
+                full_name: paper.name,
+                curriculum: paper.curriculum ? paper.curriculum.split(',').map((c: string) => c.trim()) : [],
+                terms: paper.terms ? paper.terms.split(',').map((t: string) => parseInt(t.trim())) : [],
+                grade: {
+                    id: grade.id,
+                    number: grade.number,
+                    name: grade.name
+                }
+            };
+        });
 
         return NextResponse.json({
             status: 'OK',
