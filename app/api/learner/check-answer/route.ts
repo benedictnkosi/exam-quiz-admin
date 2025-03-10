@@ -98,8 +98,9 @@ export async function POST(request: Request) {
             question: question.id,
             outcome: isCorrect ? 'correct' : 'incorrect',
             created: new Date().toISOString(),
-            duration: duration
+            duration: isCorrect ? duration : 0
         };
+
 
         const { error: recordError } = await supabase
             .from('result')

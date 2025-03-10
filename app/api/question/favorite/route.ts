@@ -206,9 +206,11 @@ export async function GET(request: Request) {
             .select(`
                 id,
                 created_at,
-                question:question (
+                question:question!inner (
                     id,
-                    ai_explanation
+                    question,
+                    ai_explanation,
+                    subject
                 )
             `)
             .eq('learner', learner.id)
