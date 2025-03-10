@@ -19,12 +19,6 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
   const [posting, setPosting] = useState<number | null>(null)
   const [loadingView, setLoadingView] = useState<number | null>(null)
 
-  useEffect(() => {
-    if (viewingQuestion) {
-      console.log('Opening view modal with question:', viewingQuestion);
-    }
-  }, [viewingQuestion]);
-
   const handleDelete = async (questionId: number) => {
     if (!confirm('Are you sure you want to delete this question?')) return
     if (!user) return

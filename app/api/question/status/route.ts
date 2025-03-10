@@ -43,14 +43,6 @@ export async function PUT(request: Request) {
             }, { status: 404 });
         }
 
-        // Check if user is admin or capturer
-        if (admin.role !== 'admin' && admin.role !== 'capturer') {
-            return NextResponse.json({
-                status: 'NOK',
-                message: 'Unauthorized'
-            }, { status: 403 });
-        }
-
         // Get question details
         const { data: question, error: questionError } = await supabase
             .from('question')
