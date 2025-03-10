@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export async function POST(request: Request) {
     try {
         const data = await request.json();
-        const { uid, question_id, answer } = data;
+        const { uid, question_id, answer, duration } = data;
 
         if (!uid || !question_id || answer === undefined) {
             return NextResponse.json({
@@ -97,7 +97,8 @@ export async function POST(request: Request) {
             learner: learner.id,
             question: question.id,
             outcome: isCorrect ? 'correct' : 'incorrect',
-            created: new Date().toISOString()
+            created: new Date().toISOString(),
+            duration: duration
         };
 
         const { error: recordError } = await supabase
@@ -109,11 +110,67 @@ export async function POST(request: Request) {
             // Continue anyway, don't fail the request
         }
 
+        // Update learner points
+        const pointsChange = isCorrect ? 1 : -1;
+        let newPoints = 0;
+        const { data: currentLearner, error: learnerFetchError } = await supabase
+            .from('learner')
+            .select('points, streak, streak_last_updated')
+            .eq('id', learner.id)
+            .single();
+
+        if (!learnerFetchError && currentLearner) {
+            newPoints = Math.max(0, (currentLearner.points || 0) + pointsChange);
+            const { error: updateError } = await supabase
+                .from('learner')
+                .update({ points: newPoints })
+                .eq('id', learner.id);
+
+            if (updateError) {
+                console.error('Error updating learner points:', updateError);
+                // Continue anyway, don't fail the request
+            }
+
+            // Check for streak update
+            if (isCorrect) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Check if streak was already updated today
+                const lastUpdated = currentLearner.streak_last_updated ? new Date(currentLearner.streak_last_updated) : null;
+                const wasUpdatedToday = lastUpdated && lastUpdated >= today;
+
+                if (!wasUpdatedToday) {
+                    const { data: todayResults, error: resultsError } = await supabase
+                        .from('result')
+                        .select('outcome')
+                        .eq('learner', learner.id)
+                        .gte('created', today.toISOString())
+                        .eq('outcome', 'correct');
+
+                    if (!resultsError && todayResults && todayResults.length >= 3) {
+                        const { error: streakError } = await supabase
+                            .from('learner')
+                            .update({
+                                streak: (currentLearner.streak || 0) + 1,
+                                streak_last_updated: new Date().toISOString()
+                            })
+                            .eq('id', learner.id);
+
+                        if (streakError) {
+                            console.error('Error updating streak:', streakError);
+                        }
+                    }
+                }
+            }
+        }
+
         return NextResponse.json({
             status: 'OK',
             correct: isCorrect,
             explanation: question.explanation,
             correctAnswer: question.answer,
+            points: newPoints,
             message: isCorrect ? 'Correct answer!' : 'Incorrect answer',
             subject: question.subject && typeof question.subject === 'object' ?
                 // If it's an array, get first element, otherwise use the object itself
