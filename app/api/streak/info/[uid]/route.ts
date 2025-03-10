@@ -41,7 +41,7 @@ export async function GET(
         const { data: streak, error: streakError } = await supabase
             .from('learner_streak')
             .select('*')
-            .eq('learner_id', learner.id)
+            .eq('learner', learner.id)
             .single();
 
         // If no streak exists, return default values
@@ -91,7 +91,7 @@ export async function GET(
                     questions_answered_today: questionsAnsweredToday,
                     last_streak_update_date: today.toISOString()
                 })
-                .eq('learner_id', learner.id);
+                .eq('learner', learner.id);
 
             if (updateError) {
                 throw updateError;

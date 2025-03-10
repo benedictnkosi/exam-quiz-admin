@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     try {
         const data = await request.json();
         const userId = data.uid;
-        const questionId = data.question_id ?? 0;
+        const questionId = data.question ?? 0;
 
         // Check if user exists
         const { data: user, error: userError } = await supabase

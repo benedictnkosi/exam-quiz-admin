@@ -38,7 +38,7 @@ export async function POST(request: Request) {
         const { data: streak, error: streakError } = await supabase
             .from('learner_streak')
             .select('*')
-            .eq('learner_id', learner.id)
+            .eq('learner', learner.id)
             .single();
 
         const today = new Date();
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
             const { error: createError } = await supabase
                 .from('learner_streak')
                 .insert([{
-                    learner_id: learner.id,
+                    learner: learner.id,
                     current_streak: 0,
                     longest_streak: 0,
                     questions_answered_today: 1,
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
                 last_answered_at: new Date().toISOString(),
                 last_streak_update_date: today.toISOString()
             })
-            .eq('learner_id', learner.id);
+            .eq('learner', learner.id);
 
         if (updateError) {
             throw updateError;

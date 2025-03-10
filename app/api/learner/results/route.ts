@@ -41,16 +41,16 @@ export async function GET(request: Request) {
             .from('result')
             .select(`
                 *,
-                question:question_id(
+                question:question(
                     id,
                     question,
                     answer,
                     options,
                     explanation,
-                    subject:subject_id(name)
+                    subject:subject(name)
                 )
             `)
-            .eq('learner_id', learner.id)
+            .eq('learner', learner.id)
             .eq('question.subject.name', `${subjectName} ${paperName}`)
             .order('created', { ascending: false });
 
@@ -70,8 +70,7 @@ export async function GET(request: Request) {
 
             return {
                 id: result.id,
-                question_id: result.question_id,
-                question: result.question.question,
+                question: result.question,
                 answer: result.question.answer,
                 options: options,
                 explanation: result.question.explanation,

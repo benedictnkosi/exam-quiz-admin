@@ -57,8 +57,8 @@ export async function DELETE(request: Request) {
             const { error: deleteError } = await supabase
                 .from('result')
                 .delete()
-                .eq('learner_id', learner.id)
-                .in('question_id', questionIds);
+                .eq('learner', learner.id)
+                .in('question', questionIds);
 
             if (deleteError) {
                 console.error('Error deleting results:', deleteError);

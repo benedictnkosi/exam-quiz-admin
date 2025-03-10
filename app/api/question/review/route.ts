@@ -59,16 +59,16 @@ export async function GET(request: Request) {
             .from('question')
             .select(`
                 *,
-                subject:subject_id(
+                subject:subject(
                     id,
                     name,
-                    grade:grade_id(
+                    grade:grade(
                         id,
                         number,
                         name
                     )
                 ),
-                capturer:capturer_id(
+                    capturer:capturer(
                     id,
                     name,
                     email
@@ -93,13 +93,13 @@ export async function GET(request: Request) {
                 .eq('email', admin.email);
 
             if (capturerIds?.length) {
-                query = query.in('capturer_id', capturerIds.map(c => c.id));
+                query = query.in('capturer', capturerIds.map(c => c.id));
             }
         }
 
         // Add subject filter if specified
         if (subjectId) {
-            query = query.eq('subject_id', subjectId);
+            query = query.eq('subject', subjectId);
         }
 
         // Add pagination

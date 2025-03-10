@@ -30,7 +30,7 @@ export async function GET(request: Request) {
             .from('subject')
             .select(`
                 *,
-                grade:grade_id(
+                grade:grade(
                     id,
                     number,
                     name
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
         const { data: questions, error: questionsError } = await supabase
             .from('question')
             .select('id, term, curriculum, status, active')
-            .eq('subject_id', subjectId);
+            .eq('subject', subjectId);
 
         if (questionsError) {
             console.error('Error fetching questions:', questionsError);
@@ -66,12 +66,12 @@ export async function GET(request: Request) {
             .from('result')
             .select(`
                 *,
-                learner:learner_id(
+                learner:learner(
                     id,
-                    grade:grade_id(number)
+                    grade:grade(number)
                 )
             `)
-            .in('question_id', questions.map(q => q.id))
+            .in('question', questions.map(q => q.id))
             .gte('created', startDate.toISOString())
             .lte('created', endDate.toISOString());
 
@@ -141,10 +141,10 @@ export async function GET(request: Request) {
             }
 
             // Track unique learners
-            learnerStats.add(result.learner_id);
+            learnerStats.add(result.learner);
 
             // Update term stats
-            const question = questions.find(q => q.id === result.question_id);
+            const question = questions.find(q => q.id === result.question);
             if (question) {
                 termStats[question.term].results.total++;
                 if (result.outcome === 'correct') {

@@ -34,12 +34,19 @@ export async function POST(request: Request) {
         }
 
         // Clean and prepare the data
-        const cleanCommaString = (value: string | null | undefined) => {
-            if (!value) return '';
-            return value
+        const cleanCommaString = (value: unknown): string => {
+            if (value === null || value === undefined) return '';
+            let stringValue: string;
+            if (typeof value !== 'string') {
+                // Convert to string if it's a number or boolean
+                stringValue = String(value);
+            } else {
+                stringValue = value;
+            }
+            return stringValue
                 .split(',')
-                .map(item => item.trim().replace(/^["']|["']$/g, ''))
-                .filter(item => item.length > 0)
+                .map((item: string) => item.trim().replace(/^["']|["']$/g, ''))
+                .filter((item: string) => item.length > 0)
                 .join(',');
         };
 
@@ -99,7 +106,7 @@ export async function POST(request: Request) {
                 const { error: deleteError } = await supabase
                     .from('result')
                     .delete()
-                    .eq('learner_id', learner.id);
+                    .eq('learner', learner.id);
 
                 if (deleteError) {
                     console.error('Error deleting results:', deleteError);

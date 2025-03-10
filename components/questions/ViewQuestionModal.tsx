@@ -39,7 +39,7 @@ export default function ViewQuestionModal({
   const { user } = useAuth()
   const [question, setQuestion] = useState({
     ...initialQuestion,
-    answer: initialQuestion.answer.replace(/[\[\]"]/g, '').trim()
+    answer: initialQuestion.answer.replace(/[[]"]/g, '').trim()
   })
   const [answer, setAnswer] = useState('test')
   const [showAnswer, setShowAnswer] = useState(false)
@@ -110,7 +110,7 @@ export default function ViewQuestionModal({
       const nextQuestion = await getNextNewQuestion(question.id.toString())
       setQuestion({
         ...nextQuestion,
-        answer: nextQuestion.answer.replace(/[\[\]"]/g, '').trim()
+        answer: nextQuestion.answer.replace(/[[]"]/g, '').trim()
       })
       // Reset states for new question
       setAnswer('')

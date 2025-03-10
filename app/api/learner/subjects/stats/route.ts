@@ -22,7 +22,7 @@ export async function GET(request: Request) {
         // Get learner with their grade
         const { data: learner, error: learnerError } = await supabase
             .from('learner')
-            .select('id, grade_id')
+            .select('id, grade')
             .eq('uid', uid)
             .single();
 
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         const { data: subject, error: subjectError } = await supabase
             .from('subject')
             .select('id, name')
-            .eq('grade_id', learner.grade_id)
+            .eq('grade', learner.grade)
             .eq('name', subjectName)
             .single();
 
@@ -57,8 +57,8 @@ export async function GET(request: Request) {
                 id,
                 outcome
             `)
-            .eq('learner_id', learner.id)
-            .eq('question.subject_id', subject.id);
+            .eq('learner', learner.id)
+            .eq('question.subject', subject.name);
 
         if (resultsError) {
             throw resultsError;

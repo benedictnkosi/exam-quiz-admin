@@ -87,7 +87,7 @@ export async function GET(request: Request) {
         const { data: results, error: resultsError } = await supabase
             .from('result')
             .select('question_id, outcome, created')
-            .in('learner_id', learners.map(l => l.id))
+            .in('learner', learners.map(l => l.id))
             .gte('created', startDate.toISOString())
             .lte('created', endDate.toISOString());
 

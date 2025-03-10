@@ -44,22 +44,22 @@ export async function GET(request: Request) {
             .from('question')
             .select(`
                 *,
-                subject:subject_id(
+                subject:subject(
                     id,
                     name,
-                    grade:grade_id(
+                    grade:grade(
                         id,
                         number,
                         name
                     )
                 ),
-                capturer:capturer_id(
+                capturer:capturer(
                     id,
                     name,
                     email
                 )
             `, { count: 'exact' })
-            .eq('subject_id', subjectId);
+            .eq('subject', subjectId);
 
         // Add filters
         if (term) {
@@ -90,9 +90,9 @@ export async function GET(request: Request) {
         // Get learner's results for these questions
         const { data: results, error: resultsError } = await supabase
             .from('result')
-            .select('question_id, outcome, created')
-            .eq('learner_id', learner.id)
-            .in('question_id', questions.map(q => q.id))
+            .select('question, outcome, created')
+            .eq('learner', learner.id)
+            .in('question', questions.map(q => q.id))
             .order('created', { ascending: false });
 
         if (resultsError) {
@@ -102,7 +102,7 @@ export async function GET(request: Request) {
         // Process questions
         const processedQuestions = questions.map(question => {
             // Get results for this question
-            const questionResults = results?.filter(r => r.question_id === question.id) || [];
+            const questionResults = results?.filter(r => r.question === question.id) || [];
             const attempts = questionResults.length;
             const correctAttempts = questionResults.filter(r => r.outcome === 'correct').length;
             const lastAttempt = questionResults[0]?.created;

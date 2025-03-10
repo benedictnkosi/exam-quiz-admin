@@ -73,16 +73,16 @@ export async function GET(request: Request) {
             .from('question')
             .select(`
                 *,
-                subject:subject_id(
+                subject:subject(
                     id,
                     name,
-                    grade:grade_id(
+                    grade:grade(
                         id,
                         number,
                         name
                     )
                 ),
-                capturer:capturer_id(
+                capturer:capturer(
                     id,
                     name,
                     email
@@ -103,8 +103,8 @@ export async function GET(request: Request) {
         const { data: attempts, error: attemptsError } = await supabase
             .from('result')
             .select('*')
-            .eq('learner_id', learner.id)
-            .eq('question_id', questionId)
+            .eq('learner', learner.id)
+            .eq('question', questionId)
             .order('created', { ascending: false });
 
         if (attemptsError) {
