@@ -40,6 +40,8 @@ export async function GET(request: Request) {
         }
 
         // Handle admin case
+        console.log('learner.role', learner.role);
+        console.log('SPECIAL_ADMINS', learner.name);
         if (learner.role === 'admin' && !SPECIAL_ADMINS.includes(learner.name)) {
             // Find capturer with same email but different uid
             const { data: capturer } = await supabase
@@ -91,20 +93,26 @@ export async function GET(request: Request) {
             }, { status: 404 });
         }
 
-        // Get results for mastered questions check
-        // Since we're not using the results currently, let's comment this out
-        // const { data: results } = await supabase
-        //     .from('result')
-        //     .select('question, created')
-        //     .eq('learner', learner.id)
-        //     .eq('outcome', 'correct');
+        // First get the subject ID
+        const { data: subject, error: subjectError } = await supabase
+            .from('subject')
+            .select('id')
+            .eq('name', `${subjectName} ${paperName}`)
+            .eq('grade', learner.grade.id)
+            .single();
 
-        // Build query for regular learner
+        if (subjectError || !subject) {
+            return NextResponse.json({
+                status: 'NOK',
+                message: 'Subject not found'
+            }, { status: 404 });
+        }
+
+        // Build query for regular learner using subject ID
         const query = supabase
             .from('question')
             .select('*, subject(*)')
-            .eq('subject.name', `${subjectName} ${paperName}`)
-            .eq('subject.grade', learner.grade.id)
+            .eq('subject', subject.id)
             .eq('active', true)
             .eq('status', 'approved');
 

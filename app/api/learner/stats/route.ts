@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         // Get the learner
         const { data: learner, error: learnerError } = await supabase
             .from('learner')
-            .select('id, grade')
+            .select('id, grade, grade')
             .eq('uid', uid)
             .single();
 
@@ -43,6 +43,7 @@ export async function GET(request: Request) {
             .eq('grade', learner.grade)
             .single();
 
+
         if (subjectError || !subject) {
             console.error('Error fetching subject:', subjectError);
             return NextResponse.json({
@@ -52,17 +53,19 @@ export async function GET(request: Request) {
         }
 
         // Get all results for the learner and subject
+
         const { data: results, error: resultsError } = await supabase
             .from('result')
             .select(`
                 id,
                 outcome,
+                learner,
                 question!inner (
                     subject
                 )
             `)
-            .eq('learner', learner.id)
-            .eq('question.subject', subject.id);
+            .eq('learner', learner.id);
+        //.eq('question.subject', subject.id);
 
         if (resultsError) {
             console.error('Error fetching results:', resultsError);
