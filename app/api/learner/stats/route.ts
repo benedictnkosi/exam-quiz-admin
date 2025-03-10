@@ -11,19 +11,19 @@ export async function GET(request: Request) {
         // Get query parameters
         const { searchParams } = new URL(request.url);
         const uid = searchParams.get('uid');
-        const period = searchParams.get('period') || '7'; // Default to 7 days
+        const subjectName = searchParams.get('subject');
 
-        if (!uid) {
+        if (!uid || !subjectName) {
             return NextResponse.json({
                 status: 'NOK',
-                message: 'UID is required'
+                message: 'UID and subject are required'
             }, { status: 400 });
         }
 
         // Get the learner
         const { data: learner, error: learnerError } = await supabase
             .from('learner')
-            .select('id, grade_id')
+            .select('id, grade')
             .eq('uid', uid)
             .single();
 
@@ -35,23 +35,34 @@ export async function GET(request: Request) {
             }, { status: 404 });
         }
 
-        // Calculate date range
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        // Get the subject for the learner's grade
+        const { data: subject, error: subjectError } = await supabase
+            .from('subject')
+            .select('id, name')
+            .eq('name', subjectName)
+            .eq('grade', learner.grade)
+            .single();
 
-        // Get results within date range
+        if (subjectError || !subject) {
+            console.error('Error fetching subject:', subjectError);
+            return NextResponse.json({
+                status: 'NOK',
+                message: 'Subject not found'
+            }, { status: 404 });
+        }
+
+        // Get all results for the learner and subject
         const { data: results, error: resultsError } = await supabase
             .from('result')
             .select(`
-                *,
-                question:question_id(
-                    subject:subject_id(name)
+                id,
+                outcome,
+                question!inner (
+                    subject
                 )
             `)
-            .eq('learner_id', learner.id)
-            .gte('created', startDate.toISOString())
-            .lte('created', endDate.toISOString());
+            .eq('learner', learner.id)
+            .eq('question.subject', subject.id);
 
         if (resultsError) {
             console.error('Error fetching results:', resultsError);
@@ -62,65 +73,28 @@ export async function GET(request: Request) {
         }
 
         // Process results
-        const subjectStats: { [key: string]: { total: number, correct: number } } = {};
-        const dailyStats: { [key: string]: { total: number, correct: number } } = {};
-        let totalQuestions = 0;
-        let totalCorrect = 0;
-
-        results.forEach(result => {
-            const subjectName = result.question.subject.name.split(' ')[0]; // Get base subject name
-            const date = new Date(result.created).toISOString().split('T')[0];
-
-            // Update subject stats
-            if (!subjectStats[subjectName]) {
-                subjectStats[subjectName] = { total: 0, correct: 0 };
-            }
-            subjectStats[subjectName].total++;
-            if (result.outcome === 'correct') {
-                subjectStats[subjectName].correct++;
-            }
-
-            // Update daily stats
-            if (!dailyStats[date]) {
-                dailyStats[date] = { total: 0, correct: 0 };
-            }
-            dailyStats[date].total++;
-            if (result.outcome === 'correct') {
-                dailyStats[date].correct++;
-            }
-
-            // Update totals
-            totalQuestions++;
-            if (result.outcome === 'correct') {
-                totalCorrect++;
-            }
-        });
-
-        // Calculate percentages and format stats
-        const formattedSubjectStats = Object.entries(subjectStats).map(([subject, stats]) => ({
-            subject,
-            total_questions: stats.total,
-            correct_answers: stats.correct,
-            percentage: Math.round((stats.correct / stats.total) * 100)
-        }));
-
-        const formattedDailyStats = Object.entries(dailyStats).map(([date, stats]) => ({
-            date,
-            total_questions: stats.total,
-            correct_answers: stats.correct,
-            percentage: Math.round((stats.correct / stats.total) * 100)
-        })).sort((a, b) => a.date.localeCompare(b.date));
+        const totalAnswers = results.length;
+        const correctAnswers = results.filter(r => r.outcome === 'correct').length;
+        const incorrectAnswers = results.filter(r => r.outcome === 'incorrect').length;
 
         return NextResponse.json({
             status: 'OK',
-            stats: {
-                overall: {
-                    total_questions: totalQuestions,
-                    correct_answers: totalCorrect,
-                    percentage: totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0
+            data: {
+                subject: {
+                    id: subject.id,
+                    name: subject.name
                 },
-                by_subject: formattedSubjectStats,
-                by_date: formattedDailyStats
+                stats: {
+                    total_answers: totalAnswers,
+                    correct_answers: correctAnswers,
+                    incorrect_answers: incorrectAnswers,
+                    correct_percentage: totalAnswers > 0
+                        ? Number((correctAnswers / totalAnswers * 100).toFixed(2))
+                        : 0,
+                    incorrect_percentage: totalAnswers > 0
+                        ? Number((incorrectAnswers / totalAnswers * 100).toFixed(2))
+                        : 0
+                }
             }
         });
 
@@ -128,8 +102,7 @@ export async function GET(request: Request) {
         console.error('Error in getLearnerStats:', error);
         return NextResponse.json({
             status: 'NOK',
-            message: 'Error getting statistics',
-            error: error instanceof Error ? error.message : 'Unknown error'
+            message: 'Error getting subject statistics: ' + (error instanceof Error ? error.message : 'Unknown error')
         }, { status: 500 });
     }
 } 
