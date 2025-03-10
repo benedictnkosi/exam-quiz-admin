@@ -6,18 +6,49 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Define interfaces for the subject data structure
-interface Subject {
+interface Grade {
     id: number;
-    name: string;
-    grade: number;
-    curriculum?: string;
-    [key: string]: unknown; // For any other properties we might access
+    number: number;
+    active: boolean;
 }
 
-export async function GET(request: Request) {
+interface Learner {
+    id: number;
+    uid: string;
+    terms?: string;
+    curriculum?: string;
+    grade: Grade;
+}
+
+interface Result {
+    id: number;
+    outcome: string;
+    created: string;
+}
+
+interface Question {
+    id: number;
+    results: Result[];
+}
+
+interface SubjectWithQuestions {
+    id: number;
+    name: string;
+    active: boolean;
+    questions: Question[];
+}
+
+interface SubjectResponse {
+    id: number;
+    name: string;
+    active: boolean;
+    question_count: number;
+    result_count: number;
+    correct_count: number;
+}
+
+export async function GET(request: Request): Promise<NextResponse> {
     try {
-        // Get query parameters
         const { searchParams } = new URL(request.url);
         const uid = searchParams.get('uid');
 
@@ -28,10 +59,17 @@ export async function GET(request: Request) {
             }, { status: 400 });
         }
 
-        // Get the learner with their grade
+        // Get learner with grade information
         const { data: learner, error: learnerError } = await supabase
             .from('learner')
-            .select('*, grade(*)')
+            .select(`
+                *,
+                grade:grade (
+                    id,
+                    number,
+                    active
+                )
+            `)
             .eq('uid', uid)
             .single();
 
@@ -43,15 +81,41 @@ export async function GET(request: Request) {
             }, { status: 404 });
         }
 
-        // Get learner's curriculum
-        const learnerCurriculum = learner.curriculum ? learner.curriculum.split(',').map((c: string) => c.trim()) : [];
+        if (!learner.grade) {
+            return NextResponse.json({
+                status: 'NOK',
+                message: 'Grade not found'
+            }, { status: 404 });
+        }
 
-        // Get all subjects for the learner's grade
+        // Parse learner's curriculum and terms
+        const learnerTerms = learner.terms ? learner.terms.split(',').map((term: string) => term.trim()) : [];
+        const learnerCurriculum = learner.curriculum ? learner.curriculum.split(',').map((curr: string) => curr.trim()) : [];
+
+        // First get all active subjects for the grade
         const { data: subjects, error: subjectsError } = await supabase
             .from('subject')
-            .select('*')
+            .select(`
+                id,
+                name,
+                active,
+                questions:question(
+                    id,
+                    results:result(
+                        id,
+                        outcome,
+                        created
+                    )
+                )
+            `)
             .eq('grade', learner.grade.id)
-            .eq('active', true);
+            .eq('active', true)
+            .eq('questions.active', true)
+            .eq('questions.status', 'approved')
+            .eq('questions.results.learner', learner.id)
+            .in('questions.curriculum', learnerCurriculum)
+            .in('questions.term', learnerTerms)
+            .order('name');
 
         if (subjectsError) {
             console.error('Error fetching subjects:', subjectsError);
@@ -61,43 +125,28 @@ export async function GET(request: Request) {
             }, { status: 500 });
         }
 
-        // Filter subjects based on curriculum if specified
-        let filteredSubjects = subjects;
-        if (learnerCurriculum.length > 0) {
-            filteredSubjects = subjects.filter(subject => {
-                const subjectCurriculum = subject.curriculum ? subject.curriculum.split(',').map((c: string) => c.trim()) : [];
-                return learnerCurriculum.some((c: string) => subjectCurriculum.includes(c));
-            });
-        }
+        // Transform the response to include question and result counts
+        const subjectsWithCounts: SubjectResponse[] = (subjects as SubjectWithQuestions[] || []).map(subject => {
+            const questions = subject.questions || [];
+            const results = questions.flatMap(q => q.results || []);
 
-        // Group subjects by name (to combine different papers)
-        const groupedSubjects = filteredSubjects.reduce((acc: { [key: string]: Subject[] }, subject: Subject) => {
-            const name = subject.name.split(' ')[0]; // Get base subject name without paper
-            if (!acc[name]) {
-                acc[name] = [];
-            }
-            acc[name].push(subject);
-            return acc;
-        }, {});
-
-        // Format response
-        const formattedSubjects = Object.entries(groupedSubjects).map(([name, papers]) => ({
-            name,
-            papers: (papers as Subject[]).map((paper: Subject) => ({
-                id: paper.id,
-                name: paper.name,
-                curriculum: paper.curriculum,
-                terms: paper.terms
-            }))
-        }));
+            return {
+                id: subject.id,
+                name: subject.name,
+                active: subject.active,
+                question_count: questions.length,
+                result_count: results.length,
+                correct_count: results.filter(r => r.outcome === 'correct').length
+            };
+        });
 
         return NextResponse.json({
             status: 'OK',
-            subjects: formattedSubjects
+            subjects: subjectsWithCounts
         });
 
     } catch (error) {
-        console.error('Error in getLearnerSubjects:', error);
+        console.error('Error getting learner subjects:', error);
         return NextResponse.json({
             status: 'NOK',
             message: 'Error getting learner subjects',

@@ -94,15 +94,14 @@ export async function POST(request: Request) {
 
         // Record the answer in the database
         const answerRecord = {
-            learner_id: learner.id,
-            question_id: question.id,
-            answer: normalizedSubmittedAnswer,
-            is_correct: isCorrect,
+            learner: learner.id,
+            question: question.id,
+            outcome: isCorrect ? 'correct' : 'incorrect',
             created: new Date().toISOString()
         };
 
         const { error: recordError } = await supabase
-            .from('learner_answer')
+            .from('result')
             .insert([answerRecord]);
 
         if (recordError) {
