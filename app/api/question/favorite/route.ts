@@ -162,20 +162,20 @@ export async function GET(request: Request) {
         // Get the query parameters
         const { searchParams } = new URL(request.url);
         const uid = searchParams.get('uid');
-        const subject_id = searchParams.get('subject_id');
+        const subject_name = searchParams.get('subject_name');
 
         // Validate required parameters
-        if (!uid || !subject_id) {
+        if (!uid || !subject_name) {
             return NextResponse.json({
                 status: 'NOK',
-                message: 'Learner ID and Subject ID are required'
+                message: 'Learner ID and Subject Name are required'
             }, { status: 400 });
         }
 
         // Check if the learner exists
         const { data: learner, error: learnerError } = await supabase
             .from('learner')
-            .select('id')
+            .select('id, grade')
             .eq('uid', uid)
             .single();
 
@@ -190,7 +190,8 @@ export async function GET(request: Request) {
         const { data: subject, error: subjectError } = await supabase
             .from('subject')
             .select('id')
-            .eq('id', subject_id)
+            .eq('name', subject_name)
+            .eq('grade', learner.grade)
             .single();
 
         if (subjectError || !subject) {
@@ -214,7 +215,7 @@ export async function GET(request: Request) {
                 )
             `)
             .eq('learner', learner.id)
-            .eq('question.subject', subject_id)
+            .eq('question.subject', subject.id)
             .order('created_at', { ascending: false });
         if (favoritesError) {
             console.error('Error fetching favorites:', favoritesError);
