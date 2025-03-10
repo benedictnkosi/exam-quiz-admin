@@ -20,10 +20,17 @@ export async function GET(request: Request) {
             }, { status: 400 });
         }
 
-        // Query Supabase for the learner
+        // Query Supabase for the learner and grade information
         const { data: learner, error } = await supabase
             .from('learner')
-            .select('*')
+            .select(`
+                *,
+                grade:grade (
+                    id,
+                    number,
+                    active
+                )
+            `)
             .eq('uid', uid)
             .single();
 
@@ -43,7 +50,6 @@ export async function GET(request: Request) {
         }
 
         return NextResponse.json(learner);
-
     } catch (error) {
         console.error('Server error:', error);
         return NextResponse.json({
