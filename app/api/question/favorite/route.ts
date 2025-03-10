@@ -187,14 +187,13 @@ export async function GET(request: Request) {
         }
 
         // Check if the subject exists
-        const { data: subject, error: subjectError } = await supabase
+        const { data: subjects, error: subjectError } = await supabase
             .from('subject')
             .select('id')
-            .eq('name', subject_name)
             .eq('grade', learner.grade)
-            .single();
+            .ilike('name', `%${subject_name}%`);
 
-        if (subjectError || !subject) {
+        if (subjectError || !subjects?.length) {
             return NextResponse.json({
                 status: 'NOK',
                 message: 'Subject not found'
@@ -215,7 +214,7 @@ export async function GET(request: Request) {
                 )
             `)
             .eq('learner', learner.id)
-            .eq('question.subject', subject.id)
+            .in('question.subject', subjects.map(s => s.id))
             .order('created_at', { ascending: false });
         if (favoritesError) {
             console.error('Error fetching favorites:', favoritesError);
