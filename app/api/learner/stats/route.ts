@@ -64,8 +64,8 @@ export async function GET(request: Request) {
                     subject
                 )
             `)
-            .eq('learner', learner.id);
-        //.eq('question.subject', subject.id);
+            .eq('learner', learner.id)
+            .eq('question.subject', subject.id);
 
         if (resultsError) {
             console.error('Error fetching results:', resultsError);
