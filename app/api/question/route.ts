@@ -132,7 +132,7 @@ export async function POST(request: Request) {
             .eq('capturer', data.capturer)
             .eq('status', 'new');
 
-        if (newQuestions && newQuestions.length >= 50 && questionId === 0 && !user.name.includes('mnelisi')) {
+        if (newQuestions && newQuestions.length >= 50 && questionId === 0) {
             return NextResponse.json({
                 status: 'NOK',
                 message: 'Cannot create new question - You have reached the maximum number of new questions'
