@@ -8,91 +8,56 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(request: Request) {
     try {
-        // Get the request body
         const body = await request.json();
-        const { question_id, uid } = body;
+        const { email } = body;
 
-        // Validate required fields
-        if (!question_id || !uid) {
+        // Validate email
+        if (!email) {
             return NextResponse.json({
                 status: 'NOK',
-                message: 'Question ID and Learner ID are required'
+                message: 'Email is required'
             }, { status: 400 });
         }
 
-        // Check if the question exists
-        const { data: question, error: questionError } = await supabase
-            .from('question')
+        // Check if email already exists
+        const { data: existingEmail, error: existingError } = await supabase
+            .from('early_access')
             .select('id')
-            .eq('id', question_id)
+            .eq('email', email)
             .single();
 
-        if (questionError || !question) {
+        if (existingEmail) {
             return NextResponse.json({
                 status: 'NOK',
-                message: 'Question not found'
-            }, { status: 404 });
-        }
-
-        // Check if the learner exists
-        const { data: learner, error: learnerError } = await supabase
-            .from('learner')
-            .select('id')
-            .eq('uid', uid)
-            .single();
-
-        if (learnerError || !learner) {
-            return NextResponse.json({
-                status: 'NOK',
-                message: 'Learner not found'
-            }, { status: 404 });
-        }
-
-        // Check if the favorite already exists
-        const { data: existingFavorite, error: existingError } = await supabase
-            .from('favorites')
-            .select('id')
-            .eq('question', question_id)
-            .eq('learner', learner.id)
-            .single();
-
-        if (existingFavorite) {
-            return NextResponse.json({
-                status: 'NOK',
-                message: 'Question is already in favorites'
+                message: 'Email already registered'
             }, { status: 400 });
         }
 
-        // Add to favorites
-        console.log(question_id, learner.id);
-        const { data: favorite, error: favoriteError } = await supabase
-            .from('favorites')
+        // Add email to early_access table
+        const { error: insertError } = await supabase
+            .from('early_access')
             .insert([
                 {
-                    question: question_id,
-                    learner: learner.id,
+                    email,
                     created_at: new Date().toISOString()
                 }
-            ])
-            .select()
-            .single();
+            ]);
 
-        if (favoriteError) {
-            console.error('Error adding to favorites:', favoriteError);
+        if (insertError) {
+            console.error('Error registering email:', insertError);
             return NextResponse.json({
                 status: 'NOK',
-                message: 'Failed to add question to favorites'
+                message: 'Failed to register email'
             }, { status: 500 });
         }
 
         return NextResponse.json({
             status: 'OK',
-            message: 'Question added to favorites successfully',
-            data: favorite
+            message: 'Email registered successfully'
         });
 
     } catch (error) {
-        console.error('Error in favorite POST:', error);
+        console.error('Error in early access registration:', error);
         return NextResponse.json({
             status: 'NOK',
             message: 'Internal server error'
@@ -210,7 +175,8 @@ export async function GET(request: Request) {
                     id,
                     question,
                     ai_explanation,
-                    subject
+                    subject,
+                    context
                 )
             `)
             .eq('learner', learner.id)

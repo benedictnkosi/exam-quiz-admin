@@ -16,6 +16,7 @@ export async function GET(request: Request) {
         const subjectName = searchParams.get('subject_name');
         const paperName = searchParams.get('paper_name');
         const uid = searchParams.get('uid');
+        const questionId = searchParams.get('question_id');
 
         if (!subjectName || !paperName || !uid) {
             return NextResponse.json({
@@ -37,6 +38,24 @@ export async function GET(request: Request) {
                 message: 'Learner not found',
                 error: learnerError?.message
             }, { status: 404 });
+        }
+
+        if (questionId && questionId !== '0') {
+            const { data: question, error: questionError } = await supabase
+                .from('question')
+                .select('*')
+                .eq('id', questionId)
+                .single();
+
+            if (questionError || !question) {
+                return NextResponse.json({
+                    status: 'NOK',
+                    message: 'Question not found',
+                    error: questionError?.message
+                }, { status: 404 });
+            }
+
+            return NextResponse.json(question);
         }
 
         // Handle admin case
