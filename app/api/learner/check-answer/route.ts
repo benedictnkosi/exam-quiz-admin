@@ -135,8 +135,12 @@ export async function POST(request: Request) {
             .eq('id', learner.id)
             .single();
 
+        let currentStreak = 0;
+        let streakUpdated = false;
+
         if (!learnerFetchError && currentLearner) {
             newPoints = Math.max(0, (currentLearner.points || 0) + pointsChange);
+            currentStreak = currentLearner.streak || 0;
             const { error: updateError } = await supabase
                 .from('learner')
                 .update({ points: newPoints })
@@ -156,6 +160,8 @@ export async function POST(request: Request) {
                 const lastUpdated = currentLearner.streak_last_updated ? new Date(currentLearner.streak_last_updated) : null;
                 const wasUpdatedToday = lastUpdated && lastUpdated >= today;
 
+                streakUpdated = false;
+
                 if (!wasUpdatedToday) {
                     const { data: todayResults, error: resultsError } = await supabase
                         .from('result')
@@ -165,16 +171,19 @@ export async function POST(request: Request) {
                         .eq('outcome', 'correct');
 
                     if (!resultsError && todayResults && todayResults.length >= 3) {
+                        currentStreak += 1;
+                        streakUpdated = true;
                         const { error: streakError } = await supabase
                             .from('learner')
                             .update({
-                                streak: (currentLearner.streak || 0) + 1,
+                                streak: currentStreak,
                                 streak_last_updated: new Date().toISOString()
                             })
                             .eq('id', learner.id);
 
                         if (streakError) {
                             console.error('Error updating streak:', streakError);
+                            streakUpdated = false;
                         }
                     }
                 }
@@ -190,6 +199,8 @@ export async function POST(request: Request) {
             points: newPoints,
             message: isCorrect ? 'Correct answer!' : 'Incorrect answer',
             lastThreeCorrect,
+            streak: currentStreak,
+            streakUpdated,
             subject: question.subject && typeof question.subject === 'object' ?
                 // If it's an array, get first element, otherwise use the object itself
                 (Array.isArray(question.subject) ?
