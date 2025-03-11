@@ -166,6 +166,18 @@ export async function POST(request: Request) {
             }
         }
 
+        // Get the last 3 answers by the learner
+        const { data: lastAnswers, error: lastAnswersError } = await supabase
+            .from('result')
+            .select('outcome')
+            .eq('learner', learner.id)
+            .order('created', { ascending: false })
+            .limit(3);
+
+        const lastThreeCorrect = !lastAnswersError && lastAnswers &&
+            lastAnswers.length === 3 &&
+            lastAnswers.every(answer => answer.outcome === 'correct');
+
         return NextResponse.json({
             status: 'OK',
             correct: isCorrect,
@@ -173,6 +185,7 @@ export async function POST(request: Request) {
             correctAnswer: question.answer,
             points: newPoints,
             message: isCorrect ? 'Correct answer!' : 'Incorrect answer',
+            lastThreeCorrect,
             subject: question.subject && typeof question.subject === 'object' ?
                 // If it's an array, get first element, otherwise use the object itself
                 (Array.isArray(question.subject) ?
