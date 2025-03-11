@@ -86,6 +86,32 @@ interface SubjectCategory {
   papers: Paper[];
 }
 
+// Helper function to clean the answer string
+function cleanAnswer(answer: string): string {
+  try {
+    // If it's a JSON array, parse first
+    let cleanedAnswer = answer;
+    if (answer.startsWith('[')) {
+      cleanedAnswer = JSON.parse(answer)
+        .map((a: string) => a.trim())
+        .join(', ');
+    }
+
+    // If answer contains pipe character, split into new lines
+    if (cleanedAnswer.includes('|')) {
+      return cleanedAnswer
+        .split('|')
+        .map(part => part.trim())
+        .join('\n');
+    }
+
+    // Return single line answer
+    return cleanedAnswer.trim();
+  } catch {
+    // If parsing fails, return the original answer
+    return answer;
+  }
+}
 
 export default function QuestionForm({ initialData, mode = 'create', onSuccess }: QuestionFormProps) {
   const { user } = useAuth()
@@ -134,7 +160,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         subject: initialData.subject?.name || '',
         term: initialData.term?.toString() || '',
         context: initialData.context || '',
-        answer: initialData.answer || '',
+        answer: cleanAnswer(initialData.answer || ''),
         explanation: initialData.explanation || '',
         options: [
           initialData.options?.option1 || '',
