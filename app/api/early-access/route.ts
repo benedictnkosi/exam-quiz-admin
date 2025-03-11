@@ -7,7 +7,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Function to set CORS headers
-function setCorsHeaders(response) {
+function setCorsHeaders(response: NextResponse): NextResponse {
     response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
     response.headers.set("Access-Control-Allow-Headers", "Content-Type");
