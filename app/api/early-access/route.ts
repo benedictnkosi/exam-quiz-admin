@@ -6,10 +6,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
     try {
-        const body = await request.json();
-        const { email } = body;
+        const { searchParams } = new URL(request.url);
+        const email = searchParams.get('email');
 
         // Validate email
         if (!email) {
