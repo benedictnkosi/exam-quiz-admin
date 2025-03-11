@@ -125,6 +125,20 @@ export async function POST(request: Request) {
             }, { status: 400 });
         }
 
+        //check number of new questions is not over 50
+        const { data: newQuestions } = await supabase
+            .from('question')
+            .select('id')
+            .eq('capturer', data.capturer)
+            .eq('status', 'new');
+
+        if (newQuestions && newQuestions.length >= 50 && questionId === 0 && !user.name.includes('mnelisi')) {
+            return NextResponse.json({
+                status: 'NOK',
+                message: 'Cannot create new question - You have reached the maximum number of new questions'
+            }, { status: 400 });
+        }
+
         // Check single type questions
         const { data: singleQuestions } = await supabase
             .from('question')
@@ -176,6 +190,20 @@ export async function POST(request: Request) {
             .eq('grade', grade?.id)
             .single();
 
+        if (questionId !== 0) {
+            const { data: existingQuestion } = await supabase
+                .from('question')
+                .select('*')
+                .eq('id', questionId)
+                .single();
+
+            if (existingQuestion) {
+                return NextResponse.json({
+                    status: 'NOK',
+                    message: 'Question already exists'
+                }, { status: 400 });
+            }
+        }
         if (!subject) {
             return NextResponse.json({
                 status: 'NOK',
@@ -219,8 +247,8 @@ export async function POST(request: Request) {
             explanation: data.explanation || null,
             year: data.year || null,
             capturer: user.id,
-            reviewer: questionId === 0 ? user.id : undefined,
-            created: new Date().toISOString(),
+            reviewer: questionId === 0 ? user.id : existingQuestion.reviewer,
+            created: questionId === 0 ? new Date().toISOString() : existingQuestion.created,
             active: true,
             status: 'new',
             comment: 'new',

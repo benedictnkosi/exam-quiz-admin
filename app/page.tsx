@@ -4,6 +4,7 @@ import StatsCard from '@/components/dashboard/StatsCard'
 import PendingApprovalsCard from '@/components/dashboard/PendingApprovalsCard'
 import StatusCountsTable from '@/components/dashboard/StatusCountsTable'
 import ReviewerStatsTable from '@/components/dashboard/ReviewerStatsTable'
+import QuestionStatsTable from '@/app/components/dashboard/QuestionStatsTable'
 
 export default function Dashboard() {
   return (
@@ -34,8 +35,8 @@ export default function Dashboard() {
         <LearnersPerWeekChart />
       </div> */}
 
-
       <div className="grid grid-cols-1 gap-6 mt-6">
+        <QuestionStatsTable />
         <StatusCountsTable />
         <ReviewerStatsTable />
       </div>
