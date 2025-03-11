@@ -65,6 +65,7 @@ export async function POST(request: Request) {
             school_longitude?: number;
             notification_hour?: number;
             private_school?: boolean;
+            avatar?: string;
         }
 
         const updateData: LearnerUpdateData = {};
@@ -122,7 +123,7 @@ export async function POST(request: Request) {
         if (data.school_longitude) updateData.school_longitude = data.school_longitude;
         if (data.notification_hour) updateData.notification_hour = data.notification_hour;
         if (data.email) updateData.email = data.email;
-
+        if (data.avatar) updateData.avatar = data.avatar;
         // Set private_school based on curriculum
         if (data.curriculum === 'CAPS') {
             updateData.private_school = false;
