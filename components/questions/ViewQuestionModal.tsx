@@ -31,6 +31,33 @@ interface RejectResponse {
   message?: string
 }
 
+// Helper function to clean the answer string
+function cleanAnswer(answer: string): string {
+  try {
+    // If it's a JSON array, parse first
+    let cleanedAnswer = answer;
+    if (answer.startsWith('[')) {
+      cleanedAnswer = JSON.parse(answer)
+        .map((a: string) => a.trim())
+        .join(', ');
+    }
+
+    // If answer contains pipe character, split into new lines
+    if (cleanedAnswer.includes('|')) {
+      return cleanedAnswer
+        .split('|')
+        .map(part => part.trim())
+        .join('\n');
+    }
+
+    // Return single line answer
+    return cleanedAnswer.trim();
+  } catch {
+    // If parsing fails, return the original answer
+    return answer;
+  }
+}
+
 export default function ViewQuestionModal({
   question: initialQuestion,
   onClose,
@@ -39,7 +66,7 @@ export default function ViewQuestionModal({
   const { user } = useAuth()
   const [question, setQuestion] = useState({
     ...initialQuestion,
-    answer: initialQuestion.answer.replace(/[[]"]/g, '').trim()
+    answer: cleanAnswer(initialQuestion.answer)
   })
   const [answer, setAnswer] = useState('test')
   const [showAnswer, setShowAnswer] = useState(false)
@@ -110,7 +137,7 @@ export default function ViewQuestionModal({
       const nextQuestion = await getNextNewQuestion(question.id.toString())
       setQuestion({
         ...nextQuestion,
-        answer: nextQuestion.answer.replace(/[[]"]/g, '').trim()
+        answer: cleanAnswer(nextQuestion.answer)
       })
       // Reset states for new question
       setAnswer('')
