@@ -141,6 +141,8 @@ export async function POST(request: Request) {
         if (!learnerFetchError && currentLearner) {
             newPoints = Math.max(0, (currentLearner.points || 0) + pointsChange);
             currentStreak = currentLearner.streak || 0;
+
+            // Update overall points
             const { error: updateError } = await supabase
                 .from('learner')
                 .update({ points: newPoints })
@@ -149,6 +151,64 @@ export async function POST(request: Request) {
             if (updateError) {
                 console.error('Error updating learner points:', updateError);
                 // Continue anyway, don't fail the request
+            }
+
+            // Update subject-specific points
+            if (question.subject && typeof question.subject === 'object') {
+                console.log('question.subject', question.subject);
+                const subjectId = Array.isArray(question.subject) ?
+                    question.subject[0]?.id :
+                    (question.subject as { id: number }).id;
+
+                if (subjectId) {
+                    console.log('subjectId', subjectId);
+                    // Get current subject points
+                    const { data: currentSubjectRanking, error: rankingError } = await supabase
+                        .from('subject_points')
+                        .select('points')
+                        .eq('learner', learner.id)
+                        .eq('subject', subjectId)
+                        .single();
+
+                    // For first time users or existing users
+                    if (rankingError?.code === 'PGRST116') {
+                        // First time user for this subject - insert new record
+                        const { error: insertError } = await supabase
+                            .from('subject_points')
+                            .insert({
+                                learner: learner.id,
+                                subject: subjectId,
+                                points: Math.max(0, pointsChange), // Only positive points for first attempt
+                                created_at: new Date().toISOString()
+                            });
+
+                        if (insertError) {
+                            console.error('Error inserting new subject ranking:', insertError);
+                        }
+                    } else if (!rankingError) {
+                        // Existing user - update points
+                        const currentSubjectPoints = currentSubjectRanking?.points || 0;
+                        const newSubjectPoints = Math.max(0, currentSubjectPoints + pointsChange);
+
+                        const { error: updateError } = await supabase
+                            .from('subject_points')
+                            .update({
+                                points: newSubjectPoints
+                            })
+                            .eq('learner', learner.id)
+                            .eq('subject', subjectId);
+
+                        if (updateError) {
+                            console.error('Error updating subject ranking:', updateError);
+                        }
+                    } else {
+                        console.error('Error fetching subject ranking:', rankingError);
+                    }
+                } else {
+                    console.error('Error updating subject ranking:', question);
+                }
+            } else {
+                console.error('Error updating subject ranking:', question);
             }
 
             // Check for streak update
