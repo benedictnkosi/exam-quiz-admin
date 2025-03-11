@@ -112,7 +112,22 @@ export async function POST(request: Request) {
         }
 
         // Update learner points
-        const pointsChange = isCorrect ? 1 : -1;
+        // Get the last 3 answers by the learner
+        const { data: lastAnswers, error: lastAnswersError } = await supabase
+            .from('result')
+            .select('outcome')
+            .eq('learner', learner.id)
+            .order('created', { ascending: false })
+            .limit(3);
+
+        const lastThreeCorrect = !lastAnswersError && lastAnswers &&
+            lastAnswers.length === 3 &&
+            lastAnswers.every(answer => answer.outcome === 'correct');
+
+
+        const pointsChange = isCorrect ?
+            (lastThreeCorrect ? 3 : 1) : // 3 points if correct and last three correct, 1 point if just correct
+            -1; // -1 point if incorrect
         let newPoints = 0;
         const { data: currentLearner, error: learnerFetchError } = await supabase
             .from('learner')
@@ -166,17 +181,6 @@ export async function POST(request: Request) {
             }
         }
 
-        // Get the last 3 answers by the learner
-        const { data: lastAnswers, error: lastAnswersError } = await supabase
-            .from('result')
-            .select('outcome')
-            .eq('learner', learner.id)
-            .order('created', { ascending: false })
-            .limit(3);
-
-        const lastThreeCorrect = !lastAnswersError && lastAnswers &&
-            lastAnswers.length === 3 &&
-            lastAnswers.every(answer => answer.outcome === 'correct');
 
         return NextResponse.json({
             status: 'OK',
