@@ -24,9 +24,9 @@ export async function GET(request: Request) {
         const { data: question, error } = await supabase
             .from('question')
             .select(`
-                *,
-                subject(*)
-            `)
+               *,
+               subject(*)
+           `)
             .eq('id', id)
             .single();
 
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     try {
         const data = await request.json();
         const userId = data.uid;
-        const questionId = data.question ?? 0;
+        const questionId = data.question_id ?? 0;
 
         // Check if user exists
         const { data: user, error: userError } = await supabase
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
             .eq('number', data.grade)
             .single();
 
-        const { data: subject } = await supabase
+        const { data: subject, error: subjectError } = await supabase
             .from('subject')
             .select('*')
             .eq('name', data.subject)
