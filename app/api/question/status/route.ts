@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Define an interface for the update data
 interface QuestionUpdateData {
     status: string;
-    feedback?: string;
+    comment?: string;
     active?: boolean;
     reviewer?: number;
     reviewed_at?: string;
@@ -63,9 +63,9 @@ export async function PUT(request: Request) {
             reviewed_at: new Date().toISOString()
         };
 
-        // Add feedback if provided
+        // Add comment if provided
         if (comment) {
-            updateData.feedback = comment;
+            updateData.comment = comment;
         }
 
 
@@ -96,7 +96,7 @@ export async function PUT(request: Request) {
             question: {
                 id: updatedQuestion.id,
                 status: updatedQuestion.status,
-                feedback: updatedQuestion.feedback,
+                comment: updatedQuestion.comment,
                 updated: updatedQuestion.updated
             }
         });
