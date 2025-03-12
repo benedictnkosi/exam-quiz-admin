@@ -160,8 +160,8 @@ export default function ViewQuestionModal({
     setRejecting(true)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/question/set-status`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/question/status`, {
+        method: 'PUT',
         body: JSON.stringify({
           question_id: question.id,
           status: 'rejected',
