@@ -1,27 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import StatsCard from './StatsCard'
-import { getNewQuestionsCount } from '../../services/api'
 
 export default function PendingApprovalsCard() {
     const [count, setCount] = useState(0)
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const newCount = await getNewQuestionsCount()
-                setCount(newCount)
-            } catch (err) {
-                console.error('Failed to fetch pending count:', err)
-            } finally {
-                setLoading(false)
-            }
-        }
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const newCount = await getNewQuestionsCount()
+    //             setCount(newCount)
+    //         } catch (err) {
+    //             console.error('Failed to fetch pending count:', err)
+    //         } finally {
+    //             setLoading(false)
+    //         }
+    //     }
 
-        fetchData()
-    }, [])
+    //     fetchData()
+    // }, [])
 
     return (
         <StatsCard

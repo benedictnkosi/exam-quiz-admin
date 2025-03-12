@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import QuestionsTable from '@/components/questions/QuestionsTable'
 import QuestionsFilter from '@/components/questions/QuestionsFilter'
 import CreateQuestionModal from '@/components/questions/CreateQuestionModal'
-import { getQuestions, type Question, getRejectedQuestionsByUid } from '@/services/api'
+import { getQuestions, type Question, getRejectedQuestions } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function QuestionsPage() {
@@ -60,8 +60,8 @@ export default function QuestionsPage() {
     setError('')
 
     try {
-      const rejectedQuestions = await getRejectedQuestionsByUid(user.uid)
-      setQuestions(rejectedQuestions.questions)
+      const rejectedQuestions = await getRejectedQuestions(user.uid)
+      setQuestions(rejectedQuestions)
     } catch (err) {
       console.error('Failed to fetch rejected questions:', err)
       setError('Failed to load rejected questions')

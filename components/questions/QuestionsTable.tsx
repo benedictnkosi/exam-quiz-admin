@@ -66,7 +66,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
   const handleUpdatePosted = async (questionId: number) => {
     try {
       setPosting(questionId)
-      await updatePostedStatus(questionId.toString(), true, user?.uid || '')
+      await updatePostedStatus(questionId.toString(), true)
       // Refresh the page to show updated status
       window.location.reload()
     } catch (error) {
