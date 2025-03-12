@@ -66,7 +66,7 @@ export async function uploadQuestionImage(
   formData.append('uid', uid)
 
   try {
-    const response = await fetch(`${API_BASE_URL}/question/image/upload`, {
+    const response = await fetch(`https://api.examquiz.co.za/public/learn/learner/upload-image`, {
       method: 'POST',
       body: formData,
     })
