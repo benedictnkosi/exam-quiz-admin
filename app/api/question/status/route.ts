@@ -9,7 +9,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Define an interface for the update data
 interface QuestionUpdateData {
     status: string;
-    updated: string;
     feedback?: string;
     active?: boolean;
     reviewer?: number;
@@ -19,7 +18,7 @@ interface QuestionUpdateData {
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
-        const { uid, question_id, status, feedback } = body;
+        const { uid, question_id, status, comment } = body;
 
         if (!uid || !question_id || !status) {
             return NextResponse.json({
@@ -61,13 +60,14 @@ export async function PUT(request: Request) {
         // Update question status
         const updateData: QuestionUpdateData = {
             status,
-            updated: new Date().toISOString()
+            reviewed_at: new Date().toISOString()
         };
 
         // Add feedback if provided
-        if (feedback) {
-            updateData.feedback = feedback;
+        if (comment) {
+            updateData.feedback = comment;
         }
+
 
         // If approving, set active to true
         if (status === 'approved') {
@@ -89,21 +89,6 @@ export async function PUT(request: Request) {
                 status: 'NOK',
                 message: 'Error updating question'
             }, { status: 500 });
-        }
-
-        // Create status change log
-        const { error: logError } = await supabase
-            .from('question_status_log')
-            .insert({
-                question_id: question_id,
-                old_status: question.status,
-                new_status: status,
-                changed_by: admin.id,
-                feedback
-            });
-
-        if (logError) {
-            console.error('Error creating status log:', logError);
         }
 
         return NextResponse.json({
