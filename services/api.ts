@@ -283,7 +283,7 @@ interface QuestionResponse {
 
 export async function getQuestionById(id: string): Promise<DetailedQuestion> {
   try {
-    const response = await fetch(`${API_BASE_URL}/questions?id=${id}`)
+    const response = await fetch(`${API_BASE_URL}/question?id=${id}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch question')
