@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { setQuestionInactive, getQuestionById, type Question, type DetailedQuestion, updatePostedStatus } from '@/services/api'
+import React, { useState } from 'react'
+import { getQuestionById, type Question, type DetailedQuestion, updatePostedStatus, deleteQuestion } from '@/services/api'
 import ViewQuestionModal from './ViewQuestionModal'
 import EditQuestionModal from './EditQuestionModal'
 import { useAuth } from '@/contexts/AuthContext'
@@ -25,7 +25,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
 
     setDeleting(questionId)
     try {
-      await setQuestionInactive(questionId.toString(), user.uid)
+      await deleteQuestion(questionId.toString(), user.uid)
       onDelete(questionId)
     } catch (error) {
       alert(`Failed to delete question ${error}`)

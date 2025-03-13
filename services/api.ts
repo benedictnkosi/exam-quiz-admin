@@ -33,7 +33,7 @@ interface ApiResponse {
 
 export async function createQuestion(data: QuestionPayload): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question`, {
+    const response = await fetch(`${API_BASE_URL}/question/create`, {
       method: 'POST',
       body: JSON.stringify({
         ...data,
@@ -214,6 +214,26 @@ export async function getQuestions(grade: string, subject: string, status?: stri
     return data.questions
   } catch (error) {
     console.error('Error fetching questions:', error)
+    throw error
+  }
+}
+
+export async function deleteQuestion(questionId: string, uid: string): Promise<ApiResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/question/delete`, {
+      method: 'DELETE',
+      body: JSON.stringify({ question_id: questionId, uid }),
+    })
+
+    const result: ApiResponse = await response.json()
+
+    if (!response.ok || result.status === 'NOK') {
+      throw new Error(result.message || 'Failed to delete question')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Error deleting question:', error)
     throw error
   }
 }
