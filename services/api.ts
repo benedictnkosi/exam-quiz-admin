@@ -33,7 +33,7 @@ interface ApiResponse {
 
 export async function createQuestion(data: QuestionPayload): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question/create`, {
+    const response = await fetch(`${API_BASE_URL}/question`, {
       method: 'POST',
       body: JSON.stringify({
         ...data,
