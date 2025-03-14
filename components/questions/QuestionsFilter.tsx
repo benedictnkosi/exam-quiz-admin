@@ -75,21 +75,19 @@ export default function QuestionsFilter({ filters, setFilters, onSearch, onFetch
       const fetchSubjects = async () => {
         try {
           const response = await fetch(`${API_BASE_URL}/subjects/active?grade=${filters.grade}`);
-          const data: SubjectsResponse = await response.json();
+          const data = await response.json();
 
-          if (data.status === 'OK' && data.subjects && data.subjects.length > 0) {
-            setSubjectGroups(data.subjects);
-
-            // Flatten all papers into a single array for the dropdown
-            const allPapers: Paper[] = [];
-            data.subjects.forEach(gradeSubject => {
-              gradeSubject.subjects.forEach(subject => {
-                subject.papers.forEach(paper => {
-                  allPapers.push(paper);
-                });
-              });
-            });
-
+          if (data.status === 'OK' && data.subjects) {
+            setSubjectGroups([{
+              grade: parseInt(filters.grade),
+              subjects: [{
+                name: 'All Subjects',
+                papers: data.subjects.map(subject => ({
+                  id: subject.id,
+                  name: subject.name
+                }))
+              }]
+            }]);
           }
         } catch (err) {
           console.error('Failed to fetch subjects:', err)

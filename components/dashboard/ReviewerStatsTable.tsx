@@ -37,7 +37,7 @@ export default function ReviewerStatsTable() {
 
             try {
                 const formattedDate = selectedDate.toISOString().split('T')[0];
-                const response = await fetch(`${API_BASE_URL}/learner/reviewed-questions?from_date=${formattedDate}`);
+                const response = await fetch(`${API_BASE_URL}/questions-reviewed?from_date=${formattedDate}`);
                 const data: ReviewerStatsResponse = await response.json();
 
                 if (data.status === 'OK' && Array.isArray(data.data)) {

@@ -239,37 +239,11 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       setLoadingSubjects(true)
 
       try {
-        // The API still returns a nested structure
         const response = await fetch(`${API_BASE_URL}/subjects/active?grade=${formData.grade}`);
         const data = await response.json();
 
-        if (data.status === 'OK' && data.subjects && data.subjects.length > 0) {
-          // Convert the nested structure to a flat list of subjects
-          const flattenedSubjects: Subject[] = [];
-
-          data.subjects.forEach((gradeData: GradeData) => {
-            if (gradeData.subjects && Array.isArray(gradeData.subjects)) {
-              gradeData.subjects.forEach((category: SubjectCategory) => {
-                if (category.papers && Array.isArray(category.papers)) {
-                  category.papers.forEach((paper: Paper) => {
-                    flattenedSubjects.push({
-                      id: paper.id,
-                      name: paper.name,
-                      active: true,
-                      grade: {
-                        id: parseInt(formData.grade),
-                        number: parseInt(formData.grade),
-                        active: 1
-                      }
-                    });
-                  });
-                }
-              });
-            }
-          });
-
-          setSubjects(flattenedSubjects);
-          console.log('Subjects loaded:', flattenedSubjects);
+        if (data.status === 'OK' && data.subjects) {
+          setSubjects(data.subjects);
 
           // In edit mode, if we don't have a subject set yet, but have initialData, set it now
           if (mode === 'edit' && !formData.subject && initialData?.subject?.name) {
@@ -646,19 +620,18 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             >
               <option value="">Select Subject</option>
               {subjects.length > 0 ? (
-                // Create category groups
                 Object.entries(
-                  subjects.reduce((acc: Record<string, Subject[]>, subject) => {
-                    const category = subject.name.split(' ')[0];
-                    if (!acc[category]) {
-                      acc[category] = [];
+                  subjects.reduce((acc: { [key: string]: Subject[] }, subject) => {
+                    const baseName = subject.name.split(' P')[0];
+                    if (!acc[baseName]) {
+                      acc[baseName] = [];
                     }
-                    acc[category].push(subject);
+                    acc[baseName].push(subject);
                     return acc;
                   }, {})
-                ).map(([category, categorySubjects]) => (
-                  <optgroup key={category} label={category}>
-                    {categorySubjects.map(subject => (
+                ).map(([baseName, papers]) => (
+                  <optgroup key={baseName} label={baseName}>
+                    {papers.map(subject => (
                       <option key={subject.id} value={subject.name}>
                         {subject.name}
                       </option>
