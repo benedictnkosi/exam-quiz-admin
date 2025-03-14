@@ -7,6 +7,7 @@ import QuestionsFilter from '@/components/questions/QuestionsFilter'
 import CreateQuestionModal from '@/components/questions/CreateQuestionModal'
 import { getQuestions, type Question, getRejectedQuestions } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { API_BASE_URL } from '@/config/constants'
 
 export default function QuestionsPage() {
   const router = useRouter()
@@ -43,7 +44,28 @@ export default function QuestionsPage() {
     setError('')
 
     try {
-      const questionsData = await getQuestions(filters.grade, filters.subject, filters.status)
+      // Find the subject name from the subject ID
+      const subjectResponse = await fetch(`${API_BASE_URL}/subjects/active?grade=${filters.grade}`);
+      const subjectData = await subjectResponse.json();
+
+      let subjectName = '';
+      if (subjectData.status === 'OK' && subjectData.subjects) {
+        interface SubjectData {
+          id: number;
+          name: string;
+        }
+
+        const foundSubject = subjectData.subjects.find((subject: SubjectData) => subject.id.toString() === filters.subject);
+        if (foundSubject) {
+          subjectName = foundSubject.name;
+        } else {
+          setError('Subject not found');
+          setLoading(false);
+          return;
+        }
+      }
+
+      const questionsData = await getQuestions(filters.grade, subjectName, filters.status)
       setQuestions(questionsData)
     } catch (err) {
       console.error('Failed to fetch questions:', err)
