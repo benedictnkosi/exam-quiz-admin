@@ -264,7 +264,7 @@ export default function ViewQuestionModal({
 
                 <p className="text-gray-700">{renderLatex(question.context)}</p>
               )}
-              {question.image_path && (
+              {(question.image_path && question.image_path !== 'NULL') && (
                 <div className="relative h-64 w-full">
                   <Image
                     src={getImageUrl(question.image_path)}
@@ -290,7 +290,7 @@ export default function ViewQuestionModal({
                 {renderLatex(question.question)}
               </p>
             </div>
-            {question.question_image_path && (
+            {(question.question_image_path && question.question_image_path !== 'NULL') && (
               <div className="relative h-64 w-full mt-2">
                 <Image
                   src={getImageUrl(question.question_image_path)}
