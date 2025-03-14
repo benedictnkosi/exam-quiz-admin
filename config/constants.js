@@ -1,8 +1,8 @@
 //const API_HOST = 'https://api.examquiz.co.za'
-const API_HOST = 'http://localhost:8000' // Uncomment for local development
+const API_HOST = 'https://examquiz.dedicated.co.za' // Uncomment for local development
 
 const API_BASE_URL = `${API_HOST}/public/learn`
-const IMAGE_BASE_URL = `https://ozhhkdhtddoznswtplbx.supabase.co/storage/v1/object/public/question_images/`
+const IMAGE_BASE_URL = `${API_HOST}/public/learn/learner/get-image?image=`
 const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY
 
 module.exports = {
