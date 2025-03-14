@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server';
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-console.log('Supabase URL:', supabaseUrl); // Log URL (but not the key for security)
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // GET learner badges
@@ -48,7 +47,6 @@ export async function GET(request: Request) {
             .eq('learner', learner.id)
             .order('created_at', { ascending: false });
 
-        console.log('Badges query result:', { badges, error: badgesError });
 
         if (badgesError) {
             throw badgesError;
@@ -96,18 +94,14 @@ export async function POST(request: Request) {
         }
 
         // Check if badge exists
-        console.log('Searching for badge with ID:', badge_id);
-
         // Test query to check table structure and permissions
         const { data: allBadges, error: testError } = await supabase
             .from('badge')
             .select('count');
-        console.log('Count query result:', { allBadges, error: testError });
 
         const { data: badgeTest } = await supabase
             .from('badge')
             .select('*');
-        console.log('All badges:', badgeTest);
 
         const { data: badge, error: badgeError } = await supabase
             .from('badge')
@@ -115,7 +109,6 @@ export async function POST(request: Request) {
             .eq('id', badge_id)
             .single();
 
-        console.log('Badge query result:', { badge, error: badgeError });
 
         if (badgeError || !badge) {
             return NextResponse.json({

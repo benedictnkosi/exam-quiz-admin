@@ -42,7 +42,6 @@ export async function POST(request: Request) {
         for (const question of questions) {
             try {
                 if (!question.image_path) {
-                    console.log("No image path found for question:", question.id);
                     continue;
                 }
 

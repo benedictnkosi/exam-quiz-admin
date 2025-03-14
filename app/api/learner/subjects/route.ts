@@ -12,13 +12,6 @@ interface Grade {
     active: boolean;
 }
 
-interface Learner {
-    id: number;
-    uid: string;
-    terms?: string;
-    curriculum?: string;
-    grade: Grade;
-}
 
 interface Result {
     id: number;

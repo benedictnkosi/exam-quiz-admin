@@ -59,8 +59,6 @@ export async function GET(request: Request) {
         }
 
         // Handle admin case
-        console.log('learner.role', learner.role);
-        console.log('SPECIAL_ADMINS', learner.name);
         if (learner.role === 'admin' && !SPECIAL_ADMINS.includes(learner.name)) {
             // Find capturer with same email but different uid
             const { data: capturer } = await supabase

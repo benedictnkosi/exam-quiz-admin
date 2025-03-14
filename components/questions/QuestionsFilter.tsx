@@ -21,9 +21,12 @@ interface GradeSubjects {
   subjects: SubjectCategory[];
 }
 
-interface SubjectsResponse {
-  status: string;
-  subjects: GradeSubjects[];
+
+// Define the subject type from the API response
+interface SubjectData {
+  id: number;
+  name: string;
+  // Add other properties if needed
 }
 
 interface QuestionsFilterProps {
@@ -82,7 +85,7 @@ export default function QuestionsFilter({ filters, setFilters, onSearch, onFetch
               grade: parseInt(filters.grade),
               subjects: [{
                 name: 'All Subjects',
-                papers: data.subjects.map(subject => ({
+                papers: data.subjects.map((subject: SubjectData) => ({
                   id: subject.id,
                   name: subject.name
                 }))
