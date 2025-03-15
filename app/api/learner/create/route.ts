@@ -6,10 +6,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// External API endpoint for duplicating users
+const EXTERNAL_API_URL = 'https://examquiz.dedicated.co.za/public/learn/learner/create';
+
 export async function POST(request: Request) {
     try {
         const data = await request.json();
         const uid = data.uid;
+        let isNewUser = false;
 
         if (!uid) {
             return NextResponse.json({
@@ -32,6 +36,9 @@ export async function POST(request: Request) {
                 message: 'Error fetching learner'
             }, { status: 500 });
         }
+
+        // If learner doesn't exist, it's a new user
+        isNewUser = !learner;
 
         // Clean and prepare the data
         const cleanCommaString = (value: unknown): string => {
@@ -158,6 +165,64 @@ export async function POST(request: Request) {
                     message: 'Error updating learner'
                 }, { status: 500 });
             }
+        }
+
+        // If it's a new user, duplicate to the external database
+        if (isNewUser) {
+            console.log('Duplicating user to external database');
+            try {
+                // Format terms and curriculum as comma-delimited strings
+                let termsString = '';
+                if (Array.isArray(data.terms)) {
+                    termsString = data.terms.join(',');
+                } else if (typeof data.terms === 'string') {
+                    termsString = cleanCommaString(data.terms);
+                }
+
+                let curriculumString = '';
+                if (Array.isArray(data.curriculum)) {
+                    curriculumString = data.curriculum.join(',');
+                } else if (typeof data.curriculum === 'string') {
+                    curriculumString = cleanCommaString(data.curriculum);
+                }
+
+                // Prepare data for external API with correct format
+                const externalData = {
+                    uid: data.uid,
+                    name: data.name,
+                    grade: data.grade,
+                    school_name: data.school_name,
+                    school_address: data.school_address,
+                    school_latitude: data.school_latitude,
+                    school_longitude: data.school_longitude,
+                    terms: termsString,
+                    curriculum: curriculumString,
+                    email: data.email,
+                    avatar: data.avatar
+                };
+
+                console.log('External data:', externalData);
+
+                // Call external API
+                const externalResponse = await fetch(EXTERNAL_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(externalData),
+                });
+
+                if (!externalResponse.ok) {
+                    console.error('Failed to duplicate user to external database:', await externalResponse.text());
+                } else {
+                    console.log('Successfully duplicated user to external database');
+                }
+            } catch (externalError) {
+                console.error('Error duplicating user to external database:', externalError);
+                // We don't return an error here as the primary operation succeeded
+            }
+        } else {
+            console.log('User already exists in external database');
         }
 
         return NextResponse.json({
