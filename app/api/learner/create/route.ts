@@ -198,7 +198,7 @@ export async function POST(request: Request) {
                     terms: termsString,
                     curriculum: curriculumString,
                     email: data.email,
-                    avatar: data.avatar
+                    avatar: "8.png"
                 };
 
                 console.log('External data:', externalData);
