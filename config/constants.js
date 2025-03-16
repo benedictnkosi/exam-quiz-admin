@@ -1,5 +1,5 @@
-const API_HOST = 'http://127.0.0.1:8000'
-//const API_HOST = 'https://examquiz.dedicated.co.za' // Uncomment for local development
+//const API_HOST = 'http://127.0.0.1:8000'
+const API_HOST = 'https://examquiz.dedicated.co.za' // Uncomment for local development
 
 const API_BASE_URL = `${API_HOST}/public/learn`
 const IMAGE_BASE_URL = `${API_HOST}/public/learn/learner/get-image?image=`
