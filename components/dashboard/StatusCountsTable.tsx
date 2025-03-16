@@ -209,6 +209,62 @@ export default function StatusCountsTable() {
                             </table>
                         </div>
 
+                        {/* Capturer Statistics */}
+                        <div>
+                            <h3 className="text-lg font-medium mb-4">Capturer Statistics</h3>
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capturer</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">New</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approved</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rejected</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pending</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {Object.entries(stats.capturer_stats)
+                                        .sort((a, b) => b[1].total - a[1].total)
+                                        .map(([capturerId, stats]) => (
+                                            <tr key={capturerId}>
+                                                <td className="px-6 py-4 text-sm text-gray-900">{capturerId}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">{stats.total}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                    {stats.status_counts.new} ({stats.percentages.new.toFixed(1)}%)
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                    {stats.status_counts.approved} ({stats.percentages.approved.toFixed(1)}%)
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                    {stats.status_counts.rejected} ({stats.percentages.rejected.toFixed(1)}%)
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                    {stats.status_counts.pending} ({stats.percentages.pending.toFixed(1)}%)
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    <tr className="bg-gray-50 font-medium">
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900">Total</td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.total, 0)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.status_counts.new, 0)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.status_counts.approved, 0)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.status_counts.rejected, 0)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.status_counts.pending, 0)}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
                     </div>
                 )}
