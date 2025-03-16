@@ -47,17 +47,21 @@ export default function QuestionStatsTable() {
     const [stats, setStats] = useState<StatsResponse['data'] | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const [selectedFromDate, setSelectedFromDate] = useState<Date>(() => {
         const date = new Date();
         date.setDate(date.getDate() - 30);
         return date;
+    });
+    const [selectedEndDate, setSelectedEndDate] = useState<Date>(() => {
+        return new Date();
     });
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const fromDate = selectedDate.toISOString().split('T')[0];
-                const response = await fetch(`${API_BASE_URL}/stats/questions?fromDate=${fromDate}`);
+                const fromDate = selectedFromDate.toISOString().split('T')[0];
+                const endDate = selectedEndDate.toISOString().split('T')[0];
+                const response = await fetch(`${API_BASE_URL}/stats/questions?fromDate=${fromDate}&endDate=${endDate}`);
                 const data: StatsResponse = await response.json();
 
                 if (data.status === 'OK') {
@@ -73,7 +77,7 @@ export default function QuestionStatsTable() {
         };
 
         fetchStats();
-    }, [selectedDate]);
+    }, [selectedFromDate, selectedEndDate]);
 
     if (loading) {
         return <div className="text-center p-4">Loading statistics...</div>;
@@ -83,18 +87,52 @@ export default function QuestionStatsTable() {
         return <div className="text-center text-red-500 p-4">{error}</div>;
     }
 
+    const handleFromDateChange = (date: Date | null) => {
+        if (date) {
+            setSelectedFromDate(date);
+            // If end date is before new from date, update end date
+            if (selectedEndDate < date) {
+                setSelectedEndDate(date);
+            }
+        }
+    };
+
+    const handleEndDateChange = (date: Date | null) => {
+        if (date) {
+            setSelectedEndDate(date);
+            // If from date is after new end date, update from date
+            if (selectedFromDate > date) {
+                setSelectedFromDate(date);
+            }
+        }
+    };
+
     return (
         <div className="bg-white rounded-lg shadow p-6 space-y-8">
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-800">Questions Statistics</h2>
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">From Date:</span>
-                    <DatePicker
-                        selected={selectedDate}
-                        onChange={(date: Date | null) => setSelectedDate(date || selectedDate)}
-                        className="border rounded-md p-2 text-sm"
-                        dateFormat="yyyy-MM-dd"
-                    />
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600">From:</span>
+                        <DatePicker
+                            selected={selectedFromDate}
+                            onChange={handleFromDateChange}
+                            className="border rounded-md p-2 text-sm"
+                            dateFormat="yyyy-MM-dd"
+                            maxDate={selectedEndDate}
+                        />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600">To:</span>
+                        <DatePicker
+                            selected={selectedEndDate}
+                            onChange={handleEndDateChange}
+                            className="border rounded-md p-2 text-sm"
+                            dateFormat="yyyy-MM-dd"
+                            minDate={selectedFromDate}
+                            maxDate={new Date()}
+                        />
+                    </div>
                 </div>
             </div>
 
