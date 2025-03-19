@@ -11,7 +11,9 @@ import Image from 'next/image'
 
 const menuItems = [
   { path: '/', label: 'Dashboard' },
-  { path: '/questions', label: 'Questions', showRejected: true }]
+  { path: '/questions', label: 'Questions', showRejected: true },
+  { path: '/images', label: 'Images' },
+]
 
 export default function Sidebar() {
   const pathname = usePathname()

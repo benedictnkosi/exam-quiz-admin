@@ -80,7 +80,7 @@ export default function ViewQuestionModal({
   useEffect(() => {
     const timer = setTimeout(() => {
       setCanApprove(true)
-    }, 30000) // 30 seconds
+    }, 15000) // 30 seconds
 
     return () => clearTimeout(timer)
   }, [])
