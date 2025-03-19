@@ -173,7 +173,7 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                       : 'bg-red-100 text-red-800'
                   }`}
                 >
-                  {question.status === 'approved' && question.comment === 'new' ? 'new' : question.status}
+                  {question.status === 'approved' && question.comment === 'new' ? 'Review' : question.status}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
