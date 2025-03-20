@@ -49,7 +49,7 @@ export default function QuestionStatsTable() {
     const [error, setError] = useState<string | null>(null);
     const [selectedFromDate, setSelectedFromDate] = useState<Date>(() => {
         const date = new Date();
-        date.setDate(date.getDate() - 30);
+        date.setDate(date.getDate() - 7);
         return date;
     });
     const [selectedEndDate, setSelectedEndDate] = useState<Date>(() => {
