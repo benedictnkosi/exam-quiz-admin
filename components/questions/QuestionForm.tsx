@@ -743,6 +743,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             <p className="text-sm text-gray-500">
               new line and - for bullet points </p>
             <p className="text-sm text-gray-500">### at the beginning of a line for headings </p>
+            <p className="text-sm text-gray-500">*** at the beginning of a line for new paragraph </p>
             <textarea
               value={formData.context}
               onChange={(e) => setFormData({ ...formData, context: e.target.value })}
