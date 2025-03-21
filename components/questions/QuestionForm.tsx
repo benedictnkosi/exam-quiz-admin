@@ -129,6 +129,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [showLatexContext, setShowLatexContext] = useState(false)
   const [showLatexAnswer, setShowLatexAnswer] = useState(false)
   const [showLatexExplanation, setShowLatexExplanation] = useState(false)
+  const [isConverting, setIsConverting] = useState(false)
 
   const initialFormState = {
     questionText: '',
@@ -523,18 +524,20 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     if (!formData.contextImage?.path) return;
 
     try {
+      setIsConverting(true);
       const response = await fetch(`${API_BASE_URL}/question/convert-image-to-text?image_name=${formData.contextImage.path}`);
       const data = await response.json();
 
       if (data.status === 'OK') {
         navigator.clipboard.writeText(data.message);
-        alert('Conversion successful! Text copied to clipboard.');
       } else {
         alert('Conversion failed. Please try again.');
       }
     } catch (error) {
       console.error('Error converting image to text:', error);
       alert('An error occurred. Please try again later.');
+    } finally {
+      setIsConverting(false);
     }
   };
 
@@ -777,13 +780,44 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               />
               {formData.contextImage && !formData.contextImage.isNew && (
                 <div className="mt-2">
-                  <img src={`${IMAGE_BASE_URL}${formData.contextImage.path}`} alt="Context Preview" className="w-80 h-auto object-cover rounded" />
+                  <img
+                    src={`${IMAGE_BASE_URL}${formData.contextImage.path}`}
+                    alt="Context Preview"
+                    className="w-80 h-auto object-cover rounded"
+                  />
                   <button
                     type="button"
                     onClick={handleConvertImageToText}
-                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isConverting}
+                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 flex items-center justify-center"
                   >
-                    Convert Image to Text
+                    {isConverting ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        Converting...
+                      </>
+                    ) : (
+                      'Convert Image to Text'
+                    )}
                   </button>
                 </div>
               )}
