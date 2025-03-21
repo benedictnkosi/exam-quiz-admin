@@ -9,7 +9,7 @@ import {
   type QuestionPayload,
   type DetailedQuestion
 } from '@/services/api'
-import { API_BASE_URL } from '@/config/constants'
+import { API_BASE_URL, IMAGE_BASE_URL } from '@/config/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import AIOptionsGenerator from './AIOptionsGenerator'
@@ -519,6 +519,58 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     })
   }
 
+  const handleConvertImageToText = async () => {
+    if (!formData.contextImage?.path) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/question/convert-image-to-text?image_name=${formData.contextImage.path}`);
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        navigator.clipboard.writeText(data.message);
+        alert('Conversion successful! Text copied to clipboard.');
+      } else {
+        alert('Conversion failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error converting image to text:', error);
+      alert('An error occurred. Please try again later.');
+    }
+  };
+
+  const renderMixedContent = (text: string) => {
+    // Split the text into lines
+    const lines = text.split('\n');
+
+    return (
+      <div className="text-gray-700">
+        {lines.map((line, index) => {
+          // Handle bold text
+          const boldProcessedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+          if (line.trim().startsWith('- ')) {
+            // If line starts with "- ", render as bullet point
+            return (
+              <div key={index} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <span style={{ marginRight: '0.5rem' }}>•</span>
+                <div dangerouslySetInnerHTML={{ __html: boldProcessedLine.substring(2) }} />
+              </div>
+            );
+          } else {
+            // Regular line
+            return (
+              <div
+                key={index}
+                dangerouslySetInnerHTML={{ __html: boldProcessedLine }}
+                style={{ marginBottom: '0.5rem' }}
+              />
+            );
+          }
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -684,8 +736,13 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-700 mb-1">
-              Question Context (Optional)
+              Question Context
             </label>
+            <p className="text-sm text-gray-500">
+              **bold** </p>
+            <p className="text-sm text-gray-500">
+              new line and - for bullet points </p>
+            <p className="text-sm text-gray-500">### at the beginning of a line for headings </p>
             <textarea
               value={formData.context}
               onChange={(e) => setFormData({ ...formData, context: e.target.value })}
@@ -701,7 +758,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             {showLatexContext && formData.context && (
               <div className="mt-2 p-3 bg-gray-50 rounded-md">
                 <p className="text-sm text-gray-700">
-                  {renderLatex(formData.context)}
+                  {renderMixedContent(formData.context)}
                 </p>
               </div>
             )}
@@ -717,17 +774,17 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                 onResetImage={handleResetContextImage}
                 showResetButton={true}
               />
-              {formData.contextImage && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData(prev => ({ ...prev, contextImage: null }))
-                    setLastContextImage(null) // Also clear the last used image
-                  }}
-                  className="ml-4 text-sm text-red-600 hover:text-red-700"
-                >
-                  Reset Context Image
-                </button>
+              {formData.contextImage && !formData.contextImage.isNew && (
+                <div className="mt-2">
+                  <img src={`${IMAGE_BASE_URL}${formData.contextImage.path}`} alt="Context Preview" className="w-80 h-auto object-cover rounded" />
+                  <button
+                    type="button"
+                    onClick={handleConvertImageToText}
+                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Convert Image to Text
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -831,7 +888,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             {showLatexExplanation && formData.explanation && (
               <div className="mt-2 p-3 bg-gray-50 rounded-md">
                 <p className="text-sm text-gray-700">
-                  {renderLatex(formData.explanation)}
+                  {renderMixedContent(formData.explanation)}
                 </p>
               </div>
             )}
@@ -844,22 +901,26 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           </div>
         </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
+        {
+          error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )
+        }
 
-        {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded space-y-1">
-            <p>Question {mode === 'edit' ? 'updated' : 'created'} successfully!</p>
-            {formData.contextImage?.path && !formData.contextImage.isNew && (
-              <p className="text-sm">
-                Used existing image: <span className="font-medium">{formData.contextImage.path}</span>
-              </p>
-            )}
-          </div>
-        )}
+        {
+          success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded space-y-1">
+              <p>Question {mode === 'edit' ? 'updated' : 'created'} successfully!</p>
+              {formData.contextImage?.path && !formData.contextImage.isNew && (
+                <p className="text-sm">
+                  Used existing image: <span className="font-medium">{formData.contextImage.path}</span>
+                </p>
+              )}
+            </div>
+          )
+        }
 
         <div className="flex justify-end space-x-4">
           <button
@@ -878,7 +939,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             {loading ? 'Saving...' : mode === 'edit' ? 'Update Question' : 'Create Question'}
           </button>
         </div>
-      </form>
-    </div>
+      </form >
+    </div >
   )
 } 

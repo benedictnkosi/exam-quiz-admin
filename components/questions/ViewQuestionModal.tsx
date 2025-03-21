@@ -190,15 +190,74 @@ export default function ViewQuestionModal({
 
   const isMultipleChoice = question.type === 'multiple_choice'
 
-  const renderLatex = (text: string) => {
-    return text.split(/(\$.*?\$)/).map((chunk, index) => {
-      if (chunk.startsWith('$') && chunk.endsWith('$')) {
-        const latex = chunk.slice(1, -1)
-        return <InlineMath key={index} math={latex} />
-      }
-      return <span key={index}>{chunk}</span>
-    })
-  }
+  const renderMixedContent = (text: string) => {
+    // Handle LaTeX content first
+    if (text.startsWith('$') && text.endsWith('$')) {
+      return text.split(/(\$.*?\$)/).map((chunk, index) => {
+        if (chunk.startsWith('$') && chunk.endsWith('$')) {
+          const latex = chunk.slice(1, -1);
+          return <InlineMath key={index} math={latex} />;
+        }
+        return <span key={index}>{chunk}</span>;
+      });
+    }
+
+    // Split the text into lines
+    const lines = text.split('\n');
+
+    return (
+      <div className="text-gray-700">
+        {lines.map((line, index) => {
+          const trimmedLine = line.trim();
+
+          // Handle headings (lines starting with ###)
+          if (trimmedLine.startsWith('###')) {
+            return (
+              <div key={index} className="text-lg font-bold mb-2 mt-3">
+                {trimmedLine.replace(/^###\s*/, '')}
+              </div>
+            );
+          }
+
+          // Handle bold text
+          const boldProcessedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+          // Create a list item style for bullet points
+          const style = trimmedLine.startsWith('- ') ? {
+            paddingLeft: '1.5em',
+            position: 'relative' as const,
+            marginBottom: '0.5rem'
+          } : {
+            marginBottom: '0.5rem'
+          };
+
+          // Add bullet point before the content if line starts with -
+          const content = trimmedLine.startsWith('- ') ? (
+            <div style={style}>
+              <span style={{
+                position: 'absolute',
+                left: '0.5em',
+                top: '0'
+              }}>•</span>
+              <span dangerouslySetInnerHTML={{
+                __html: boldProcessedLine.substring(2)
+              }} />
+            </div>
+          ) : (
+            <div style={style} dangerouslySetInnerHTML={{
+              __html: boldProcessedLine
+            }} />
+          );
+
+          return (
+            <div key={index}>
+              {content}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -261,8 +320,7 @@ export default function ViewQuestionModal({
             <div className="space-y-2">
               <h3 className="font-medium text-gray-900">Context</h3>
               {question.context && (
-
-                <p className="text-gray-700">{renderLatex(question.context)}</p>
+                <p className="text-gray-700">{renderMixedContent(question.context)}</p>
               )}
               {(question.image_path && question.image_path !== 'NULL') && (
                 <div className="relative h-64 w-full">
@@ -287,7 +345,7 @@ export default function ViewQuestionModal({
             <h3 className="text-lg font-medium text-gray-900 mb-2">Question</h3>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-800">
-                {renderLatex(question.question)}
+                {renderMixedContent(question.question)}
               </p>
             </div>
             {(question.question_image_path && question.question_image_path !== 'NULL') && (
@@ -340,7 +398,7 @@ export default function ViewQuestionModal({
                       }`}
                     disabled={showAnswer || loading}
                   >
-                    {renderLatex(value)}
+                    {renderMixedContent(value)}
                   </button>
                 ))}
               </div>
@@ -384,7 +442,7 @@ export default function ViewQuestionModal({
               {/* Correct Answer */}
               <div className="p-4 rounded-md bg-gray-50">
                 <h3 className="font-medium text-gray-900">Correct Answer</h3>
-                <p className="mt-1 text-gray-700">{renderLatex(question.answer)}</p>
+                <p className="mt-1 text-gray-700">{renderMixedContent(question.answer)}</p>
               </div>
 
               {/* Explanation */}
@@ -392,7 +450,7 @@ export default function ViewQuestionModal({
                 <div className="space-y-2">
                   <h3 className="font-medium text-gray-900">Explanation</h3>
                   {question.explanation && (
-                    <p className="text-gray-700">{renderLatex(question.explanation)}</p>
+                    <p className="text-gray-700">{renderMixedContent(question.explanation)}</p>
                   )}
                   {question.answer_image && (
                     <div className="relative h-64 w-full mt-2">
