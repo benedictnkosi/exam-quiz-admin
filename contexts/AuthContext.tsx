@@ -27,8 +27,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Create learner record when user logs in
-          await createLearner(user.uid, user.email || '', user.displayName)
           // Get the ID token and set it in a cookie
           const token = await user.getIdToken()
           Cookies.set('__firebase_auth_token', token)
@@ -37,8 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         // Remove the token cookie when signed out
+        console.log('Removing token cookie')
         Cookies.remove('__firebase_auth_token')
-        if (pathname !== '/login') {
+        const publicPaths = ['/login', '/register', '/reset-password', '/onboarding']
+        if (!publicPaths.includes(pathname)) {
           router.push('/login')
         }
       }

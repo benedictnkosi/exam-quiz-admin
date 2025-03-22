@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/layout/Sidebar";
 import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ subsets: ["latin"] });
@@ -31,10 +30,11 @@ export default function RootLayout({
       >
         <AuthProvider>
           <div className="flex min-h-screen">
-            <main className="flex-1 p-8">
+            <main className="flex-1">
               {children}
             </main>
-            <Sidebar />
+
+
           </div>
         </AuthProvider>
       </body>

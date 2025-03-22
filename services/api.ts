@@ -1,5 +1,30 @@
-import { API_BASE_URL } from '../config/constants.js'
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.examquiz.co.za'
+export const HOST_URL = process.env.NEXT_PUBLIC_HOST_URL || 'https://examquiz.co.za'
 
+// Types
+export interface Grade {
+  id: number
+  number: number
+  active: number
+}
+
+export interface Subject {
+  id: number
+  name: string
+  active: boolean
+  grade: {
+    id: number
+    number: number
+    active: number
+  }
+  totalQuestions?: number
+  total_questions?: number
+  answered_questions?: number
+  correct_answers?: number
+  question_count?: number
+  result_count?: number
+  correct_count?: number
+}
 
 export interface QuestionPayload {
   question: string
@@ -19,18 +44,115 @@ export interface QuestionPayload {
   capturer: string
   uid: string
   question_id?: number
-  grade: string,
+  grade: string
   curriculum: string
 }
 
-
-interface ApiResponse {
+export interface ApiResponse {
   status: 'OK' | 'NOK'
   message?: string
   question_id?: number
   fileName?: string
 }
 
+export interface CheckAnswerResponse {
+  status: string
+  correct: boolean
+  explanation: string | null
+  correctAnswer: string
+  points: number
+  message: string
+  lastThreeCorrect: boolean
+  subject: string
+  streakUpdated: boolean
+  streak: number
+}
+
+export interface Question {
+  id: number
+  question: string
+  type: 'multiple_choice'
+  answer: string
+  status: string
+  capturer: {
+    name: string
+  }
+  grade: string
+  subject: string | { id: number; name: string; active: boolean; grade: any }
+  createdAt: string
+  comment?: string
+  posted: boolean
+  image_path: string
+  question_image_path: string
+}
+
+export interface DetailedQuestion {
+  id: number
+  question: string
+  type: 'multiple_choice'
+  context: string
+  answer: string
+  options: string[] | {
+    option1: string
+    option2: string
+    option3: string
+    option4: string
+  }
+  term: number
+  explanation: string
+  active: boolean
+  year: number
+  capturer: {
+    id: number
+    uid: string
+    name: string
+    grade: any
+    points: number
+  }
+  status: string
+  message?: string
+  comment?: string
+  reviewer: {
+    id: number
+    uid: string
+    name: string
+    grade: any
+    points: number
+  }
+  created: string
+  subject: {
+    id: number
+    name: string
+    active: boolean
+    grade: any
+  }
+  image_path?: string
+  question_image_path?: string
+  answer_image?: string
+  curriculum: string
+  posted: boolean
+  reviewed_at?: string
+  updated?: string
+}
+
+export interface MySubjectsResponse {
+  status: string
+  subjects: {
+    id: number
+    name: string
+    active: boolean
+    totalSubjectQuestions: number
+    totalResults: number
+    correctAnswers: number
+  }[]
+}
+
+// Helper functions
+function ensureHttps(url: string): string {
+  return url
+}
+
+// API Functions
 export async function createQuestion(data: QuestionPayload): Promise<ApiResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/question/create`, {
@@ -84,26 +206,15 @@ export async function uploadQuestionImage(
   }
 }
 
-export interface Grade {
-  id: number
-  number: number
-  active: number
-}
-
-interface GradesResponse {
-  status: string
-  grades: Grade[]
-}
-
-export async function getGrades() {
+export async function getGrades(): Promise<Grade[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/grades`)
+    const response = await fetch(ensureHttps(`${API_BASE_URL}/grades`))
 
     if (!response.ok) {
       throw new Error('Failed to fetch grades')
     }
 
-    const data: GradesResponse = await response.json()
+    const data = await response.json()
     return data.grades
   } catch (error) {
     console.error('Error fetching grades:', error)
@@ -111,23 +222,7 @@ export async function getGrades() {
   }
 }
 
-export interface Subject {
-  id: number
-  name: string
-  active: boolean
-  grade: {
-    id: number
-    number: number
-    active: number
-  }
-}
-
-interface SubjectsResponse {
-  status: string
-  subjects: Subject[]
-}
-
-export async function getActiveSubjects(grade: string) {
+export async function getActiveSubjects(grade: string): Promise<Subject[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/subjects/active?grade=${grade}`)
 
@@ -135,7 +230,7 @@ export async function getActiveSubjects(grade: string) {
       throw new Error('Failed to fetch subjects')
     }
 
-    const data: SubjectsResponse = await response.json()
+    const data = await response.json()
     return data.subjects
   } catch (error) {
     console.error('Error fetching subjects:', error)
@@ -143,15 +238,12 @@ export async function getActiveSubjects(grade: string) {
   }
 }
 
-// Update the interface and function for setting image path
-interface SetImagePathPayload {
+export async function setQuestionImagePath(data: {
   question_id: string
-  image_name: string  // Changed from image_path to image_name
-  image_type: 'question_context' | 'question' | 'answer',
+  image_name: string
+  image_type: 'question_context' | 'question' | 'answer'
   uid: string
-}
-
-export async function setQuestionImagePath(data: SetImagePathPayload): Promise<ApiResponse> {
+}): Promise<ApiResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
       method: 'POST',
@@ -171,30 +263,13 @@ export async function setQuestionImagePath(data: SetImagePathPayload): Promise<A
   }
 }
 
-export interface Question {
-  id: number
-  question: string
-  type: 'multiple_choice'
-  answer: string
-  status: string
-  capturer: {
-    name: string
-  }
-  grade: string
-  subject: string | { id: number; name: string; active: boolean; grade: any }
-  createdAt: string
-  comment?: string
-  posted: boolean
-  image_path: string
-  question_image_path: string
-}
-
-interface QuestionsResponse {
-  status: string
-  questions: Question[]
-}
-
-export async function getQuestions(grade: string, subject: string, status?: string, uid?: string, social?: boolean) {
+export async function getQuestions(
+  grade: string,
+  subject: string,
+  status?: string,
+  uid?: string,
+  social?: boolean
+): Promise<Question[]> {
   try {
     let url = `${API_BASE_URL}/questions/by-grade-subject?grade=${grade}&subject=${subject}`
     if (status) {
@@ -204,13 +279,13 @@ export async function getQuestions(grade: string, subject: string, status?: stri
       url += `&social=${social}`
     }
 
-    const response = await fetch(url);
+    const response = await fetch(url)
 
     if (!response.ok) {
       throw new Error('Failed to fetch questions')
     }
 
-    const data: QuestionsResponse = await response.json()
+    const data = await response.json()
     return data.questions
   } catch (error) {
     console.error('Error fetching questions:', error)
@@ -258,49 +333,6 @@ export async function setQuestionInactive(questionId: string, uid: string): Prom
   }
 }
 
-export interface DetailedQuestion {
-  id: number
-  question: string
-  type: 'multiple_choice'
-  context: string
-  answer: string
-  options: {
-    option1: string
-    option2: string
-    option3: string
-    option4: string
-  }
-  term: number
-  explanation: string
-  active: boolean
-  year: number
-  capturer: string
-  status: string
-  comment?: string
-  reviewer: string
-  created: string
-  subject: {
-    id: number
-    name: string
-    active: boolean
-    grade: {
-      id: number
-      number: number
-      active: number
-    }
-  }
-  image_path?: string          // For question context image
-  question_image_path?: string // For question image
-  answer_image?: string        // For answer explanation image
-  curriculum: string
-}
-
-interface QuestionResponse {
-  status: string
-  message?: string
-  question: DetailedQuestion
-}
-
 export async function getQuestionById(id: string): Promise<DetailedQuestion> {
   try {
     const response = await fetch(`${API_BASE_URL}/questions?id=${id}`)
@@ -315,7 +347,6 @@ export async function getQuestionById(id: string): Promise<DetailedQuestion> {
       throw new Error('Question not found')
     }
 
-    // Clean up the answer by removing brackets and quotes
     const question = data[0]
     question.answer = question.answer.replace(/[\[\]"]/g, '')
 
@@ -326,103 +357,50 @@ export async function getQuestionById(id: string): Promise<DetailedQuestion> {
   }
 }
 
-export async function requestAdminAccess(uid: string) {
-  const response = await fetch(`${API_BASE_URL}/public/learner/role/update`, {
-    method: 'POST',
-    body: JSON.stringify({
-      role: 'admin_pending',
-      uid
-    }),
-  })
-  return response.json()
-}
-
-export async function getPendingAdminRequests() {
-  const response = await fetch(`${API_BASE_URL}/public/learners/by-role?role=admin_pending`)
-  return response.json()
-}
-
-export async function approveAdminRequest(userId: string, uid: string) {
-  const response = await fetch(`${API_BASE_URL}/public/learner/role/update`, {
-    method: 'POST',
-    body: JSON.stringify({
-      user_id: userId,
-      role: 'admin',
-      uid
-    }),
-  })
-  return response.json()
-}
-
-export async function createLearner(uid: string, email: string, displayName?: string | null) {
+export async function createLearner(
+  uid: string,
+  data: {
+    name: string
+    grade: number
+    school: string
+    school_address: string
+    school_latitude: number
+    school_longitude: number
+    terms: string
+    curriculum: string
+    email: string
+    avatar: string
+  }
+): Promise<{ status: string }> {
   try {
     const response = await fetch(`${API_BASE_URL}/learner/create`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         uid,
-        email,
-        name: displayName || email.split('@')[0]
-      }),
+        name: data.name,
+        grade: data.grade.toString(),
+        school_name: data.school,
+        school_address: data.school_address,
+        school_latitude: data.school_latitude,
+        school_longitude: data.school_longitude,
+        terms: data.terms,
+        curriculum: data.curriculum,
+        email: data.email,
+        avatar: data.avatar
+      })
     })
 
     if (!response.ok) {
-      throw new Error('Failed to create learner')
+      const error = await response.json().catch(() => ({ message: 'Failed to update learner' }))
+      throw new Error(error.message || 'Failed to update learner')
     }
 
     return response.json()
   } catch (error) {
     console.error('Error creating learner:', error)
-    throw error
-  }
-}
-
-interface SubjectGradePayload {
-  subject_id: number
-  active: boolean
-  grade?: number  // Made optional since it's not needed for status updates
-}
-
-export async function addSubjectToGrade(data: SubjectGradePayload, uid: string): Promise<ApiResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/subject/add-to-grade`, {
-      method: 'POST',
-      body: JSON.stringify({
-        ...data,
-        uid
-      }),
-    })
-
-    const result = await response.json()
-    if (!response.ok || result.status === 'NOK') {
-      throw new Error(result.message || 'Failed to add subject to grade')
-    }
-
-    return result
-  } catch (error) {
-    console.error('Error adding subject to grade:', error)
-    throw error
-  }
-}
-
-export async function updateSubjectGradeStatus(data: SubjectGradePayload, uid: string): Promise<ApiResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/subject/update-active`, {
-      method: 'POST',
-      body: JSON.stringify({
-        subject_id: data.subject_id,
-        active: data.active,
-        uid
-      }),
-    })
-
-    const result = await response.json()
-    if (!response.ok || result.status === 'NOK') {
-      throw new Error(result.message || 'Failed to update subject status')
-    }
-
-    return result
-  } catch (error) {
-    console.error('Error updating subject status:', error)
     throw error
   }
 }
@@ -438,28 +416,6 @@ export async function getSubjectsForGrade(gradeId: string, uid: string) {
     return response.json()
   } catch (error) {
     console.error('Error fetching subjects:', error)
-    throw error
-  }
-}
-
-export async function addSubject(data: { name: string, grade: number }, uid: string): Promise<ApiResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/subject/create`, {
-      method: 'POST',
-      body: JSON.stringify({
-        ...data,
-        uid
-      }),
-    })
-
-    const result = await response.json()
-    if (!response.ok || result.status === 'NOK') {
-      throw new Error(result.message || 'Failed to add subject')
-    }
-
-    return result
-  } catch (error) {
-    console.error('Error adding subject:', error)
     throw error
   }
 }
@@ -527,23 +483,14 @@ export async function getRejectedQuestionsCount(email: string): Promise<number> 
   }
 }
 
-export async function getSocialMediaQuestions(email: string): Promise<number> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
-    const data = await response.json()
-    return data.count || 0
-  } catch (error) {
-    console.error('Error fetching rejected count:', error)
-    return 0
-  }
-}
-
 export async function updatePostedStatus(questionId: string, posted: boolean): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/question/update-posted-status?questionId=${questionId}&posted=${posted}`, {
-      method: 'POST'
-
-    })
+    const response = await fetch(
+      `${API_BASE_URL}/question/update-posted-status?questionId=${questionId}&posted=${posted}`,
+      {
+        method: 'POST'
+      }
+    )
 
     if (!response.ok) {
       throw new Error('Failed to update posted status')
@@ -553,6 +500,198 @@ export async function updatePostedStatus(questionId: string, posted: boolean): P
     return result
   } catch (error) {
     console.error('Error updating posted status:', error)
+    throw error
+  }
+}
+
+export async function fetchMySubjects(uid: string): Promise<MySubjectsResponse> {
+  const response = await fetch(`${API_BASE_URL}/learner/subjects?uid=${uid}`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch enrolled subjects')
+  }
+
+  return response.json()
+}
+
+export async function checkAnswer(
+  uid: string,
+  questionId: number,
+  answer: string,
+  duration: number
+): Promise<CheckAnswerResponse> {
+  const response = await fetch(`${API_BASE_URL}/learner/check-answer`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      uid,
+      question_id: questionId,
+      answer,
+      answers: [],
+      requesting_type: 'real',
+      duration: duration
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to check answer')
+  }
+
+  const data = await response.json()
+  return data
+}
+
+export async function getLearner(uid: string): Promise<{
+  id: number
+  uid: string
+  name: string
+  grade: {
+    id: number
+    number: number
+    active: number
+  }
+  school_name: string
+  school_address: string
+  school_latitude: number
+  school_longitude: number
+  curriculum: string
+  terms: string
+  email: string
+  role?: string
+  points: number
+  streak: number
+  avatar: string
+}> {
+  const response = await fetch(`${API_BASE_URL}/learner?uid=${uid}`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch learner')
+  }
+
+  const data = await response.json()
+  return { ...data, role: data.role || 'learner', points: data.points || 0 }
+}
+
+export async function removeResults(uid: string, subjectName: string): Promise<void> {
+  const response = await fetch(
+    ensureHttps(`${API_BASE_URL}/learner/remove-results?uid=${uid}&subject_name=${subjectName}`),
+    {
+      method: 'DELETE',
+      body: JSON.stringify({
+        uid,
+        subject_name: subjectName
+      })
+    }
+  )
+  if (!response.ok) {
+    throw new Error('Failed to remove results')
+  }
+}
+
+export async function getSubjectStats(uid: string, subjectName: string): Promise<{
+  status: string
+  data: {
+    subject: {
+      id: number
+      name: string
+    }
+    stats: {
+      total_answers: number
+      correct_answers: number
+      incorrect_answers: number
+      correct_percentage: number
+      incorrect_percentage: number
+    }
+  }
+}> {
+  try {
+    const response = await fetch(
+      ensureHttps(`${API_BASE_URL}/learner/subject-stats?uid=${uid}&subject_name=${subjectName}`),
+      { method: 'GET' }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch subject stats')
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching subject stats:', error)
+    throw error
+  }
+}
+
+export async function setQuestionStatus(data: {
+  question_id: number
+  status: 'approved' | 'rejected'
+  email: string
+  uid: string
+  comment: string
+}): Promise<void> {
+  try {
+    const response = await fetch(ensureHttps(`${API_BASE_URL}/question/set-status`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to update question status')
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Error setting question status:', error)
+    throw error
+  }
+}
+
+export async function updatePushToken(uid: string, pushToken: string): Promise<void> {
+  const response = await fetch(`${HOST_URL}/api/push-notifications/update-token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      uid,
+      push_token: pushToken
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to update push token')
+  }
+}
+
+export async function getRandomQuestion(
+  subjectName: string,
+  paper: string,
+  uid: string
+): Promise<DetailedQuestion> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=${paper}&uid=${uid}&question_id=0`
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch random question')
+    }
+
+    const data = await response.json()
+    console.log("data ", data)
+    if (!data) {
+      throw new Error('No questions available')
+    }
+
+    // The API returns the question directly, not wrapped in a question property
+    return data
+  } catch (error) {
+    console.error('Error fetching random question:', error)
     throw error
   }
 } 
