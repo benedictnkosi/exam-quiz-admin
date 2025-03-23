@@ -1,6 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
+import Head from 'next/head'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer } from '@/services/api'
@@ -913,318 +914,351 @@ export default function QuizPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#1B1464] relative">
-            {/* Toggle Button - Only visible on smaller screens */}
-            <button
-                onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                className="lg:hidden fixed top-4 left-4 z-20 bg-white shadow-lg p-3 rounded-xl text-[#00B894] hover:bg-gray-100 transition-colors"
-            >
-                {isSidebarVisible ? '✕ Close' : '☰ Menu'}
-            </button>
+        <>
+            <Head>
+                <meta name="google-site-verification" content="yfhZrnvqHP_FjjF34b1TKGn9-3fUGY5kOe0f-Ls_0QY" />
+            </Head>
+            <div className="min-h-screen bg-[#1B1464] relative">
+                {/* Toggle Button - Only visible on smaller screens */}
+                <button
+                    onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+                    className="lg:hidden fixed top-4 left-4 z-20 bg-white shadow-lg p-3 rounded-xl text-[#00B894] hover:bg-gray-100 transition-colors"
+                >
+                    {isSidebarVisible ? '✕ Close' : '☰ Menu'}
+                </button>
 
-            <div className="flex h-full">
-                {/* Left Panel - Subject Info */}
-                <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block fixed lg:static w-full lg:w-1/3 bg-[#00B894] p-6 flex flex-col h-screen overflow-y-auto z-40`}>
-                    {/* Close button - Only visible on mobile */}
-                    <button
-                        onClick={() => setIsSidebarVisible(false)}
-                        className="lg:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
-                        aria-label="Close menu"
-                    >
-                        ✕
-                    </button>
+                <div className="flex h-full">
+                    {/* Left Panel - Subject Info */}
+                    <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block fixed lg:static w-full lg:w-1/3 bg-[#00B894] p-6 flex flex-col h-screen overflow-y-auto z-40`}>
+                        {/* Close button - Only visible on mobile */}
+                        <button
+                            onClick={() => setIsSidebarVisible(false)}
+                            className="lg:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
+                            aria-label="Close menu"
+                        >
+                            ✕
+                        </button>
 
-                    <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
-                        <Image
-                            src={getSubjectIcon(subjectName || '')}
-                            alt={subjectName || ''}
-                            width={64}
-                            height={64}
-                            className="rounded-full"
-                        />
-                        <h1 className="text-2xl font-bold text-white">{subjectName}</h1>
-                    </div>
+                        <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
+                            <Image
+                                src={getSubjectIcon(subjectName || '')}
+                                alt={subjectName || ''}
+                                width={64}
+                                height={64}
+                                className="rounded-full"
+                            />
+                            <h1 className="text-2xl font-bold text-white">{subjectName}</h1>
+                        </div>
 
-                    {/* Stats Card */}
-                    {selectedPaper && (
-                        <div className="bg-white rounded-xl p-6 mb-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-black text-xl font-bold flex items-center gap-2">
-                                    {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
-                                </h2>
-                                <button className="text-2xl"
-                                    onClick={() => setIsRestartModalVisible(true)}
-                                >🔄</button>
+                        {/* Stats Card */}
+                        {selectedPaper && (
+                            <div className="bg-white rounded-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-black text-xl font-bold flex items-center gap-2">
+                                        {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
+                                    </h2>
+                                    <button className="text-2xl"
+                                        onClick={() => setIsRestartModalVisible(true)}
+                                    >🔄</button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 rounded-xl p-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">🎯</span>
+                                            <div>
+                                                <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
+                                                <div className="text-gray-500">Bullseyes</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-xl p-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">💥</span>
+                                            <div>
+                                                <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
+                                                <div className="text-gray-500">Oopsies</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-gray-600 text-sm">Progress</span>
+                                        <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div
+                                            className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
+                                            style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
                             </div>
+                        )}
 
+                        {/* Paper Selection */}
+                        <div className="bg-white/10 rounded-xl p-6">
+                            <h2 className="text-xl font-bold text-white mb-4">Choose Paper</h2>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-2xl">🎯</span>
-                                        <div>
-                                            <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
-                                            <div className="text-gray-500">Bullseyes</div>
+                                <button
+                                    onClick={() => loadRandomQuestion('P1')}
+                                    className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P1'
+                                        ? 'bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50'
+                                        : 'bg-purple-600/50 hover:bg-purple-600/70'
+                                        }`}
+                                >
+                                    {selectedPaper === 'P1' && (
+                                        <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
+                                            <span className="text-purple-600 text-sm">✓</span>
                                         </div>
+                                    )}
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-2xl mb-1">📚</span>
+                                        <span className="font-semibold">Paper 1</span>
                                     </div>
-                                </div>
-
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-2xl">💥</span>
-                                        <div>
-                                            <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
-                                            <div className="text-gray-500">Oopsies</div>
+                                </button>
+                                <button
+                                    onClick={() => loadRandomQuestion('P2')}
+                                    className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P2'
+                                        ? 'bg-orange-500 shadow-lg shadow-orange-500/50 scale-105 border-2 border-white/50'
+                                        : 'bg-orange-500/50 hover:bg-orange-500/70'
+                                        }`}
+                                >
+                                    {selectedPaper === 'P2' && (
+                                        <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
+                                            <span className="text-orange-500 text-sm">✓</span>
                                         </div>
+                                    )}
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-2xl mb-1">📝</span>
+                                        <span className="font-semibold">Paper 2</span>
                                     </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-4">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-gray-600 text-sm">Progress</span>
-                                    <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div
-                                        className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
-                                        style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
-                                    ></div>
-                                </div>
+                                </button>
                             </div>
                         </div>
-                    )}
 
-                    {/* Paper Selection */}
-                    <div className="bg-white/10 rounded-xl p-6">
-                        <h2 className="text-xl font-bold text-white mb-4">Choose Paper</h2>
-                        <div className="grid grid-cols-2 gap-4">
-                            <button
-                                onClick={() => loadRandomQuestion('P1')}
-                                className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P1'
-                                    ? 'bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50'
-                                    : 'bg-purple-600/50 hover:bg-purple-600/70'
-                                    }`}
-                            >
-                                {selectedPaper === 'P1' && (
-                                    <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                        <span className="text-purple-600 text-sm">✓</span>
-                                    </div>
+                        {/* Favorites Section */}
+                        <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
+                            <div className="flex items-center justify-center gap-2 mb-4 relative">
+                                <span className="text-2xl">⭐</span>
+                                <h2 className="text-xl font-bold text-white">Favorite Questions</h2>
+                                {isFavoritesLoading && (
+                                    <div className="absolute right-0 animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
                                 )}
-                                <div className="flex flex-col items-center">
-                                    <span className="text-2xl mb-1">📚</span>
-                                    <span className="font-semibold">Paper 1</span>
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => loadRandomQuestion('P2')}
-                                className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P2'
-                                    ? 'bg-orange-500 shadow-lg shadow-orange-500/50 scale-105 border-2 border-white/50'
-                                    : 'bg-orange-500/50 hover:bg-orange-500/70'
-                                    }`}
-                            >
-                                {selectedPaper === 'P2' && (
-                                    <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                        <span className="text-orange-500 text-sm">✓</span>
-                                    </div>
-                                )}
-                                <div className="flex flex-col items-center">
-                                    <span className="text-2xl mb-1">📝</span>
-                                    <span className="font-semibold">Paper 2</span>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[calc(100vh-600px)] lg:max-h-[400px]">
+                                {favoriteQuestions.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {favoriteQuestions.map((fav, index) => {
+                                            // Rotate through background colors with better opacity
+                                            const bgColors = [
+                                                'bg-pink-500/20',
+                                                'bg-orange-500/20',
+                                                'bg-green-500/20',
+                                                'bg-blue-500/20',
+                                                'bg-purple-500/20'
+                                            ];
+                                            const bgColor = bgColors[index % bgColors.length];
 
-                    {/* Favorites Section */}
-                    <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
-                        <div className="flex items-center justify-center gap-2 mb-4 relative">
-                            <span className="text-2xl">⭐</span>
-                            <h2 className="text-xl font-bold text-white">Favorite Questions</h2>
-                            {isFavoritesLoading && (
-                                <div className="absolute right-0 animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
-                            )}
-                        </div>
-                        <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[calc(100vh-600px)] lg:max-h-[400px]">
-                            {favoriteQuestions.length > 0 ? (
-                                <div className="space-y-3">
-                                    {favoriteQuestions.map((fav, index) => {
-                                        // Rotate through background colors with better opacity
-                                        const bgColors = [
-                                            'bg-pink-500/20',
-                                            'bg-orange-500/20',
-                                            'bg-green-500/20',
-                                            'bg-blue-500/20',
-                                            'bg-purple-500/20'
-                                        ];
-                                        const bgColor = bgColors[index % bgColors.length];
-
-                                        return (
-                                            <button
-                                                key={fav.id}
-                                                onClick={() => loadSpecificQuestion(fav.questionId)}
-                                                className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
-                                            >
-                                                <div className="flex items-start gap-3">
-                                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                                                        <span className="text-white text-sm">#{index + 1}</span>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-white text-sm font-medium line-clamp-2 pr-8">
-                                                            {fav.question || fav.context || `Question #${fav.questionId}`}
-                                                        </p>
-                                                    </div>
-                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                                            <span className="text-white">→</span>
+                                            return (
+                                                <button
+                                                    key={fav.id}
+                                                    onClick={() => loadSpecificQuestion(fav.questionId)}
+                                                    className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                                            <span className="text-white text-sm">#{index + 1}</span>
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-white text-sm font-medium line-clamp-2 pr-8">
+                                                                {fav.question || fav.context || `Question #${fav.questionId}`}
+                                                            </p>
+                                                        </div>
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                                                <span className="text-white">→</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="h-full flex items-center justify-center">
-                                    <div className="text-center">
-                                        <div className="text-4xl mb-2">⭐</div>
-                                        <p className="text-white/60 text-sm">
-                                            No saved questions yet
-                                        </p>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="h-full flex items-center justify-center">
+                                        <div className="text-center">
+                                            <div className="text-4xl mb-2">⭐</div>
+                                            <p className="text-white/60 text-sm">
+                                                No saved questions yet
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
+                        {/* Back to Home Button */}
+                        <button
+                            onClick={() => router.push('/')}
+                            className="mt-6 bg-white/20 text-white rounded-xl p-4 hover:bg-white/30 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <span className="text-xl">🏠</span>
+                            <span className="font-semibold">Back to Home</span>
+                        </button>
                     </div>
 
-                    {/* Back to Home Button */}
-                    <button
-                        onClick={() => router.push('/')}
-                        className="mt-6 bg-white/20 text-white rounded-xl p-4 hover:bg-white/30 transition-colors flex items-center justify-center gap-2"
-                    >
-                        <span className="text-xl">🏠</span>
-                        <span className="font-semibold">Back to Home</span>
-                    </button>
-                </div>
-
-                {/* Right Panel - Quiz Content */}
-                <div className={`flex-1 p-6 lg:p-6 min-h-screen ${isSidebarVisible ? 'hidden lg:block' : 'block'}`}>
-                    {loading ? (
-                        <div className="h-full flex items-center justify-center">
-                            <div className="text-white text-center">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                                <p>Loading your question...</p>
+                    {/* Right Panel - Quiz Content */}
+                    <div className={`flex-1 p-6 lg:p-6 min-h-screen ${isSidebarVisible ? 'hidden lg:block' : 'block'}`}>
+                        {loading ? (
+                            <div className="h-full flex items-center justify-center">
+                                <div className="text-white text-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                                    <p>Loading your question...</p>
+                                </div>
                             </div>
-                        </div>
-                    ) : noMoreQuestions ? (
-                        <div className="p-6">
-                            <div className="max-w-3xl mx-auto">
-                                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
-                                    <Image
-                                        src="/images/illustrations/stressed.png"
-                                        alt="No Questions"
-                                        width={200}
-                                        height={200}
-                                        className="mx-auto mb-6"
-                                    />
-                                    <h2 className="text-2xl font-bold text-white mb-2">
-                                        🐛 Oops! Looks like the quiz gremlins ate all the questions!
-                                    </h2>
-                                    <p className="text-gray-300 mb-8">
-                                        Check your profile for selected school terms and curriculum
-                                    </p>
-
-                                    <button
-                                        onClick={() => router.push('/profile')}
-                                        className="w-full mb-4 p-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 text-white"
-                                    >
-                                        <span className="text-xl">⚙️</span>
-                                        <span>Go to Profile Settings</span>
-                                    </button>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <button
-                                            onClick={() => {
-                                                setIsRestartModalVisible(true);
-                                            }}
-                                            className="p-4 rounded-lg bg-red-600 hover:bg-red-700 transition-colors flex items-center justify-center gap-2 text-white"
-                                        >
-                                            <span className="text-xl">🔄</span>
-                                            <span>Restart Subject</span>
-                                        </button>
+                        ) : noMoreQuestions ? (
+                            <div className="p-6">
+                                <div className="max-w-3xl mx-auto">
+                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
+                                        <Image
+                                            src="/images/illustrations/stressed.png"
+                                            alt="No Questions"
+                                            width={200}
+                                            height={200}
+                                            className="mx-auto mb-6"
+                                        />
+                                        <h2 className="text-2xl font-bold text-white mb-2">
+                                            🐛 Oops! Looks like the quiz gremlins ate all the questions!
+                                        </h2>
+                                        <p className="text-gray-300 mb-8">
+                                            Check your profile for selected school terms and curriculum
+                                        </p>
 
                                         <button
-                                            onClick={() => router.push('/')}
-                                            className="p-4 rounded-lg bg-gray-600 hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-white"
+                                            onClick={() => router.push('/profile')}
+                                            className="w-full mb-4 p-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 text-white"
                                         >
-                                            <span className="text-xl">🏠</span>
-                                            <span>Go Home</span>
+                                            <span className="text-xl">⚙️</span>
+                                            <span>Go to Profile Settings</span>
                                         </button>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button
+                                                onClick={() => {
+                                                    setIsRestartModalVisible(true);
+                                                }}
+                                                className="p-4 rounded-lg bg-red-600 hover:bg-red-700 transition-colors flex items-center justify-center gap-2 text-white"
+                                            >
+                                                <span className="text-xl">🔄</span>
+                                                <span>Restart Subject</span>
+                                            </button>
+
+                                            <button
+                                                onClick={() => router.push('/')}
+                                                className="p-4 rounded-lg bg-gray-600 hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-white"
+                                            >
+                                                <span className="text-xl">🏠</span>
+                                                <span>Go Home</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="max-w-3xl mx-auto">
-                            {/* Question Card */}
-                            {currentQuestion && (
-                                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8 mt-12 lg:mt-0">
-                                    {/* Question Metadata */}
-                                    <div className="flex flex-wrap gap-3 mb-4 text-sm">
-                                        <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
-                                            <span className="text-xs">📅</span>
-                                            <span>Term {currentQuestion.term}</span>
-                                        </div>
-                                        <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
-                                            <span className="text-xs">📆</span>
-                                            <span>{currentQuestion.year}</span>
-                                        </div>
-                                        <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
-                                            <span className="text-xs">📚</span>
-                                            <span>{currentQuestion.curriculum}</span>
-                                        </div>
-                                        {currentQuestion && (
-                                            <button
-                                                onClick={isCurrentQuestionFavorited ? handleUnfavoriteQuestion : handleFavoriteQuestion}
-                                                disabled={isFavoriting}
-                                                className={`bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5 transition-colors ${isCurrentQuestionFavorited
-                                                    ? 'text-yellow-400 hover:text-yellow-500'
-                                                    : 'text-white/80 hover:text-white'
-                                                    }`}
-                                                aria-label={isCurrentQuestionFavorited ? "Remove from favorites" : "Add to favorites"}
-                                            >
-                                                {isFavoriting ? (
-                                                    <div className="w-4 h-4 flex items-center justify-center">
-                                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-xs">⭐</span>
-                                                )}
-                                                <span>{isCurrentQuestionFavorited ? 'Favorited' : 'Add to Favorites'}</span>
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Question Context */}
-                                    {(currentQuestion.context || currentQuestion.image_path) && (
-                                        <div className="mb-4">
-                                            <h3 className="text-lg font-semibold mb-2 text-white">Context</h3>
-                                            {currentQuestion.context && (
-                                                <div className="p-4 bg-white/5 rounded-lg">
-                                                    {renderMixedContent(currentQuestion.context, true)}
-                                                </div>
+                        ) : (
+                            <div className="max-w-3xl mx-auto">
+                                {/* Question Card */}
+                                {currentQuestion && (
+                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8 mt-12 lg:mt-0">
+                                        {/* Question Metadata */}
+                                        <div className="flex flex-wrap gap-3 mb-4 text-sm">
+                                            <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
+                                                <span className="text-xs">📅</span>
+                                                <span>Term {currentQuestion.term}</span>
+                                            </div>
+                                            <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
+                                                <span className="text-xs">📆</span>
+                                                <span>{currentQuestion.year}</span>
+                                            </div>
+                                            <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
+                                                <span className="text-xs">📚</span>
+                                                <span>{currentQuestion.curriculum}</span>
+                                            </div>
+                                            {currentQuestion && (
+                                                <button
+                                                    onClick={isCurrentQuestionFavorited ? handleUnfavoriteQuestion : handleFavoriteQuestion}
+                                                    disabled={isFavoriting}
+                                                    className={`bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5 transition-colors ${isCurrentQuestionFavorited
+                                                        ? 'text-yellow-400 hover:text-yellow-500'
+                                                        : 'text-white/80 hover:text-white'
+                                                        }`}
+                                                    aria-label={isCurrentQuestionFavorited ? "Remove from favorites" : "Add to favorites"}
+                                                >
+                                                    {isFavoriting ? (
+                                                        <div className="w-4 h-4 flex items-center justify-center">
+                                                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs">⭐</span>
+                                                    )}
+                                                    <span>{isCurrentQuestionFavorited ? 'Favorited' : 'Add to Favorites'}</span>
+                                                </button>
                                             )}
-                                            {currentQuestion.image_path && currentQuestion.image_path !== 'NULL' && (
-                                                <div className="mt-4">
+                                        </div>
+
+                                        {/* Question Context */}
+                                        {(currentQuestion.context || currentQuestion.image_path) && (
+                                            <div className="mb-4">
+                                                <h3 className="text-lg font-semibold mb-2 text-white">Context</h3>
+                                                {currentQuestion.context && (
+                                                    <div className="p-4 bg-white/5 rounded-lg">
+                                                        {renderMixedContent(currentQuestion.context, true)}
+                                                    </div>
+                                                )}
+                                                {currentQuestion.image_path && currentQuestion.image_path !== 'NULL' && (
+                                                    <div className="mt-4">
+                                                        <button
+                                                            onClick={() => {
+                                                                setZoomImageUrl(currentQuestion.image_path || null)
+                                                                setIsZoomModalVisible(true)
+                                                            }}
+                                                            className="w-full"
+                                                        >
+                                                            <Image
+                                                                src={`${IMAGE_BASE_URL}${currentQuestion.image_path}`}
+                                                                alt="Context Image"
+                                                                width={400}
+                                                                height={300}
+                                                                className="rounded-lg"
+                                                                onLoad={() => setIsImageLoading(false)}
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Question */}
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
+                                            <div className="text-xl mb-2 text-white text-center">
+                                                {renderMixedContent(currentQuestion.question, true)}
+                                            </div>
+                                            {currentQuestion.question_image_path && currentQuestion.question_image_path !== 'NULL' && (
+                                                <div className="mt-4 text-center">
                                                     <button
                                                         onClick={() => {
-                                                            setZoomImageUrl(currentQuestion.image_path || null)
+                                                            setZoomImageUrl(currentQuestion.question_image_path || null)
                                                             setIsZoomModalVisible(true)
                                                         }}
-                                                        className="w-full"
+                                                        className="inline-block"
                                                     >
                                                         <Image
-                                                            src={`${IMAGE_BASE_URL}${currentQuestion.image_path}`}
-                                                            alt="Context Image"
+                                                            src={`${IMAGE_BASE_URL}${currentQuestion.question_image_path}`}
+                                                            alt="Question Image"
                                                             width={400}
                                                             height={300}
                                                             className="rounded-lg"
@@ -1234,341 +1268,313 @@ export default function QuizPage() {
                                                 </div>
                                             )}
                                         </div>
-                                    )}
 
-                                    {/* Question */}
-                                    <div className="mb-6">
-                                        <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
-                                        <div className="text-xl mb-2 text-white text-center">
-                                            {renderMixedContent(currentQuestion.question, true)}
-                                        </div>
-                                        {currentQuestion.question_image_path && currentQuestion.question_image_path !== 'NULL' && (
-                                            <div className="mt-4 text-center">
+                                        {/* Options */}
+                                        <div className="space-y-4">
+                                            {Object.entries(currentQuestion.options).map(([key, value]) => (
                                                 <button
-                                                    onClick={() => {
-                                                        setZoomImageUrl(currentQuestion.question_image_path || null)
-                                                        setIsZoomModalVisible(true)
-                                                    }}
-                                                    className="inline-block"
+                                                    key={key}
+                                                    onClick={() => handleAnswer(value)}
+                                                    disabled={isAnswered}
+                                                    className={`w-full p-4 rounded-lg text-center transition-all border ${selectedAnswer === value
+                                                        ? isCorrect
+                                                            ? 'bg-green-100 text-green-900 border-green-500'
+                                                            : 'bg-red-100/90 text-gray-900 border-red-400'
+                                                        : cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
+                                                            ? 'bg-green-100 text-green-900 border-green-500'
+                                                            : 'bg-white/95 hover:bg-gray-50 border-gray-200'
+                                                        } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
-                                                    <Image
-                                                        src={`${IMAGE_BASE_URL}${currentQuestion.question_image_path}`}
-                                                        alt="Question Image"
-                                                        width={400}
-                                                        height={300}
-                                                        className="rounded-lg"
-                                                        onLoad={() => setIsImageLoading(false)}
-                                                    />
+                                                    {renderMixedContent(value, false)}
                                                 </button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Options */}
-                                    <div className="space-y-4">
-                                        {Object.entries(currentQuestion.options).map(([key, value]) => (
-                                            <button
-                                                key={key}
-                                                onClick={() => handleAnswer(value)}
-                                                disabled={isAnswered}
-                                                className={`w-full p-4 rounded-lg text-center transition-all border ${selectedAnswer === value
-                                                    ? isCorrect
-                                                        ? 'bg-green-100 text-green-900 border-green-500'
-                                                        : 'bg-red-100/90 text-gray-900 border-red-400'
-                                                    : cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
-                                                        ? 'bg-green-100 text-green-900 border-green-500'
-                                                        : 'bg-white/95 hover:bg-gray-50 border-gray-200'
-                                                    } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
-                                            >
-                                                {renderMixedContent(value, false)}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    {/* AI Explanation Button */}
-                                    <button
-                                        onClick={() => fetchAIExplanation(currentQuestion.id)}
-                                        disabled={isLoadingExplanation}
-                                        className="w-full mt-4 p-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        {isLoadingExplanation ? (
-                                            <>
-                                                <span className="text-white">🤖 Pretending to think...</span>
-                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
-                                            </>
-                                        ) : (
-                                            <span className="text-white">🤖 Break it Down for Me!</span>
-                                        )}
-                                    </button>
-
-                                    {/* Report Issue Button */}
-                                    <button
-                                        onClick={reportIssue}
-                                        className="w-full mt-4 p-4 rounded-lg bg-red-100/10 hover:bg-red-100/20 transition-colors text-left"
-                                    >
-                                        <span className="text-red-500 font-medium">
-                                            🛑 Report an Issue with this Question
-                                        </span>
-                                    </button>
-
-                                    {/* Explanation */}
-                                    {showExplanation && (
-                                        <div className="mt-8">
-                                            <div className={`p-4 rounded-lg ${isCorrect ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-                                                <p className="font-bold mb-2 text-white">
-                                                    {isCorrect ? getRandomSuccessMessage() : getRandomWrongMessage()}
-                                                </p>
-
-                                                {/* Correct Answer Display */}
-                                                <div className="mb-4">
-                                                    <p className="text-white font-semibold">✅ Correct Answer:</p>
-                                                    <div className="text-green-300 mt-1">
-                                                        {renderMixedContent(correctAnswer, true)}
-                                                    </div>
-                                                </div>
-
-                                                {/* Explanation Display */}
-                                                {currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && (
-                                                    <div className="mb-4">
-                                                        <p className="text-white font-semibold">📝 Explanation:</p>
-                                                        <div className="mt-1">
-                                                            {renderMixedContent(currentQuestion.explanation, true)}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* AI Explanation */}
-                                                {currentQuestion?.ai_explanation && (
-                                                    <div className="mt-4 p-4 bg-white/5 rounded-lg">
-                                                        <p className="text-white font-semibold mb-2">🤖 AI Explanation:</p>
-                                                        <div className="text-gray-300">
-                                                            {renderMixedContent(currentQuestion.ai_explanation, true)}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            ))}
                                         </div>
-                                    )}
-                                </div>
-                            )}
 
-                            {/* Next Question Button */}
-                            <div className="flex justify-center mb-8">
+                                        {/* AI Explanation Button */}
+                                        <button
+                                            onClick={() => fetchAIExplanation(currentQuestion.id)}
+                                            disabled={isLoadingExplanation}
+                                            className="w-full mt-4 p-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            {isLoadingExplanation ? (
+                                                <>
+                                                    <span className="text-white">🤖 Pretending to think...</span>
+                                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+                                                </>
+                                            ) : (
+                                                <span className="text-white">🤖 Break it Down for Me!</span>
+                                            )}
+                                        </button>
+
+                                        {/* Report Issue Button */}
+                                        <button
+                                            onClick={reportIssue}
+                                            className="w-full mt-4 p-4 rounded-lg bg-red-100/10 hover:bg-red-100/20 transition-colors text-left"
+                                        >
+                                            <span className="text-red-500 font-medium">
+                                                🛑 Report an Issue with this Question
+                                            </span>
+                                        </button>
+
+                                        {/* Explanation */}
+                                        {showExplanation && (
+                                            <div className="mt-8">
+                                                <div className={`p-4 rounded-lg ${isCorrect ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                                                    <p className="font-bold mb-2 text-white">
+                                                        {isCorrect ? getRandomSuccessMessage() : getRandomWrongMessage()}
+                                                    </p>
+
+                                                    {/* Correct Answer Display */}
+                                                    <div className="mb-4">
+                                                        <p className="text-white font-semibold">✅ Correct Answer:</p>
+                                                        <div className="text-green-300 mt-1">
+                                                            {renderMixedContent(correctAnswer, true)}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Explanation Display */}
+                                                    {currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && (
+                                                        <div className="mb-4">
+                                                            <p className="text-white font-semibold">📝 Explanation:</p>
+                                                            <div className="mt-1">
+                                                                {renderMixedContent(currentQuestion.explanation, true)}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* AI Explanation */}
+                                                    {currentQuestion?.ai_explanation && (
+                                                        <div className="mt-4 p-4 bg-white/5 rounded-lg">
+                                                            <p className="text-white font-semibold mb-2">🤖 AI Explanation:</p>
+                                                            <div className="text-gray-300">
+                                                                {renderMixedContent(currentQuestion.ai_explanation, true)}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Next Question Button */}
+                                <div className="flex justify-center mb-8">
+                                    <button
+                                        onClick={handleNext}
+                                        className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full py-4 px-8 flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-opacity"
+                                    >
+                                        <span className="text-xl">▶</span>
+                                        <span className="font-semibold">🎯 Next Question</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Overlay for smaller screens when sidebar is visible */}
+                {isSidebarVisible && (
+                    <div
+                        className="lg:hidden fixed inset-0 bg-black/50 z-30"
+                        onClick={() => setIsSidebarVisible(false)}
+                    />
+                )}
+
+                {/* Image Zoom Modal */}
+                {isZoomModalVisible && zoomImageUrl && (
+                    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
+                        <button
+                            onClick={() => {
+                                setIsZoomModalVisible(false)
+                                setImageRotation(0)
+                            }}
+                            className="absolute top-4 right-4 text-white"
+                        >
+                            ✕
+                        </button>
+                        <button
+                            onClick={() => setImageRotation((prev) => (prev + 90) % 360)}
+                            className="absolute top-4 left-4 text-white"
+                        >
+                            ↻
+                        </button>
+                        <div style={{ transform: `rotate(${imageRotation}deg)` }}>
+                            <Image
+                                src={`${IMAGE_BASE_URL}${zoomImageUrl}`}
+                                alt="Zoomed Image"
+                                width={800}
+                                height={600}
+                                className="rounded-lg"
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Report Issue Modal */}
+                {isReportModalVisible && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl p-6 max-w-lg w-full">
+                            <h2 className="text-xl font-bold text-gray-900 mb-4">Report an Issue</h2>
+                            <textarea
+                                value={reportComment}
+                                onChange={(e) => setReportComment(e.target.value)}
+                                placeholder="Please describe the issue..."
+                                className="w-full h-32 p-3 border rounded-lg text-gray-900 mb-4"
+                                disabled={isSubmitting}
+                            />
+                            <div className="flex gap-4">
                                 <button
-                                    onClick={handleNext}
-                                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full py-4 px-8 flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-opacity"
+                                    onClick={() => setIsReportModalVisible(false)}
+                                    className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                                    disabled={isSubmitting}
                                 >
-                                    <span className="text-xl">▶</span>
-                                    <span className="font-semibold">🎯 Next Question</span>
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSubmitReport}
+                                    className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? 'Submitting...' : 'Submit Report'}
                                 </button>
                             </div>
                         </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Overlay for smaller screens when sidebar is visible */}
-            {isSidebarVisible && (
-                <div
-                    className="lg:hidden fixed inset-0 bg-black/50 z-30"
-                    onClick={() => setIsSidebarVisible(false)}
-                />
-            )}
-
-            {/* Image Zoom Modal */}
-            {isZoomModalVisible && zoomImageUrl && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
-                    <button
-                        onClick={() => {
-                            setIsZoomModalVisible(false)
-                            setImageRotation(0)
-                        }}
-                        className="absolute top-4 right-4 text-white"
-                    >
-                        ✕
-                    </button>
-                    <button
-                        onClick={() => setImageRotation((prev) => (prev + 90) % 360)}
-                        className="absolute top-4 left-4 text-white"
-                    >
-                        ↻
-                    </button>
-                    <div style={{ transform: `rotate(${imageRotation}deg)` }}>
-                        <Image
-                            src={`${IMAGE_BASE_URL}${zoomImageUrl}`}
-                            alt="Zoomed Image"
-                            width={800}
-                            height={600}
-                            className="rounded-lg"
-                        />
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Report Issue Modal */}
-            {isReportModalVisible && (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-lg w-full">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Report an Issue</h2>
-                        <textarea
-                            value={reportComment}
-                            onChange={(e) => setReportComment(e.target.value)}
-                            placeholder="Please describe the issue..."
-                            className="w-full h-32 p-3 border rounded-lg text-gray-900 mb-4"
-                            disabled={isSubmitting}
-                        />
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => setIsReportModalVisible(false)}
-                                className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-                                disabled={isSubmitting}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSubmitReport}
-                                className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? 'Submitting...' : 'Submit Report'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Thank You Modal */}
-            {isThankYouModalVisible && (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center">
-                        {/* Green Checkmark Circle */}
-                        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-
-                        {/* Title with Emojis */}
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-2">
-                            <span>🎉</span>
-                            You&apos;re Awesome!
-                            <span>👋</span>
-                        </h2>
-
-                        {/* Message */}
-                        <p className="text-gray-600 mb-8 text-lg">
-                            Your feedback helps us level up our questions! Thanks for making the quiz even better. 🚀💡
-                        </p>
-
-                        {/* Keep Going Button */}
-                        <button
-                            onClick={() => setIsThankYouModalVisible(false)}
-                            className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                        >
-                            Keep Going <span>🚀</span>
-                        </button>
-                    </div>
-                </div>
-            )}
-
-
-            {/* Streak Modal */}
-            {showStreakModal && (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1B1464] rounded-xl p-8 max-w-md w-full text-center">
-                        {/* Days of the week */}
-                        <div className="mb-6">
-                            <div className="grid grid-cols-7 gap-2 mb-4">
-                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                                    <div
-                                        key={index}
-                                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto"
-                                    >
-                                        <span className="text-white font-medium">{day}</span>
-                                    </div>
-                                ))}
+                {/* Thank You Modal */}
+                {isThankYouModalVisible && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center">
+                            {/* Green Checkmark Circle */}
+                            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
                             </div>
-                            <div className="relative w-20 h-20 mx-auto mb-4">
-                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className="text-4xl">⭐</span>
+
+                            {/* Title with Emojis */}
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-2">
+                                <span>🎉</span>
+                                You&apos;re Awesome!
+                                <span>👋</span>
+                            </h2>
+
+                            {/* Message */}
+                            <p className="text-gray-600 mb-8 text-lg">
+                                Your feedback helps us level up our questions! Thanks for making the quiz even better. 🚀💡
+                            </p>
+
+                            {/* Keep Going Button */}
+                            <button
+                                onClick={() => setIsThankYouModalVisible(false)}
+                                className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                            >
+                                Keep Going <span>🚀</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+
+                {/* Streak Modal */}
+                {showStreakModal && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div className="bg-[#1B1464] rounded-xl p-8 max-w-md w-full text-center">
+                            {/* Days of the week */}
+                            <div className="mb-6">
+                                <div className="grid grid-cols-7 gap-2 mb-4">
+                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                                        <div
+                                            key={index}
+                                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto"
+                                        >
+                                            <span className="text-white font-medium">{day}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="relative w-20 h-20 mx-auto mb-4">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className="text-4xl">⭐</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h2 className="text-3xl font-bold text-white mb-2">
+                                🔥 {currentStreak}-Day Streak! 🔥
+                            </h2>
+                            <p className="text-gray-300 mb-8">
+                                Keep the fire going — get 3 right answers every day to grow your streak!
+                            </p>
+                            <button
+                                onClick={() => setShowStreakModal(false)}
+                                className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
+                            >
+                                CONTINUE
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* AI Explanation Modal */}
+                {isExplanationModalVisible && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div className="rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900">
+                            {/* Header - Fixed */}
+                            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">🤖 AI Explanation</h2>
+                                <button
+                                    onClick={() => setIsExplanationModalVisible(false)}
+                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            {/* Content - Scrollable */}
+                            <div className="flex-1 overflow-y-auto p-6 min-h-0">
+                                <div className="prose prose-sm max-w-none dark:prose-invert">
+                                    {renderMixedContent(aiExplanation, false)}
                                 </div>
                             </div>
                         </div>
-
-                        <h2 className="text-3xl font-bold text-white mb-2">
-                            🔥 {currentStreak}-Day Streak! 🔥
-                        </h2>
-                        <p className="text-gray-300 mb-8">
-                            Keep the fire going — get 3 right answers every day to grow your streak!
-                        </p>
-                        <button
-                            onClick={() => setShowStreakModal(false)}
-                            className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
-                        >
-                            CONTINUE
-                        </button>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* AI Explanation Modal */}
-            {isExplanationModalVisible && (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900">
-                        {/* Header - Fixed */}
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">🤖 AI Explanation</h2>
-                            <button
-                                onClick={() => setIsExplanationModalVisible(false)}
-                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        {/* Content - Scrollable */}
-                        <div className="flex-1 overflow-y-auto p-6 min-h-0">
-                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                                {renderMixedContent(aiExplanation, false)}
+                {/* Add MessageModal */}
+                <MessageModal
+                    isVisible={messageModal.isVisible}
+                    message={messageModal.message}
+                    type={messageModal.type}
+                    onClose={() => setMessageModal(prev => ({ ...prev, isVisible: false }))}
+                />
+
+                {/* Add Restart Modal */}
+                {isRestartModalVisible && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl p-6 max-w-lg w-full">
+                            <h2 className="text-xl font-bold text-gray-900 mb-4">Reset Progress</h2>
+                            <p className="text-gray-600 mb-6">
+                                Are you sure you want to reset your progress for this paper? This action cannot be undone.
+                            </p>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setIsRestartModalVisible(false)}
+                                    className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleRestart}
+                                    className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                                >
+                                    Reset
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-
-            {/* Add MessageModal */}
-            <MessageModal
-                isVisible={messageModal.isVisible}
-                message={messageModal.message}
-                type={messageModal.type}
-                onClose={() => setMessageModal(prev => ({ ...prev, isVisible: false }))}
-            />
-
-            {/* Add Restart Modal */}
-            {isRestartModalVisible && (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-lg w-full">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Reset Progress</h2>
-                        <p className="text-gray-600 mb-6">
-                            Are you sure you want to reset your progress for this paper? This action cannot be undone.
-                        </p>
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => setIsRestartModalVisible(false)}
-                                className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleRestart}
-                                className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700"
-                            >
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </>
     )
 } 
