@@ -201,7 +201,7 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                         );
                     } else {
                         return (
-                            <span key={index} className={`content-text ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <span key={index} className={`content-text ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                 {part}
                             </span>
                         );
@@ -219,7 +219,7 @@ function renderMixedContent(text: string, isDark: boolean = false) {
             {parts.map((part, index) => {
                 if (part.trim()) {
                     const needsExtraSpacing = part.trim().startsWith('***');
-                    const fontSize = part.length > 500 ? 'text-sm' : 'text-lg';
+                    const fontSize = part.length > 500 ? 'text-sm' : 'text-base';
 
                     // Handle headers
                     if (part.startsWith('# ')) {
@@ -275,7 +275,7 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                                         return bpart ? (
                                                             <span
                                                                 key={`bullet-text-${bindex}`}
-                                                                className={`${isDark ? 'text-gray-300' : 'text-gray-700'} ${fontSize}`}
+                                                                className={`${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}
                                                             >
                                                                 {bpart.trim()}
                                                             </span>
@@ -309,7 +309,7 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                 return boldPart ? (
                                     <span
                                         key={`${index}-${boldIndex}`}
-                                        className={`${isDark ? 'text-gray-300' : 'text-gray-700'} ${fontSize}`}
+                                        className={`${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}
                                     >
                                         {boldPart.replace(/^\*\*\*/, '')}
                                     </span>
@@ -1295,14 +1295,14 @@ export default function QuizPage() {
                                                     disabled={isAnswered}
                                                     className={`w-full p-4 rounded-lg text-center transition-all border ${selectedAnswer === value
                                                         ? isCorrect
-                                                            ? 'bg-green-100 text-green-900 border-green-500'
-                                                            : 'bg-red-100/90 text-gray-900 border-red-400'
+                                                            ? 'bg-green-500/20 text-green-100 border-green-500/50'
+                                                            : 'bg-red-500/20 text-red-100 border-red-500/50'
                                                         : cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
-                                                            ? 'bg-green-100 text-green-900 border-green-500'
-                                                            : 'bg-white/95 hover:bg-gray-50 border-gray-200'
+                                                            ? 'bg-green-500/20 text-green-100 border-green-500/50'
+                                                            : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
                                                         } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
-                                                    {renderMixedContent(value, false)}
+                                                    {renderMixedContent(value, true)}
                                                 </button>
                                             ))}
                                         </div>
@@ -1311,7 +1311,7 @@ export default function QuizPage() {
                                         <button
                                             onClick={() => fetchAIExplanation(currentQuestion.id)}
                                             disabled={isLoadingExplanation}
-                                            className="w-full mt-4 p-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                                            className="w-full mt-4 p-4 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                                         >
                                             {isLoadingExplanation ? (
                                                 <>
@@ -1326,9 +1326,9 @@ export default function QuizPage() {
                                         {/* Report Issue Button */}
                                         <button
                                             onClick={reportIssue}
-                                            className="w-full mt-4 p-4 rounded-lg bg-red-100/10 hover:bg-red-100/20 transition-colors text-left"
+                                            className="w-full mt-4 p-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors text-left"
                                         >
-                                            <span className="text-red-500 font-medium">
+                                            <span className="text-red-300 font-medium">
                                                 🛑 Report an Issue with this Question
                                             </span>
                                         </button>
@@ -1336,24 +1336,24 @@ export default function QuizPage() {
                                         {/* Explanation */}
                                         {showExplanation && (
                                             <div className="mt-8">
-                                                <div className={`p-4 rounded-lg ${isCorrect ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-                                                    <p className="font-bold mb-2 text-white">
+                                                <div className={`p-6 rounded-lg ${isCorrect ? 'bg-green-500/20 border border-green-500/30' : 'bg-red-500/20 border border-red-500/30'}`}>
+                                                    <p className="font-bold mb-4 text-white text-lg">
                                                         {isCorrect ? getRandomSuccessMessage() : getRandomWrongMessage()}
                                                     </p>
 
                                                     {/* Correct Answer Display */}
-                                                    <div className="mb-4">
-                                                        <p className="text-white font-semibold">✅ Correct Answer:</p>
-                                                        <div className="text-green-300 mt-1">
+                                                    <div className="mb-6 bg-white/5 p-4 rounded-lg">
+                                                        <p className="text-white font-semibold mb-2">✅ Correct Answer:</p>
+                                                        <div className="text-green-200">
                                                             {renderMixedContent(correctAnswer, true)}
                                                         </div>
                                                     </div>
 
                                                     {/* Explanation Display */}
                                                     {currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && (
-                                                        <div className="mb-4">
-                                                            <p className="text-white font-semibold">📝 Explanation:</p>
-                                                            <div className="mt-1">
+                                                        <div className="mb-6 bg-white/5 p-4 rounded-lg">
+                                                            <p className="text-white font-semibold mb-2">📝 Explanation:</p>
+                                                            <div className="text-gray-200">
                                                                 {renderMixedContent(currentQuestion.explanation, true)}
                                                             </div>
                                                         </div>
@@ -1361,9 +1361,9 @@ export default function QuizPage() {
 
                                                     {/* AI Explanation */}
                                                     {currentQuestion?.ai_explanation && (
-                                                        <div className="mt-4 p-4 bg-white/5 rounded-lg">
+                                                        <div className="bg-white/5 p-4 rounded-lg">
                                                             <p className="text-white font-semibold mb-2">🤖 AI Explanation:</p>
-                                                            <div className="text-gray-300">
+                                                            <div className="text-gray-200">
                                                                 {renderMixedContent(currentQuestion.ai_explanation, true)}
                                                             </div>
                                                         </div>
@@ -1539,21 +1539,21 @@ export default function QuizPage() {
                 {/* AI Explanation Modal */}
                 {isExplanationModalVisible && (
                     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                        <div className="rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900">
+                        <div className="rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col bg-[#1B1464]">
                             {/* Header - Fixed */}
-                            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">🤖 AI Explanation</h2>
+                            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+                                <h2 className="text-xl font-bold text-white">🤖 AI Explanation</h2>
                                 <button
                                     onClick={() => setIsExplanationModalVisible(false)}
-                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    className="text-gray-400 hover:text-white transition-colors"
                                 >
                                     ✕
                                 </button>
                             </div>
                             {/* Content - Scrollable */}
                             <div className="flex-1 overflow-y-auto p-6 min-h-0">
-                                <div className="prose prose-sm max-w-none dark:prose-invert">
-                                    {renderMixedContent(aiExplanation, false)}
+                                <div className="prose prose-sm max-w-none prose-invert">
+                                    {renderMixedContent(aiExplanation, true)}
                                 </div>
                             </div>
                         </div>
