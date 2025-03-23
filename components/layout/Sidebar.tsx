@@ -10,9 +10,9 @@ import { signOut } from 'firebase/auth'
 import Image from 'next/image'
 
 const menuItems = [
-  { path: '/', label: 'Dashboard' },
+  { path: '/admin', label: 'Dashboard' },
   { path: '/questions', label: 'Questions', showRejected: true },
-  { path: '/images', label: 'Images' },
+  { path: '/', label: 'APP' },
 ]
 
 export default function Sidebar() {

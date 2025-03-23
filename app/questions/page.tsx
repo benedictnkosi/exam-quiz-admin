@@ -8,6 +8,8 @@ import CreateQuestionModal from '@/components/questions/CreateQuestionModal'
 import { getQuestions, type Question, getRejectedQuestions } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL } from '@/config/constants'
+import Sidebar from '@/components/layout/Sidebar'
+import AdminRoute from '@/components/auth/AdminRoute'
 
 export default function QuestionsPage() {
   const router = useRouter()
@@ -100,40 +102,45 @@ export default function QuestionsPage() {
   }, [searchParams, filters.grade, filters.subject, handleSearch])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Questions</h1>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Create Question
-        </button>
+    <AdminRoute>
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-1 container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Questions</h1>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Create Question
+            </button>
+          </div>
+
+          <QuestionsFilter
+            filters={filters}
+            setFilters={updateFilters}
+            onSearch={handleSearch}
+            onFetchRejected={handleFetchRejected}
+          />
+
+          <QuestionsTable
+            questions={questions}
+            isLoading={loading}
+            error={error}
+            onDelete={(id) => setQuestions(prev => prev.filter(q => q.id !== id))}
+          />
+
+          {showCreateModal && (
+            <CreateQuestionModal
+              onClose={() => setShowCreateModal(false)}
+              onSuccess={() => {
+                setShowCreateModal(false)
+                handleSearch()
+              }}
+            />
+          )}
+        </div>
       </div>
-
-      <QuestionsFilter
-        filters={filters}
-        setFilters={updateFilters}
-        onSearch={handleSearch}
-        onFetchRejected={handleFetchRejected}
-      />
-
-      <QuestionsTable
-        questions={questions}
-        isLoading={loading}
-        error={error}
-        onDelete={(id) => setQuestions(prev => prev.filter(q => q.id !== id))}
-      />
-
-      {showCreateModal && (
-        <CreateQuestionModal
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false)
-            handleSearch()
-          }}
-        />
-      )}
-    </div>
+    </AdminRoute>
   )
 } 

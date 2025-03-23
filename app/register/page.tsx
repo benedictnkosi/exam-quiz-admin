@@ -6,6 +6,7 @@ import { auth } from '@/lib/firebase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'
+import { logAnalyticsEvent } from '@/lib/analytics'
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('')
@@ -65,6 +66,15 @@ export default function RegisterPage() {
                     throw new Error('Failed to create user profile')
                 }
             }
+
+            // Log registration success
+            await logAnalyticsEvent('register_success', {
+                user_id: user.uid,
+                email: email,
+                grade: onboardingData.grade,
+                school: onboardingData.school_name,
+                curriculum: onboardingData.curriculum
+            });
 
             router.push('/')
             router.refresh()

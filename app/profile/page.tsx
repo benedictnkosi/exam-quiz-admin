@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { getLearner, createLearner, getGrades } from '@/services/api'
 import { auth } from '@/lib/firebase'
-import { signOut as firebaseSignOut } from 'firebase/auth'
+import { signOut as firebaseSignOut, deleteUser } from 'firebase/auth'
 import { Autocomplete, LoadScriptNext } from '@react-google-maps/api'
 import { FiInfo } from 'react-icons/fi'
 
@@ -75,6 +75,9 @@ export default function ProfilePage() {
     const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null)
     const [schoolFunfact, setSchoolFunfact] = useState<string>('')
     const [isLoadingFact, setIsLoadingFact] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deleteConfirmation, setDeleteConfirmation] = useState('')
+    const [isDeleting, setIsDeleting] = useState(false)
 
     useEffect(() => {
         async function loadData() {
@@ -263,7 +266,7 @@ export default function ProfilePage() {
                 // Fetch fun fact when school is selected
                 setIsLoadingFact(true)
                 try {
-                    const { fact } = await getSchoolFunfacts(place.name || '')
+                    const { fact } = await getSchoolFunfacts(place.name || '', place.formatted_address || '')
                     setSchoolFunfact(fact)
                 } catch (error) {
                     console.error('Error loading fun fact:', error)
@@ -273,6 +276,65 @@ export default function ProfilePage() {
             }
         }
     }
+
+    const handleDeleteAccount = async () => {
+        if (!user?.uid) return;
+
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/learner/delete?uid=${user.uid}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error('Failed to delete account');
+            }
+
+            if (data.message === 'Learner and associated data deleted successfully') {
+                // Delete Firebase user account
+                try {
+                    await deleteUser(auth.currentUser!);
+                    setStatusModalConfig({
+                        title: 'Success',
+                        message: 'Account deleted successfully',
+                        type: 'success'
+                    });
+                    setShowStatusModal(true);
+                    setTimeout(async () => {
+                        await firebaseSignOut(auth);
+                        window.location.href = '/login';
+                    }, 3000);
+                } catch (firebaseError) {
+                    console.error('Error deleting Firebase account:', firebaseError);
+                    // Continue with sign out even if Firebase deletion fails
+                }
+            } else {
+                setStatusModalConfig({
+                    title: 'Error',
+                    message: data.message || 'Failed to delete account',
+                    type: 'error'
+                });
+                setShowStatusModal(true);
+            }
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            setStatusModalConfig({
+                title: 'Error',
+                message: 'Failed to delete account',
+                type: 'error'
+            });
+            setShowStatusModal(true);
+        } finally {
+            setIsDeleting(false);
+            setShowDeleteModal(false);
+            setDeleteConfirmation('');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#1B1464] text-white p-6">
@@ -301,8 +363,8 @@ export default function ProfilePage() {
                                     width={96}
                                     height={96}
                                     className="w-full h-full object-cover"
-                                    onError={(e: any) => {
-                                        e.target.src = '/images/subjects/icon.png'
+                                    onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                        e.currentTarget.src = '/images/subjects/icon.png'
                                     }}
                                 />
                             </div>
@@ -395,7 +457,7 @@ export default function ProfilePage() {
                             {/* Curriculum Selection */}
                             <div>
                                 <label className="block text-sm font-medium mb-2"> Choose Your Curriculums</label>
-                                <p className="text-sm text-gray-400 mb-3">Only questions from the selected curriculum\s will appear in the quiz.</p>
+                                <p className="text-sm text-gray-400 mb-3">Only questions from the selected curriculum&apos;s will appear in the quiz.</p>
                                 <div className="flex flex-wrap gap-2">
                                     {CURRICULA.map((curr) => (
                                         <button
@@ -482,10 +544,64 @@ export default function ProfilePage() {
                     <button
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                        className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 mb-4"
                     >
                         {isLoggingOut ? 'Signing out...' : 'Sign Out'}
                     </button>
+
+                    {/* Delete Account Button */}
+                    <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="w-full bg-red-900 hover:bg-red-800 text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2 transition-colors"
+                    >
+                        Delete Account
+                    </button>
+
+                    {/* Delete Account Modal */}
+                    {showDeleteModal && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+                            <div className="bg-[#1B1464] rounded-xl p-6 max-w-md w-full">
+                                <h3 className="text-xl font-bold mb-4">⚠️ Delete Account?</h3>
+                                <p className="text-gray-300 mb-6">
+                                    This action cannot be undone. All your data, including progress, settings, and history will be permanently deleted.
+                                </p>
+
+                                <div className="mb-6">
+                                    <p className="text-sm text-gray-400 mb-2">
+                                        Type <span className="text-red-500">delete</span> to confirm
+                                    </p>
+                                    <input
+                                        type="text"
+                                        value={deleteConfirmation}
+                                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                                        placeholder="Type 'delete'"
+                                        maxLength={50}
+                                    />
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => {
+                                            setShowDeleteModal(false);
+                                            setDeleteConfirmation('');
+                                        }}
+                                        className="flex-1 bg-gray-600 hover:bg-gray-700 text-white rounded-xl py-3"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteAccount}
+                                        disabled={isDeleting || deleteConfirmation !== 'delete'}
+                                        className={`flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl py-3 transition-colors ${(isDeleting || deleteConfirmation !== 'delete') ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                    >
+                                        {isDeleting ? 'Deleting...' : 'Delete Account'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </LoadScriptNext>
 
@@ -528,7 +644,7 @@ export default function ProfilePage() {
                                 onClick={saveChanges}
                                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3"
                             >
-                                ✅ Yes, Let's Do It!
+                                ✅ Yes, Let&apos;s Do It!
                             </button>
                         </div>
                     </div>

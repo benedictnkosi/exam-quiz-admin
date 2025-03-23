@@ -134,7 +134,7 @@ export default function OnboardingPage() {
             curriculum,
             difficultSubject,
             avatar: selectedAvatar,
-            
+
         })
         router.push(`/register?${params.toString()}`)
     }
@@ -189,8 +189,8 @@ export default function OnboardingPage() {
                             />
                         </div>
                         <div className="text-center space-y-6">
-                            <h2 className="text-3xl font-bold text-white">What's your name? 👋</h2>
-                            <p className="text-xl text-white/90">Let's make this journey personal!</p>
+                            <h2 className="text-3xl font-bold text-white">What&apos;s your name? 👋</h2>
+                            <p className="text-xl text-white/90">Let&apos;s make this journey personal!</p>
                             <div className="space-y-4">
                                 <input
                                     type="text"
@@ -245,7 +245,7 @@ export default function OnboardingPage() {
                             <h2 className="text-3xl font-bold text-white">🎓 Which school do you rep?</h2>
                             <p className="text-xl text-white/90">Join the learning squad! 🚀📚</p>
                             <LoadScriptNext
-                                googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyAM4_ept97xi7dsmE6PFewsPyo1M2vIfXI'}
+                                googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
                                 libraries={['places']}
                             >
                                 <Autocomplete
@@ -363,7 +363,7 @@ export default function OnboardingPage() {
                     <div className="space-y-8">
                         <div className="text-center space-y-6">
                             <h2 className="text-3xl font-bold text-white">🤔 Which subject challenges you the most?</h2>
-                            <p className="text-xl text-white/90">We'll give extra attention to this one! 💪</p>
+                            <p className="text-xl text-white/90">We&apos;ll give extra attention to this one! 💪</p>
                             <div className="space-y-4">
                                 {[
                                     { id: 'mathematics', label: 'Mathematics', emoji: '1️⃣' },

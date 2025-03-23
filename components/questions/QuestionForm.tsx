@@ -113,6 +113,12 @@ function cleanAnswer(answer: string): string {
   }
 }
 
+// Add type guard
+function isOptionsObject(options: string[] | { option1: string; option2: string; option3: string; option4: string; }):
+  options is { option1: string; option2: string; option3: string; option4: string; } {
+  return !Array.isArray(options) && 'option1' in options;
+}
+
 export default function QuestionForm({ initialData, mode = 'create', onSuccess }: QuestionFormProps) {
   const { user } = useAuth()
   const router = useRouter()
@@ -147,6 +153,15 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     curriculum: 'CAPS'
   }
 
+  // Update the initialization code
+  const initialOptions = initialData?.options ?
+    (isOptionsObject(initialData.options) ? [
+      initialData.options.option1 || '',
+      initialData.options.option2 || '',
+      initialData.options.option3 || '',
+      initialData.options.option4 || '',
+    ] : initialData.options) : ['', '', '', ''];
+
   const [formData, setFormData] = useState<FormData>(() => {
     if (initialData) {
       // Get grade as a string to ensure consistency
@@ -163,12 +178,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         context: initialData.context || '',
         answer: cleanAnswer(initialData.answer || ''),
         explanation: initialData.explanation || '',
-        options: [
-          initialData.options?.option1 || '',
-          initialData.options?.option2 || '',
-          initialData.options?.option3 || '',
-          initialData.options?.option4 || '',
-        ],
+        options: initialOptions,
         contextImage: initialData.image_path ? {
           file: null,
           path: initialData.image_path,

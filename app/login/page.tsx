@@ -54,7 +54,7 @@ export default function LoginPage() {
             Exam Quiz <span className="text-3xl">👋</span>
           </h1>
           <p className="mt-4 text-xl text-white/90">
-            Ready to ace those exams? Let's get started! 🚀
+            Ready to ace those exams? Let&apos;s get started! 🚀
           </p>
         </div>
 
@@ -131,6 +131,16 @@ export default function LoginPage() {
           >
             Create an account
           </Link>
+        </div>
+
+        {/* Privacy Policy Link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-400">
+            By signing in, you agree to our{' '}
+            <Link href="/privacy" className="text-indigo-400 hover:text-indigo-300 underline">
+              Privacy Policy
+            </Link>
+          </p>
         </div>
       </div>
     </div>

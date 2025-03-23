@@ -82,6 +82,7 @@ export default function Home() {
         ])
 
         setLearnerInfo(learnerData)
+        console.log("learnerData.role", learnerData.role)
         if (subjectsData?.subjects) {
           // Group subjects and combine P1/P2 stats
           const subjectGroups = subjectsData.subjects.reduce((acc: Record<string, GroupedSubject>, curr: Subject) => {
@@ -153,6 +154,17 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {learnerInfo?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </Link>
+            )}
             <Link
               href="/info"
               className="text-white hover:text-gray-300 transition-colors"
@@ -212,17 +224,31 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Share Button */}
-        <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2 mb-12">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-          </svg>
-          <span>Spread the fun, tell your friends! 📢</span>
-        </button>
+        {/* Share Buttons */}
+        <div className="flex gap-4 mb-12">
+          <button
+            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://examquiz.co.za')}`, '_blank', 'width=600,height=400')}
+            className="flex-1 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+            </svg>
+            <span>Share on Facebook</span>
+          </button>
+          <button
+            onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent('https://examquiz.co.za')}&text=${encodeURIComponent('Check out Exam Quiz - Learn, Play, and Grow! 🎓')}`, '_blank', 'width=600,height=400')}
+            className="flex-1 bg-[#1DA1F2] hover:bg-[#1A8CD8] text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+            </svg>
+            <span>Share on Twitter</span>
+          </button>
+        </div>
 
         {/* Subject Grid */}
         <h2 className="text-2xl font-bold mb-8">🤸‍♂️ Learn, Play, and Grow!</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {subjects.map(subject => {
             const masteryPercentage = subject.answered_questions === 0 ? 0 :
               Math.round((subject.correct_answers / subject.answered_questions) * 100)

@@ -7,6 +7,7 @@ import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, ch
 import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
 import type { JSX } from 'react'
+import { logAnalyticsEvent } from '@/lib/analytics'
 
 // Interfaces
 interface Question {
@@ -501,6 +502,18 @@ export default function QuizPage() {
 
             const response = await checkAnswer(user.uid, currentQuestion.id, answer, duration)
 
+            // Log analytics event
+            logAnalyticsEvent('submit_answer', {
+                user_id: user.uid,
+                question_id: currentQuestion.id,
+                is_correct: response.correct,
+                subject: currentQuestion.subject?.name,
+                grade: currentQuestion.subject?.grade?.number,
+                duration: duration,
+                streak: response.streak,
+                points: response.correct ? 1 : 0
+            });
+
             // Play sound based on answer correctness
             playSound(response.correct)
             setCorrectAnswer(response.correctAnswer)
@@ -628,7 +641,7 @@ export default function QuizPage() {
                     .replace(/\\text\{([^}]+)\}/g, '\\text{$1}')
                     .replace(/\[/g, '$')
                     .replace(/\]/g, '$')
-                    .replace(/\\[\[\]]/g, '$')
+                    .replace(/\\[[]]/g, '$')
                     // Remove newlines between $ signs to keep LaTeX on one line
                     .replace(/\$\s*\n\s*([^$]+)\s*\n\s*\$/g, '$ $1 $')
 
@@ -898,7 +911,7 @@ export default function QuizPage() {
             {/* Toggle Button - Only visible on smaller screens */}
             <button
                 onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-lg p-3 rounded-xl text-[#00B894] hover:bg-gray-100 transition-colors"
+                className="lg:hidden fixed top-4 left-4 z-20 bg-white shadow-lg p-3 rounded-xl text-[#00B894] hover:bg-gray-100 transition-colors"
             >
                 {isSidebarVisible ? '✕ Close' : '☰ Menu'}
             </button>
@@ -1007,26 +1020,44 @@ export default function QuizPage() {
 
                     {/* Favorites Section */}
                     <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col min-h-0">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-bold text-white">⭐ Favorite Questions</h2>
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="text-2xl">⭐</span>
+                            <h2 className="text-xl font-bold text-white">Favorite Questions</h2>
                             {isFavoritesLoading && (
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white ml-auto"></div>
                             )}
                         </div>
                         <div className="flex-1 overflow-y-auto">
                             {favoriteQuestions.length > 0 ? (
                                 <div className="space-y-3">
-                                    {favoriteQuestions.map((fav) => (
-                                        <button
-                                            key={fav.id}
-                                            onClick={() => loadSpecificQuestion(fav.questionId)}
-                                            className="w-full text-left p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-                                        >
-                                            <p className="text-white text-sm line-clamp-2">
-                                                {fav.question || fav.context || `Question #${fav.questionId}`}
-                                            </p>
-                                        </button>
-                                    ))}
+                                    {favoriteQuestions.map((fav, index) => {
+                                        // Rotate through background colors
+                                        const bgColors = [
+                                            'bg-pink-400/80',
+                                            'bg-orange-400/80',
+                                            'bg-green-400/80',
+                                            'bg-blue-400/80',
+                                            'bg-purple-400/80'
+                                        ];
+                                        const bgColor = bgColors[index % bgColors.length];
+
+                                        return (
+                                            <button
+                                                key={fav.id}
+                                                onClick={() => loadSpecificQuestion(fav.questionId)}
+                                                className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-transform hover:scale-[1.02] relative group`}
+                                            >
+                                                <p className="text-white text-lg font-medium pr-8">
+                                                    {fav.question || fav.context || `Question #${fav.questionId}`}
+                                                </p>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                                        <span className="text-white">→</span>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="h-full flex items-center justify-center">
@@ -1109,7 +1140,7 @@ export default function QuizPage() {
                         <div className="max-w-3xl mx-auto">
                             {/* Question Card */}
                             {currentQuestion && (
-                                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8">
+                                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8 mt-12 lg:mt-0">
                                     {/* Question Metadata */}
                                     <div className="flex flex-wrap gap-3 mb-4 text-sm">
                                         <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
@@ -1124,6 +1155,26 @@ export default function QuizPage() {
                                             <span className="text-xs">📚</span>
                                             <span>{currentQuestion.curriculum}</span>
                                         </div>
+                                        {currentQuestion && (
+                                            <button
+                                                onClick={isCurrentQuestionFavorited ? handleUnfavoriteQuestion : handleFavoriteQuestion}
+                                                disabled={isFavoriting}
+                                                className={`bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5 transition-colors ${isCurrentQuestionFavorited
+                                                    ? 'text-yellow-400 hover:text-yellow-500'
+                                                    : 'text-white/80 hover:text-white'
+                                                    }`}
+                                                aria-label={isCurrentQuestionFavorited ? "Remove from favorites" : "Add to favorites"}
+                                            >
+                                                {isFavoriting ? (
+                                                    <div className="w-4 h-4 flex items-center justify-center">
+                                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs">⭐</span>
+                                                )}
+                                                <span>{isCurrentQuestionFavorited ? 'Favorited' : 'Add to Favorites'}</span>
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Question Context */}
@@ -1193,18 +1244,16 @@ export default function QuizPage() {
                                                 key={key}
                                                 onClick={() => handleAnswer(value)}
                                                 disabled={isAnswered}
-                                                className={`w-full p-4 rounded-lg text-left transition-all ${isAnswered
-                                                    ? selectedAnswer === value
-                                                        ? isCorrect
-                                                            ? 'bg-green-500/20 border-green-500'
-                                                            : 'bg-red-500/20 border-red-500'
-                                                        : cleanAnswer(value) === cleanAnswer(currentQuestion.answer)
-                                                            ? 'bg-green-500/20 border-green-500'
-                                                            : 'bg-white/5'
-                                                    : 'bg-white/5 hover:bg-white/10'
-                                                    } ${isAnswered ? 'cursor-default' : 'cursor-pointer'} text-white`}
+                                                className={`w-full p-4 rounded-lg text-left transition-all border ${selectedAnswer === value
+                                                    ? isCorrect
+                                                        ? 'bg-green-100 text-green-900 border-green-500'
+                                                        : 'bg-red-100/90 text-gray-900 border-red-400'
+                                                    : cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
+                                                        ? 'bg-green-100 text-green-900 border-green-500'
+                                                        : 'bg-white/95 hover:bg-gray-50 border-gray-200'
+                                                    } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
                                             >
-                                                {renderMixedContent(value, true)}
+                                                {renderMixedContent(value, false)}
                                             </button>
                                         ))}
                                     </div>
@@ -1273,42 +1322,6 @@ export default function QuizPage() {
                                             </div>
                                         </div>
                                     )}
-
-                                    {/* Favorite Button */}
-                                    <div className="flex items-center gap-2">
-                                        {currentQuestion && (
-                                            <button
-                                                onClick={isCurrentQuestionFavorited ? handleUnfavoriteQuestion : handleFavoriteQuestion}
-                                                disabled={isFavoriting}
-                                                className={`p-2 rounded-full transition-colors ${isCurrentQuestionFavorited
-                                                    ? 'text-yellow-400 hover:text-yellow-500'
-                                                    : 'text-gray-400 hover:text-gray-500'
-                                                    }`}
-                                                aria-label={isCurrentQuestionFavorited ? "Remove from favorites" : "Add to favorites"}
-                                            >
-                                                {isFavoriting ? (
-                                                    <div className="w-6 h-6 flex items-center justify-center">
-                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                                                    </div>
-                                                ) : (
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 24 24"
-                                                        fill={isCurrentQuestionFavorited ? "currentColor" : "none"}
-                                                        stroke="currentColor"
-                                                        className="w-6 h-6"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
-                                                        />
-                                                    </svg>
-                                                )}
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
                             )}
 
@@ -1400,14 +1413,32 @@ export default function QuizPage() {
             {/* Thank You Modal */}
             {isThankYouModalVisible && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-lg w-full text-center">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Thank You!</h2>
-                        <p className="text-gray-600 mb-6">Your report has been submitted successfully. We appreciate your feedback!</p>
+                    <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center">
+                        {/* Green Checkmark Circle */}
+                        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+
+                        {/* Title with Emojis */}
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-2">
+                            <span>🎉</span>
+                            You&apos;re Awesome!
+                            <span>👋</span>
+                        </h2>
+
+                        {/* Message */}
+                        <p className="text-gray-600 mb-8 text-lg">
+                            Your feedback helps us level up our questions! Thanks for making the quiz even better. 🚀💡
+                        </p>
+
+                        {/* Keep Going Button */}
                         <button
                             onClick={() => setIsThankYouModalVisible(false)}
-                            className="py-2 px-8 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                            className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
                         >
-                            Close
+                            Keep Going <span>🚀</span>
                         </button>
                     </div>
                 </div>
@@ -1457,21 +1488,21 @@ export default function QuizPage() {
             {/* AI Explanation Modal */}
             {isExplanationModalVisible && (
                 <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className={`rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col ${true ? 'bg-gray-900' : 'bg-white'}`}>
+                    <div className="rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900">
                         {/* Header - Fixed */}
-                        <div className="flex justify-between items-center p-6 border-b border-gray-700">
-                            <h2 className={`text-xl font-bold ${true ? 'text-white' : 'text-gray-900'}`}>🤖 AI Explanation</h2>
+                        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">🤖 AI Explanation</h2>
                             <button
                                 onClick={() => setIsExplanationModalVisible(false)}
-                                className={`${true ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                             >
                                 ✕
                             </button>
                         </div>
                         {/* Content - Scrollable */}
                         <div className="flex-1 overflow-y-auto p-6 min-h-0">
-                            <div className="prose prose-sm max-w-none">
-                                {renderMixedContent(aiExplanation, true)}
+                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                                {renderMixedContent(aiExplanation, false)}
                             </div>
                         </div>
                     </div>
