@@ -98,7 +98,7 @@ export default function LoginPage() {
             </button>
             <h2 className="text-2xl font-bold text-[#1e1b4b] mb-4">Coming Soon!</h2>
             <p className="text-gray-600 mb-6">
-              We're working hard to bring Exam Quiz to Android. Stay tuned for updates!
+              We&apos;re working hard to bring Exam Quiz to Android. Stay tuned for updates!
             </p>
             <button
               onClick={() => setShowAndroidModal(false)}
