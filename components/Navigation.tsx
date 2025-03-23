@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const adminNavigationItems = [
-  { name: 'Dashboard', href: '/' },
+  { name: 'Dashboard', href: '/admin' },
   { name: 'Questions', href: '/questions' }
 ]
 

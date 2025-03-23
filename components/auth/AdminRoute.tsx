@@ -9,9 +9,18 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
     const { user, loading } = useAuth()
 
     useEffect(() => {
-        if (!loading && (!user || !user.isAdmin)) {
-            router.push('/')
+        const checkAdminStatus = async () => {
+            if (!user) return
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/learner/${user.uid}`)
+            const data = await response.json()
+            console.log(data)
+
+            if (!loading && (!user || data.role !== 'admin')) {
+                router.push('/')
+            }
         }
+        checkAdminStatus()
     }, [user, loading, router])
 
     if (loading) {
@@ -22,9 +31,6 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
         )
     }
 
-    if (!user || !user.isAdmin) {
-        return null
-    }
 
     return <>{children}</>
 } 
