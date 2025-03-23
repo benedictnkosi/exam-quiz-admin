@@ -354,7 +354,7 @@ export default function QuizPage() {
     const [showExplanation, setShowExplanation] = useState(false)
     const [streak, setStreak] = useState(0)
     const [points, setPoints] = useState(0)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [noMoreQuestions, setNoMoreQuestions] = useState(false)
     const [stats, setStats] = useState<SubjectStats['data']['stats'] | null>(null)
     const [favoriteQuestions, setFavoriteQuestions] = useState<FavoriteQuestion[]>([])
@@ -381,7 +381,7 @@ export default function QuizPage() {
     const [isExplanationModalVisible, setIsExplanationModalVisible] = useState(false)
     const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
     const [isFavoriting, setIsFavoriting] = useState(false)
-    const [selectedPaper, setSelectedPaper] = useState<string | null>(null)
+    const [selectedPaper, setSelectedPaper] = useState<string>('')
     const [correctAnswer, setCorrectAnswer] = useState<string>('')
 
     const [messageModal, setMessageModal] = useState<{
@@ -394,7 +394,7 @@ export default function QuizPage() {
         type: 'info'
     });
     const [isRestartModalVisible, setIsRestartModalVisible] = useState(false)
-    const [isSidebarVisible, setIsSidebarVisible] = useState(false)
+    const [isSidebarVisible, setIsSidebarVisible] = useState(true)
 
     const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'https://api.examquiz.co.za'
     const startTimer = () => {
@@ -410,21 +410,15 @@ export default function QuizPage() {
     }
 
     useEffect(() => {
-        if (user?.uid && subjectId) {
-            loadRandomQuestion('P1') // Default to Paper 1, you can change this as needed
-        }
-    }, [user?.uid, subjectId])
-
-    useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 1024) { // lg breakpoint
                 setIsSidebarVisible(true);
-            } else {
-                setIsSidebarVisible(false);
             }
         };
 
-        handleResize(); // Set initial state
+        // Initial check
+        handleResize();
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -435,6 +429,8 @@ export default function QuizPage() {
         }
         // Set the selected paper
         setSelectedPaper(paper)
+        // Close the sidebar on mobile when a paper is selected
+        setIsSidebarVisible(false)
         // Reset all states before loading new question
         setSelectedAnswer(null)
         setShowExplanation(false)
@@ -526,6 +522,13 @@ export default function QuizPage() {
             setFeedbackMessage(response.correct ? getRandomSuccessMessage() : getRandomWrongMessage())
             setShowExplanation(true)
 
+            if (response.correct) {
+                //increament points by 1
+                setPoints(points + 1)
+            } else {
+                //decreament points by 1
+                setPoints(points - 1)
+            }
             // Handle points and streak display
             if (response.streakUpdated && response.correct) {
                 setEarnedPoints(points)
@@ -839,6 +842,9 @@ export default function QuizPage() {
         }
         try {
             setLoading(true);
+            // Close the sidebar on mobile when a favorite is clicked
+            setIsSidebarVisible(false);
+
             const response = await fetch(
                 `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=P1&uid=${user.uid}&question_id=${questionId}`
             );
@@ -918,8 +924,17 @@ export default function QuizPage() {
 
             <div className="flex h-full">
                 {/* Left Panel - Subject Info */}
-                <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block w-full lg:w-1/3 bg-[#00B894] p-6 flex flex-col h-screen sticky top-0 overflow-y-auto z-40`}>
-                    <div className="flex items-center gap-4 mb-6">
+                <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block fixed lg:static w-full lg:w-1/3 bg-[#00B894] p-6 flex flex-col h-screen overflow-y-auto z-40`}>
+                    {/* Close button - Only visible on mobile */}
+                    <button
+                        onClick={() => setIsSidebarVisible(false)}
+                        className="lg:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
+                        aria-label="Close menu"
+                    >
+                        ✕
+                    </button>
+
+                    <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
                         <Image
                             src={getSubjectIcon(subjectName || '')}
                             alt={subjectName || ''}
@@ -931,51 +946,53 @@ export default function QuizPage() {
                     </div>
 
                     {/* Stats Card */}
-                    <div className="bg-white rounded-xl p-6 mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-black text-xl font-bold flex items-center gap-2">
-                                {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
-                            </h2>
-                            <button className="text-2xl"
-                                onClick={() => setIsRestartModalVisible(true)}
-                            >🔄</button>
-                        </div>
+                    {selectedPaper && (
+                        <div className="bg-white rounded-xl p-6 mb-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-black text-xl font-bold flex items-center gap-2">
+                                    {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
+                                </h2>
+                                <button className="text-2xl"
+                                    onClick={() => setIsRestartModalVisible(true)}
+                                >🔄</button>
+                            </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gray-50 rounded-xl p-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-2xl">🎯</span>
-                                    <div>
-                                        <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
-                                        <div className="text-gray-500">Bullseyes</div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-gray-50 rounded-xl p-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-2xl">🎯</span>
+                                        <div>
+                                            <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
+                                            <div className="text-gray-500">Bullseyes</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-xl p-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-2xl">💥</span>
+                                        <div>
+                                            <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
+                                            <div className="text-gray-500">Oopsies</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-gray-50 rounded-xl p-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-2xl">💥</span>
-                                    <div>
-                                        <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
-                                        <div className="text-gray-500">Oopsies</div>
-                                    </div>
+                            <div className="mt-4">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-gray-600 text-sm">Progress</span>
+                                    <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div
+                                        className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
+                                        style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
+                                    ></div>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="mt-4">
-                            <div className="flex items-center justify-between mb-1">
-                                <span className="text-gray-600 text-sm">Progress</span>
-                                <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                <div
-                                    className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
-                                    style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
+                    )}
 
                     {/* Paper Selection */}
                     <div className="bg-white/10 rounded-xl p-6">
@@ -1019,25 +1036,25 @@ export default function QuizPage() {
                     </div>
 
                     {/* Favorites Section */}
-                    <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col min-h-0">
-                        <div className="flex items-center gap-2 mb-4">
+                    <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
+                        <div className="flex items-center justify-center gap-2 mb-4 relative">
                             <span className="text-2xl">⭐</span>
                             <h2 className="text-xl font-bold text-white">Favorite Questions</h2>
                             {isFavoritesLoading && (
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white ml-auto"></div>
+                                <div className="absolute right-0 animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
                             )}
                         </div>
-                        <div className="flex-1 overflow-y-auto">
+                        <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[calc(100vh-600px)] lg:max-h-[400px]">
                             {favoriteQuestions.length > 0 ? (
                                 <div className="space-y-3">
                                     {favoriteQuestions.map((fav, index) => {
-                                        // Rotate through background colors
+                                        // Rotate through background colors with better opacity
                                         const bgColors = [
-                                            'bg-pink-400/80',
-                                            'bg-orange-400/80',
-                                            'bg-green-400/80',
-                                            'bg-blue-400/80',
-                                            'bg-purple-400/80'
+                                            'bg-pink-500/20',
+                                            'bg-orange-500/20',
+                                            'bg-green-500/20',
+                                            'bg-blue-500/20',
+                                            'bg-purple-500/20'
                                         ];
                                         const bgColor = bgColors[index % bgColors.length];
 
@@ -1045,14 +1062,21 @@ export default function QuizPage() {
                                             <button
                                                 key={fav.id}
                                                 onClick={() => loadSpecificQuestion(fav.questionId)}
-                                                className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-transform hover:scale-[1.02] relative group`}
+                                                className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
                                             >
-                                                <p className="text-white text-lg font-medium pr-8">
-                                                    {fav.question || fav.context || `Question #${fav.questionId}`}
-                                                </p>
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                                        <span className="text-white">→</span>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                                        <span className="text-white text-sm">#{index + 1}</span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-white text-sm font-medium line-clamp-2 pr-8">
+                                                            {fav.question || fav.context || `Question #${fav.questionId}`}
+                                                        </p>
+                                                    </div>
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                                            <span className="text-white">→</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </button>
@@ -1061,9 +1085,12 @@ export default function QuizPage() {
                                 </div>
                             ) : (
                                 <div className="h-full flex items-center justify-center">
-                                    <p className="text-white/60 text-center">
-                                        No saved questions yet
-                                    </p>
+                                    <div className="text-center">
+                                        <div className="text-4xl mb-2">⭐</div>
+                                        <p className="text-white/60 text-sm">
+                                            No saved questions yet
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -1080,7 +1107,7 @@ export default function QuizPage() {
                 </div>
 
                 {/* Right Panel - Quiz Content */}
-                <div className={`${isSidebarVisible ? 'hidden lg:block' : 'block'} flex-1 p-6 lg:p-6 min-h-screen`}>
+                <div className={`flex-1 p-6 lg:p-6 min-h-screen ${isSidebarVisible ? 'hidden lg:block' : 'block'}`}>
                     {loading ? (
                         <div className="h-full flex items-center justify-center">
                             <div className="text-white text-center">
@@ -1211,18 +1238,18 @@ export default function QuizPage() {
 
                                     {/* Question */}
                                     <div className="mb-6">
-                                        <h3 className="text-lg font-semibold mb-2 text-white">Question</h3>
-                                        <div className="text-xl mb-2 text-white">
+                                        <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
+                                        <div className="text-xl mb-2 text-white text-center">
                                             {renderMixedContent(currentQuestion.question, true)}
                                         </div>
                                         {currentQuestion.question_image_path && currentQuestion.question_image_path !== 'NULL' && (
-                                            <div className="mt-4">
+                                            <div className="mt-4 text-center">
                                                 <button
                                                     onClick={() => {
                                                         setZoomImageUrl(currentQuestion.question_image_path || null)
                                                         setIsZoomModalVisible(true)
                                                     }}
-                                                    className="w-full"
+                                                    className="inline-block"
                                                 >
                                                     <Image
                                                         src={`${IMAGE_BASE_URL}${currentQuestion.question_image_path}`}
@@ -1244,7 +1271,7 @@ export default function QuizPage() {
                                                 key={key}
                                                 onClick={() => handleAnswer(value)}
                                                 disabled={isAnswered}
-                                                className={`w-full p-4 rounded-lg text-left transition-all border ${selectedAnswer === value
+                                                className={`w-full p-4 rounded-lg text-center transition-all border ${selectedAnswer === value
                                                     ? isCorrect
                                                         ? 'bg-green-100 text-green-900 border-green-500'
                                                         : 'bg-red-100/90 text-gray-900 border-red-400'

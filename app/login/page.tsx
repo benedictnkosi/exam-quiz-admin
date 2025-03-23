@@ -52,7 +52,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#312e81] to-[#1e1b4b] p-16 flex-col justify-between relative overflow-hidden">
         {/* Mock Image */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-[80%] max-w-[500px]" style={{ transform: 'rotate(-12deg)' }}>
+          <div className="relative w-[60%] max-w-[400px]" style={{ transform: 'rotate(12deg)' }}>
             <div className="absolute inset-0 bg-gradient-to-t from-[#312e81] via-transparent to-transparent z-10" />
             <img
               src="/images/mock.png"
