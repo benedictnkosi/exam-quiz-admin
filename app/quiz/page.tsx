@@ -1312,22 +1312,6 @@ export default function QuizPage() {
                                             ))}
                                         </div>
 
-                                        {/* AI Explanation Button */}
-                                        <button
-                                            onClick={() => fetchAIExplanation(currentQuestion.id)}
-                                            disabled={isLoadingExplanation}
-                                            className="w-full mt-4 p-4 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            {isLoadingExplanation ? (
-                                                <>
-                                                    <span className="text-white">🤖 Pretending to think...</span>
-                                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
-                                                </>
-                                            ) : (
-                                                <span className="text-white">🤖 Break it Down for Me!</span>
-                                            )}
-                                        </button>
-
                                         {/* Report Issue Button */}
                                         <button
                                             onClick={reportIssue}
@@ -1364,15 +1348,23 @@ export default function QuizPage() {
                                                         </div>
                                                     )}
 
-                                                    {/* AI Explanation */}
-                                                    {currentQuestion?.ai_explanation && (
-                                                        <div className="bg-white/5 p-4 rounded-lg">
-                                                            <p className="text-white font-semibold mb-2">🤖 AI Explanation:</p>
-                                                            <div className="text-gray-200">
-                                                                {renderMixedContent(currentQuestion.ai_explanation, true)}
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    {/* AI Explanation Button */}
+                                                    <button
+                                                        onClick={() => fetchAIExplanation(currentQuestion.id)}
+                                                        disabled={isLoadingExplanation}
+                                                        className="w-full p-4 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        {isLoadingExplanation ? (
+                                                            <>
+                                                                <span className="text-white">🤖 Pretending to think...</span>
+                                                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-white">🤖 Break it Down for Me!</span>
+                                                        )}
+                                                    </button>
+
+
                                                 </div>
                                             </div>
                                         )}
