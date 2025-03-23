@@ -584,7 +584,7 @@ export default function QuizPage() {
         setSelectedAnswer('')
         setIsAnswered(false)
         setShowExplanation(false)
-        loadRandomQuestion('P1')
+        loadRandomQuestion(selectedPaper)
     }
 
     const reportIssue = () => {
@@ -930,14 +930,16 @@ export default function QuizPage() {
                 <div className="flex h-full">
                     {/* Left Panel - Subject Info */}
                     <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block fixed lg:static w-full lg:w-1/3 bg-[#00B894] p-6 flex flex-col h-screen overflow-y-auto z-40`}>
-                        {/* Close button - Only visible on mobile */}
-                        <button
-                            onClick={() => setIsSidebarVisible(false)}
-                            className="lg:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
-                            aria-label="Close menu"
-                        >
-                            ✕
-                        </button>
+                        {/* Close button - Only visible on mobile when paper is selected */}
+                        {selectedPaper && (
+                            <button
+                                onClick={() => setIsSidebarVisible(false)}
+                                className="lg:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
+                                aria-label="Close menu"
+                            >
+                                ✕
+                            </button>
+                        )}
 
                         <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
                             <Image
@@ -1118,6 +1120,21 @@ export default function QuizPage() {
                                 <div className="text-white text-center">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
                                     <p>Loading your question...</p>
+                                </div>
+                            </div>
+                        ) : !selectedPaper ? (
+                            <div className="h-full flex items-center justify-center">
+                                <div className="text-center max-w-md mx-auto">
+                                    <div className="text-6xl mb-6">📚</div>
+                                    <h2 className="text-2xl font-bold text-white mb-4">Ready to Start Learning?</h2>
+                                    <p className="text-gray-300 mb-6">
+                                        Choose either Paper 1 or Paper 2 from the menu to begin your quiz journey. Each paper contains unique questions to help you master the subject.
+                                    </p>
+                                    <div className="bg-white/10 rounded-xl p-4">
+                                        <p className="text-white/80 text-sm">
+                                            💡 <span className="font-medium">Tip:</span> You can track your progress, save favorite questions, and even get AI explanations once you start!
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         ) : noMoreQuestions ? (
@@ -1358,15 +1375,17 @@ export default function QuizPage() {
                                 )}
 
                                 {/* Next Question Button */}
-                                <div className="flex justify-center mb-8">
-                                    <button
-                                        onClick={handleNext}
-                                        className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full py-4 px-8 flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-opacity"
-                                    >
-                                        <span className="text-xl">▶</span>
-                                        <span className="font-semibold">🎯 Next Question</span>
-                                    </button>
-                                </div>
+                                {currentQuestion && (
+                                    <div className="flex justify-center mb-8">
+                                        <button
+                                            onClick={handleNext}
+                                            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full py-4 px-8 flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-opacity"
+                                        >
+                                            <span className="text-xl">▶</span>
+                                            <span className="font-semibold">🎯 Next Question</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

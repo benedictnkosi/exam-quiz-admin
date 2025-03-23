@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
 import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'
+import { IoLogoApple, IoLogoGooglePlaystore } from 'react-icons/io5'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showAndroidModal, setShowAndroidModal] = useState(false)
   const router = useRouter()
   const { user } = useAuth()
 
@@ -62,7 +64,51 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* Download Buttons - Desktop Only */}
+        <div className="relative z-20 mt-auto space-y-4">
+          <a
+            href="https://apps.apple.com/za/app/past-papers-exam-quiz/id6742684696"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white text-[#1e1b4b] hover:bg-white/90 transition-all duration-300 transform hover:scale-[1.02]"
+          >
+            <IoLogoApple size={24} />
+            <span className="font-semibold">Download on App Store</span>
+          </a>
+
+          <button
+            onClick={() => setShowAndroidModal(true)}
+            className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02]"
+          >
+            <IoLogoGooglePlaystore size={24} />
+            <span className="font-semibold">Get it on Google Play</span>
+          </button>
+        </div>
       </div>
+
+      {/* Android Coming Soon Modal */}
+      {showAndroidModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative">
+            <button
+              onClick={() => setShowAndroidModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl font-bold text-[#1e1b4b] mb-4">Coming Soon!</h2>
+            <p className="text-gray-600 mb-6">
+              We're working hard to bring Exam Quiz to Android. Stay tuned for updates!
+            </p>
+            <button
+              onClick={() => setShowAndroidModal(false)}
+              className="w-full py-3 px-6 rounded-full bg-[#1e1b4b] text-white hover:bg-[#312e81] transition-all duration-300"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Right Section - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
@@ -147,6 +193,27 @@ export default function LoginPage() {
             >
               Create an account
             </Link>
+          </div>
+
+          {/* Download Buttons - Mobile Only */}
+          <div className="lg:hidden space-y-4">
+            <a
+              href="https://apps.apple.com/za/app/past-papers-exam-quiz/id6742684696"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white text-[#1e1b4b] hover:bg-white/90 transition-all duration-300 transform hover:scale-[1.02]"
+            >
+              <IoLogoApple size={24} />
+              <span className="font-semibold">Download on App Store</span>
+            </a>
+
+            <button
+              onClick={() => setShowAndroidModal(true)}
+              className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02]"
+            >
+              <IoLogoGooglePlaystore size={24} />
+              <span className="font-semibold">Get it on Google Play</span>
+            </button>
           </div>
 
           <div className="text-center">
