@@ -1143,7 +1143,7 @@ export default function QuizPage() {
                                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
                                         <div className="w-24 h-24 rounded-full bg-blue-400 overflow-hidden mb-4 mx-auto">
                                             <Image
-                                                src="/images/avatars/1.png"
+                                                src="/images/avatars/5.png"
                                                 alt="Profile"
                                                 width={96}
                                                 height={96}

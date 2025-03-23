@@ -358,7 +358,7 @@ export default function ProfilePage() {
                         <div className="flex flex-col items-center mb-8">
                             <div className="w-24 h-24 rounded-full bg-blue-400 overflow-hidden mb-4">
                                 <Image
-                                    src={learnerInfo?.avatar ? `/images/avatars/${learnerInfo.avatar}` : '/images/avatars/1.png'}
+                                    src={learnerInfo?.avatar ? `/images/avatars/${learnerInfo.avatar}.png` : '/images/avatars/1.png'}
                                     alt="Profile"
                                     width={96}
                                     height={96}
