@@ -133,7 +133,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-5 py-4 bg-white rounded-2xl text-gray-900 text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-                placeholder="nkosi@gmail.com"
+                placeholder="email@example.com"
                 disabled={loading}
               />
               <div className="relative">

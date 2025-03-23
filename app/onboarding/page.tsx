@@ -396,14 +396,7 @@ export default function OnboardingPage() {
             case 6:
                 return (
                     <div className="space-y-8">
-                        <div className="relative w-full h-[200px]">
-                            <Image
-                                src={ILLUSTRATIONS.ready}
-                                alt="Avatar Selection"
-                                layout="fill"
-                                objectFit="contain"
-                            />
-                        </div>
+
                         <div className="text-center space-y-6">
                             <h2 className="text-3xl font-bold text-white">🎨 Choose Your Avatar</h2>
                             <p className="text-xl text-white/90">Pick a cool avatar to represent you! ✨</p>

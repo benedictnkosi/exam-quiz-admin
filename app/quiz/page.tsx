@@ -1141,13 +1141,18 @@ export default function QuizPage() {
                             <div className="p-6">
                                 <div className="max-w-3xl mx-auto">
                                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
-                                        <Image
-                                            src="/images/illustrations/stressed.png"
-                                            alt="No Questions"
-                                            width={200}
-                                            height={200}
-                                            className="mx-auto mb-6"
-                                        />
+                                        <div className="w-24 h-24 rounded-full bg-blue-400 overflow-hidden mb-4 mx-auto">
+                                            <Image
+                                                src="/images/avatars/1.png"
+                                                alt="Profile"
+                                                width={96}
+                                                height={96}
+                                                className="w-full h-full object-cover"
+                                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                                    e.currentTarget.src = '/images/subjects/icon.png'
+                                                }}
+                                            />
+                                        </div>
                                         <h2 className="text-2xl font-bold text-white mb-2">
                                             🐛 Oops! Looks like the quiz gremlins ate all the questions!
                                         </h2>
