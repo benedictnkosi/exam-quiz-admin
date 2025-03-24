@@ -190,27 +190,145 @@ function getRandomLoadingMessage(): string {
 }
 
 // Add helper function
+let isOpeningDollarSign = false
+let isClosingDollarSignNextLine = false
+
 function renderMixedContent(text: string, isDark: boolean = false) {
     if (!text) return null;
 
+    if (text.includes('$') && text.trim().length < 3 && !isOpeningDollarSign && !isClosingDollarSignNextLine) {
+        isOpeningDollarSign = true
+        return ''
+    }
+
+    if (isOpeningDollarSign) {
+        isOpeningDollarSign = false
+        isClosingDollarSignNextLine = true
+        text = `$${text}$`
+    }
+
+    if (text.includes('$') && text.trim().length < 3 && isClosingDollarSignNextLine) {
+        isClosingDollarSignNextLine = false
+        return ''
+    }
+
+    // Handle headings first
+    if (text.startsWith('# ')) {
+        return (
+            <h1 className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                🤖 {text.substring(2).trim()}
+            </h1>
+        );
+    }
+    if (text.startsWith('## ')) {
+        return (
+            <h2 className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {text.substring(3).trim()}
+            </h2>
+        );
+    }
+    if (text.startsWith('### ')) {
+        return (
+            <h3 className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {text.substring(4).trim()}
+            </h3>
+        );
+    }
+    if (text.startsWith('#### ')) {
+        return (
+            <h4 className={`text-lg font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {text.substring(5).trim()}
+            </h4>
+        );
+    }
+
+    // Handle bullet points
+    if (text.trim().startsWith('-')) {
+        const content = text.trim().substring(1).trim();
+        const hasBold = content.includes('**');
+
+        // Split content into bold parts first
+        const boldParts = content.split(/(\*\*[^*]+\*\*)/g);
+
+        return (
+            <div className="flex items-start space-x-2 mb-4">
+                <span className={`bullet-point ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {hasBold ? '✅' : '🎯'}
+                </span>
+                <div className={`flex-1 ${!hasBold ? 'ml-4' : ''}`}>
+                    {boldParts.map((part, index) => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                            // Handle bold text
+                            const innerContent = part.slice(2, -2);
+                            return (
+                                <span
+                                    key={index}
+                                    className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
+                                >
+                                    {innerContent.includes('$') ? (
+                                        // Handle formulas within bold text
+                                        <>{renderMixedContent(innerContent, isDark)}</>
+                                    ) : (
+                                        innerContent
+                                    )}
+                                </span>
+                            );
+                        } else if (part.includes('$')) {
+                            // Handle formulas in non-bold text
+                            return <span key={index}>{renderMixedContent(part, isDark)}</span>;
+                        } else {
+                            // Regular text
+                            return part ? (
+                                <span
+                                    key={index}
+                                    className={`${isDark ? 'text-white' : 'text-gray-900'}`}
+                                >
+                                    {part}
+                                </span>
+                            ) : null;
+                        }
+                    })}
+                </div>
+            </div>
+        );
+    }
+
+    // Handle formulas and regular text
     if (text.includes('$')) {
+        //remove ** from the text
+        text = text.replace(/\*\*/g, '')
         // First split by LaTeX delimiters
         const parts = text.split(/(\$[^$]+\$)/g);
 
         return (
-            <div className="mixed-content-container space-y-2">
+            <div className="mixed-content-container space-y-2 inline">
                 {parts.map((part, index) => {
                     if (part.startsWith('$') && part.endsWith('$')) {
                         // LaTeX content
                         return (
                             <div key={index} className={`latex-container inline-block ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                {/* // remove ** from the part */}
                                 <InlineMath math={part.slice(1, -1)} />
                             </div>
                         );
                     } else {
+                        // Regular text with potential bold formatting
+                        const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
                         return (
                             <span key={index} className={`content-text ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                {part}
+                                {boldParts.map((boldPart, boldIndex) => {
+                                    if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
+                                        return (
+                                            <span
+                                                key={`${index}-${boldIndex}`}
+                                                className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
+                                            >
+                                                {boldPart.slice(2, -2)}
+                                            </span>
+                                        );
+                                    }
+                                    return boldPart;
+                                })}
                             </span>
                         );
                     }
@@ -219,116 +337,29 @@ function renderMixedContent(text: string, isDark: boolean = false) {
         );
     }
 
-    // Split by new line
-    const parts = text.split(/\n/g);
-
+    // Handle regular text with bold formatting
+    const boldParts = text.split(/(\*\*[^*]+\*\*)/g);
     return (
-        <div className="mixed-content-container space-y-2">
-            {parts.map((part, index) => {
-                if (part.trim()) {
-                    const needsExtraSpacing = part.trim().startsWith('***');
-                    const fontSize = part.length > 500 ? 'text-sm' : 'text-base';
-
-                    // Handle headers
-                    if (part.startsWith('# ')) {
-                        return (
-                            <h1 key={index} className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}>
-                                🤖 {part.substring(2).trim()}
-                            </h1>
-                        );
-                    }
-                    if (part.startsWith('## ')) {
-                        return (
-                            <h2 key={index} className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}>
-                                {part.substring(3).trim()}
-                            </h2>
-                        );
-                    }
-                    if (part.startsWith('### ')) {
-                        return (
-                            <h3 key={index} className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}>
-                                {part.substring(4).trim()}
-                            </h3>
-                        );
-                    }
-
-                    // Handle bullet points and regular text
-                    const lines = part.split('\n').filter(line => line.trim());
-                    const hasBulletPoints = lines.some(line => line.trim().startsWith('-'));
-
-                    if (hasBulletPoints) {
-                        return (
-                            <div key={index} className={`bullet-list-container ${needsExtraSpacing ? 'mt-6' : ''}`}>
-                                {lines.map((line, lineIndex) => {
-                                    const trimmedLine = line.trim();
-                                    if (trimmedLine.startsWith('-')) {
-                                        const bulletContent = trimmedLine.substring(1).trim();
-                                        const bulletBoldParts = bulletContent.split(/(\*\*[^*]+\*\*)/g);
-
-                                        return (
-                                            <div key={`${index}-${lineIndex}`} className="flex items-start space-x-2 mb-4">
-                                                <span className={`bullet-point ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                                    {bulletContent.includes('**') ? '✅' : '🎯'}
-                                                </span>
-                                                <div className={`flex-1 ${!bulletContent.includes('**') ? 'ml-4' : ''}`}>
-                                                    {bulletBoldParts.map((bpart, bindex) => {
-                                                        if (bpart.startsWith('**') && bpart.endsWith('**')) {
-                                                            return (
-                                                                <span
-                                                                    key={`bullet-bold-${bindex}`}
-                                                                    className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}
-                                                                >
-                                                                    {bpart.slice(2, -2).trim()}
-                                                                </span>
-                                                            );
-                                                        }
-                                                        return bpart ? (
-                                                            <span
-                                                                key={`bullet-text-${bindex}`}
-                                                                className={`${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}
-                                                            >
-                                                                {bpart.trim()}
-                                                            </span>
-                                                        ) : null;
-                                                    })}
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })}
-                            </div>
-                        );
-                    }
-
-                    // Handle regular text with bold formatting
-                    const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+        <div className="text-container inline">
+            {boldParts.map((boldPart, boldIndex) => {
+                if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
                     return (
-                        <div key={index} className={`text-container ${needsExtraSpacing ? 'mt-6' : ''}`}>
-                            {boldParts.map((boldPart, boldIndex) => {
-                                if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
-                                    return (
-                                        <span
-                                            key={`${index}-${boldIndex}`}
-                                            className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}
-                                        >
-                                            {boldPart.slice(2, -2)}
-                                        </span>
-                                    );
-                                }
-                                return boldPart ? (
-                                    <span
-                                        key={`${index}-${boldIndex}`}
-                                        className={`${isDark ? 'text-white' : 'text-gray-900'} ${fontSize}`}
-                                    >
-                                        {boldPart.replace(/^\*\*\*/, '')}
-                                    </span>
-                                ) : null;
-                            })}
-                        </div>
+                        <span
+                            key={`${boldIndex}`}
+                            className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
+                        >
+                            {boldPart.slice(2, -2)}
+                        </span>
                     );
                 }
-                return null;
+                return boldPart ? (
+                    <span
+                        key={`${boldIndex}`}
+                        className={`${isDark ? 'text-white' : 'text-gray-900'}`}
+                    >
+                        {boldPart}
+                    </span>
+                ) : null;
             })}
         </div>
     );
@@ -1556,6 +1587,7 @@ export default function QuizPage() {
                                                     <div className="mt-8">
                                                         <div className="text-gray-200 space-y-4">
                                                             {currentQuestion.ai_explanation?.split('\n').map((line, index) => {
+                                                                console.log(line)
                                                                 const trimmedLine = line.trim();
                                                                 if (trimmedLine.startsWith('-')) {
                                                                     const content = trimmedLine.substring(1).trim();
