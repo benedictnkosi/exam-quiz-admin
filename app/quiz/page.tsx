@@ -6,8 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer } from '@/services/api'
 import 'katex/dist/katex.min.css'
-import { InlineMath, BlockMath } from 'react-katex'
-import type { JSX } from 'react'
+import { InlineMath } from 'react-katex'
 import { logAnalyticsEvent } from '@/lib/analytics'
 
 // Interfaces
@@ -61,10 +60,6 @@ interface Question {
     ai_explanation?: string | null
 }
 
-interface QuestionResponse extends Question {
-    status: string;
-    message?: string;
-}
 
 function getSubjectIcon(subjectName: string): string {
     const nameMap: { [key: string]: string } = {

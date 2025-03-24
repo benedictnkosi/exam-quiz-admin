@@ -6,6 +6,7 @@ import { auth } from '@/lib/firebase'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
+import Image from 'next/image'
 import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'
 import { IoLogoApple, IoLogoGooglePlaystore } from 'react-icons/io5'
 
@@ -56,10 +57,13 @@ export default function LoginPage() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-[60%] max-w-[400px]" style={{ transform: 'rotate(12deg)' }}>
             <div className="absolute inset-0 bg-gradient-to-t from-[#312e81] via-transparent to-transparent z-10" />
-            <img
+            <Image
               src="/images/mock.png"
               alt="Exam Quiz App Interface"
+              width={400}
+              height={800}
               className="w-full h-auto relative z-0 drop-shadow-2xl"
+              priority
             />
           </div>
         </div>

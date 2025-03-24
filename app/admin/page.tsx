@@ -1,7 +1,5 @@
 'use client'
 import React from 'react'
-import StatsCard from '@/components/dashboard/StatsCard'
-import PendingApprovalsCard from '@/components/dashboard/PendingApprovalsCard'
 import StatusCountsTable from '@/components/dashboard/StatusCountsTable'
 import ReviewerStatsTable from '@/components/dashboard/ReviewerStatsTable'
 import QuestionStatsTable from '@/app/components/dashboard/QuestionStatsTable'

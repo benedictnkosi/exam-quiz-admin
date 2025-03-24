@@ -1,17 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
-import { IoEyeOutline, IoEyeOffOutline, IoInformationCircle, IoLocation } from 'react-icons/io5'
+import { IoInformationCircle, IoLocation } from 'react-icons/io5'
 import { Autocomplete, LoadScriptNext } from '@react-google-maps/api'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api'
+import { API_HOST } from '@/config/constants'
 
 async function getSchoolFunfacts(schoolName: string, schoolAddress: string) {
     try {
-        const response = await fetch(`${API_BASE_URL}/school/fact?school_name=${encodeURIComponent(schoolName)} ${encodeURIComponent(schoolAddress)}`)
+        const response = await fetch(`${API_HOST}/api/school/fact?school_name=${encodeURIComponent(schoolName)} ${encodeURIComponent(schoolAddress)}`)
         const data = await response.json()
         if (data.status === "OK") {
             return {
@@ -73,7 +72,6 @@ export default function OnboardingPage() {
     })
 
     const router = useRouter()
-    const { user } = useAuth()
 
     // useEffect(() => {
     //     console.log(user)
