@@ -12,7 +12,7 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
         const checkAdminStatus = async () => {
             if (!user) return
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/learner/${user.uid}`)
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/learner?uid=${user.uid}`)
             const data = await response.json()
             console.log(data)
 

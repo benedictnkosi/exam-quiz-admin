@@ -35,7 +35,7 @@ interface FormData {
   explanation: string
   options: string[]
   contextImage: ImageInfo | null
-  questionImage: File | null
+  questionImage: ImageInfo | null
   explanationImage: File | null
   curriculum: string
 }
@@ -184,7 +184,11 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           path: initialData.image_path,
           isNew: false
         } : null,
-        questionImage: null,
+        questionImage: initialData.question_image_path ? {
+          file: null,
+          path: initialData.question_image_path,
+          isNew: false
+        } : null,
         explanationImage: null,
         curriculum: initialData.curriculum || 'CAPS'
       }
@@ -344,17 +348,17 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
   const handleImageChange = (field: 'contextImage' | 'questionImage' | 'explanationImage') =>
     (file: File | null, imagePath?: string) => {
-      if (field === 'contextImage') {
-        const newContextImage = file ? {
+      if (field === 'contextImage' || field === 'questionImage') {
+        const newImage = file ? {
           file,
           path: imagePath || '',
           isNew: !imagePath
         } : null;
         setFormData({
           ...formData,
-          [field]: newContextImage
+          [field]: newImage
         });
-        if (file) {
+        if (field === 'contextImage' && file) {
           setLastContextImage(null); // Clear last used when new file selected
         }
       } else {
@@ -384,6 +388,13 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       contextImage: null
     }));
     setLastContextImage(null);
+  }
+
+  const handleResetQuestionImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      questionImage: null
+    }));
   }
 
   const handleImageUpload = async (file: File, type: 'question_context' | 'question' | 'answer', qId: string) => {
@@ -476,7 +487,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         }
       } else if (formData.contextImage?.path) {
         // Reuse existing context image
-        await fetch(`${API_BASE_URL}/question/set-image-path`, {
+        const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
           method: 'POST',
           body: JSON.stringify({
             question_id: questionId.toString(),
@@ -485,11 +496,34 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             uid: user.uid
           })
         })
+        console.log(response)
       }
 
-      // Handle other images normally...
-      if (formData.questionImage) {
-        await handleImageUpload(formData.questionImage, 'question', questionId.toString())
+      // Handle question image - only upload if it's a new file
+      if (formData.questionImage?.file && formData.questionImage.isNew) {
+        const fileName = await handleImageUpload(formData.questionImage.file, 'question', questionId.toString())
+        if (fileName) {
+          setFormData(prev => ({
+            ...prev,
+            questionImage: {
+              ...prev.questionImage!,
+              path: fileName,
+              isNew: false
+            }
+          }));
+        }
+      } else if (formData.questionImage?.path) {
+        // Reuse existing question image
+        const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
+          method: 'POST',
+          body: JSON.stringify({
+            question_id: questionId.toString(),
+            image_name: formData.questionImage.path,
+            image_type: 'question',
+            uid: user.uid
+          })
+        })
+        console.log(response)
       }
 
       if (formData.explanationImage) {
@@ -621,8 +655,19 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               key={`question-image-${resetKey}`}
               onFileSelect={handleImageChange('questionImage')}
               label="Upload Question Image"
-              imageName={formData.questionImage ? undefined : undefined}
+              imageName={formData.questionImage?.path}
+              showResetButton={true}
+              onResetImage={handleResetQuestionImage}
             />
+            {formData.questionImage && !formData.questionImage.isNew && (
+              <div className="mt-2">
+                <img
+                  src={`${IMAGE_BASE_URL}${formData.questionImage.path}`}
+                  alt="Question Preview"
+                  className="w-80 h-auto object-cover rounded"
+                />
+              </div>
+            )}
           </div>
 
           <div>
