@@ -195,10 +195,11 @@ export default function QuestionStatsTable() {
                             {stats && Object.entries(stats.capturer_stats).length > 0 ? (
                                 Object.entries(stats.capturer_stats)
                                     .sort((a, b) => b[1].total - a[1].total)
-                                    .map(([_, capturer]) => (
-                                        <tr key={capturer.name}>
+                                    .map(([capturerId, capturer]) => (
+                                        <tr key={capturerId}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 {capturer.name}
+                                                <div className="text-xs text-gray-500">{capturer.email}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {capturer.total}
