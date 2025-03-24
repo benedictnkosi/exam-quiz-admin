@@ -297,6 +297,11 @@ function renderMixedContent(text: string, isDark: boolean = false) {
     if (text.includes('$')) {
         //remove ** from the text
         text = text.replace(/\*\*/g, '')
+
+        // Clean up LaTeX commands
+        text = text.replace(/\\newlineeq/g, '=')  // Replace \newlineeq with =
+        text = text.replace(/\\newline/g, ' ')    // Replace \newline with space
+
         // First split by LaTeX delimiters
         const parts = text.split(/(\$[^$]+\$)/g);
 
@@ -305,10 +310,10 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                 {parts.map((part, index) => {
                     if (part.startsWith('$') && part.endsWith('$')) {
                         // LaTeX content
+                        const formula = part.slice(1, -1).trim()
                         return (
                             <div key={index} className={`latex-container inline-block ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                {/* // remove ** from the part */}
-                                <InlineMath math={part.slice(1, -1)} />
+                                <InlineMath math={formula} />
                             </div>
                         );
                     } else {
