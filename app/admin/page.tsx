@@ -7,6 +7,11 @@ import ReviewerStatsTable from '@/components/dashboard/ReviewerStatsTable'
 import QuestionStatsTable from '@/app/components/dashboard/QuestionStatsTable'
 import Sidebar from '@/components/layout/Sidebar'
 import AdminRoute from '@/components/auth/AdminRoute'
+import TotalLearnersCard from '@/components/dashboard/TotalLearnersCard'
+import TotalQuestionsCard from '@/components/dashboard/TotalQuestionsCard'
+import DailyAnswersChart from '@/components/dashboard/DailyAnswersChart'
+import DailyRegistrationsChart from '@/components/dashboard/DailyRegistrationsChart'
+import LearnerActivityChart from '@/components/dashboard/LearnerActivityChart'
 
 export default function AdminDashboard() {
     return (
@@ -17,22 +22,17 @@ export default function AdminDashboard() {
                     <h1 className="text-2xl font-semibold mb-6">Admin Dashboard</h1>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <PendingApprovalsCard />
-                        <StatsCard
-                            title="Total Questions"
-                            value="1,234"
-                            description="Across all grades"
-                        />
-                        <StatsCard
-                            title="Your Questions"
-                            value="123"
-                            description="Questions you've created"
-                        />
-                        <StatsCard
-                            title="Registered Learners"
-                            value="5,678"
-                            description="Total app users"
-                        />
+                        <TotalQuestionsCard />
+                        <TotalLearnersCard />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <LearnerActivityChart />
+                        <DailyAnswersChart />
+                    </div>
+
+                    <div className="mt-6">
+                        <DailyRegistrationsChart />
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 mt-6">
