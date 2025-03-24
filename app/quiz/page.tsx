@@ -344,7 +344,6 @@ export default function QuizPage() {
     // Add new state variables
     const [selectedLearningType, setSelectedLearningType] = useState<'quiz' | 'quick_lessons' | null>('quiz')
     const [isQuizStarted, setIsQuizStarted] = useState(false)
-    const [showFavorites, setShowFavorites] = useState(true)
     const [selectedPaper, setSelectedPaper] = useState<string>('P1')
 
     // Add audio refs
@@ -510,8 +509,6 @@ export default function QuizPage() {
         }
         // Set the selected paper
         setSelectedPaper(paper)
-        // Close the sidebar on mobile when a paper is selected
-        setIsSidebarVisible(false)
         // Reset all states before loading new question
         setSelectedAnswer(null)
         setShowExplanation(false)
@@ -822,7 +819,6 @@ export default function QuizPage() {
             }
 
             if (data.status === "OK") {
-                showMessage('Question added to favorites!', 'success')
                 await fetchFavoriteQuestions()
             } else {
                 setIsCurrentQuestionFavorited(false)
@@ -863,7 +859,6 @@ export default function QuizPage() {
 
             const data = await response.json()
             if (data.status === "OK") {
-                showMessage('Question removed from favorites!', 'success')
                 await fetchFavoriteQuestions()
             } else {
                 setIsCurrentQuestionFavorited(true)
@@ -999,19 +994,7 @@ export default function QuizPage() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-[#1B1464] flex items-center justify-center">
-                <div className="text-white text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                    <p>{selectedLearningType === 'quick_lessons'
-                        ? getRandomLoadingMessage()
-                        : 'Loading your question...'}</p>
-                </div>
-            </div>
-        )
-    }
-
+    // Remove the initial loading check
     return (
         <>
             <Head>
@@ -1166,27 +1149,9 @@ export default function QuizPage() {
                                     <h2 className="text-black text-xl font-bold flex items-center gap-2">
                                         {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
                                     </h2>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => {
-                                                setIsQuizStarted(false);
-                                                setSelectedLearningType(null);
-                                                setCurrentQuestion(null);
-                                                setSelectedAnswer(null);
-                                                setShowExplanation(false);
-                                                setIsCorrect(null);
-                                                setShowFeedback(false);
-                                                setNoMoreQuestions(false);
-                                                stopTimer();
-                                            }}
-                                            className="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-gray-700 transition-colors"
-                                        >
-                                            Change Path
-                                        </button>
-                                        <button className="text-2xl"
-                                            onClick={() => setIsRestartModalVisible(true)}
-                                        >🔄</button>
-                                    </div>
+                                    <button className="text-2xl"
+                                        onClick={() => setIsRestartModalVisible(true)}
+                                    >🔄</button>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
@@ -1227,67 +1192,67 @@ export default function QuizPage() {
                         )}
 
                         {/* Favorites Section */}
-                        {showFavorites && (
-                            <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
-                                <div className="flex items-center justify-center gap-2 mb-4 relative">
-                                    <span className="text-2xl">⭐</span>
-                                    <h2 className="text-xl font-bold text-white">Favorite Questions</h2>
-                                    {isFavoritesLoading && (
-                                        <div className="absolute right-0 animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
-                                    )}
-                                </div>
-                                <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[calc(100vh-600px)] lg:max-h-[400px]">
-                                    {favoriteQuestions.length > 0 ? (
-                                        <div className="space-y-3">
-                                            {favoriteQuestions.map((fav, index) => {
-                                                // Rotate through background colors with better opacity
-                                                const bgColors = [
-                                                    'bg-pink-500/20',
-                                                    'bg-orange-500/20',
-                                                    'bg-green-500/20',
-                                                    'bg-blue-500/20',
-                                                    'bg-purple-500/20'
-                                                ];
-                                                const bgColor = bgColors[index % bgColors.length];
 
-                                                return (
-                                                    <button
-                                                        key={fav.id}
-                                                        onClick={() => loadSpecificQuestion(fav.questionId)}
-                                                        className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
-                                                    >
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                                                                <span className="text-white text-sm">#{index + 1}</span>
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-white text-sm font-medium line-clamp-2 pr-8">
-                                                                    {fav.question || fav.context || `Question #${fav.questionId}`}
-                                                                </p>
-                                                            </div>
-                                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                                                    <span className="text-white">→</span>
-                                                                </div>
+                        <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
+                            <div className="flex items-center justify-center gap-2 mb-4 relative">
+                                <span className="text-2xl">⭐</span>
+                                <h2 className="text-xl font-bold text-white">Favorite Questions</h2>
+                                {isFavoritesLoading && (
+                                    <div className="absolute right-0 animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+                                )}
+                            </div>
+                            <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[calc(100vh-600px)] lg:max-h-[400px]">
+                                {favoriteQuestions.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {favoriteQuestions.map((fav, index) => {
+                                            // Rotate through background colors with better opacity
+                                            const bgColors = [
+                                                'bg-pink-500/20',
+                                                'bg-orange-500/20',
+                                                'bg-green-500/20',
+                                                'bg-blue-500/20',
+                                                'bg-purple-500/20'
+                                            ];
+                                            const bgColor = bgColors[index % bgColors.length];
+
+                                            return (
+                                                <button
+                                                    key={fav.id}
+                                                    onClick={() => loadSpecificQuestion(fav.questionId)}
+                                                    className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                                            <span className="text-white text-sm">#{index + 1}</span>
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-white text-sm font-medium line-clamp-2 pr-8">
+                                                                {fav.question || fav.context || `Question #${fav.questionId}`}
+                                                            </p>
+                                                        </div>
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                                                <span className="text-white">→</span>
                                                             </div>
                                                         </div>
-                                                    </button>
-                                                );
-                                            })}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="h-full flex items-center justify-center">
+                                        <div className="text-center">
+                                            <div className="text-4xl mb-2">⭐</div>
+                                            <p className="text-white/60 text-sm">
+                                                No saved questions yet
+                                            </p>
                                         </div>
-                                    ) : (
-                                        <div className="h-full flex items-center justify-center">
-                                            <div className="text-center">
-                                                <div className="text-4xl mb-2">⭐</div>
-                                                <p className="text-white/60 text-sm">
-                                                    No saved questions yet
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
+
 
                         {/* Back to Home and Change Path Buttons */}
                         <div className="mt-6 grid grid-cols-2 gap-4">
@@ -1308,18 +1273,17 @@ export default function QuizPage() {
                                     setShowFeedback(false);
                                     setNoMoreQuestions(false);
                                     stopTimer();
-                                    setShowFavorites(false);
                                 }}
                                 className="bg-white/20 text-white rounded-xl p-4 hover:bg-white/30 transition-colors flex items-center justify-center gap-2"
                             >
-                                <span className="text-xl">🔄</span>
-                                <span className="font-semibold">Change Path</span>
+                                <span className="text-xl">🛣️</span>
+                                <span className="font-semibold">Change Mode</span>
                             </button>
                         </div>
                     </div>
 
                     {/* Right Panel - Quiz Content */}
-                    <div className={`flex-1 p-6 lg:p-6 min-h-screen ${isSidebarVisible ? 'hidden lg:block' : 'block'}`}>
+                    <div className={`flex-1 p-3 mt-6 lg:p-6 min-h-screen ${isSidebarVisible ? 'hidden lg:block' : 'block'}`}>
                         {loading ? (
                             <div className="h-full flex items-center justify-center">
                                 <div className="text-white text-center">
@@ -1416,9 +1380,9 @@ export default function QuizPage() {
                             <div className="max-w-3xl mx-auto">
                                 {/* Question Card */}
                                 {currentQuestion && (
-                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8 mt-12 lg:mt-0">
+                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-0 lg:p-6 mb-8 mt-12 lg:mt-0">
                                         {/* Question Metadata */}
-                                        <div className="flex flex-wrap gap-3 mb-4 text-sm">
+                                        <div className="flex flex-wrap gap-3 mb-4 text-sm p-6">
                                             <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
                                                 <span className="text-xs">📅</span>
                                                 <span>Term {currentQuestion.term}</span>
@@ -1518,7 +1482,7 @@ export default function QuizPage() {
                                         {/* AI Explanation for Quick Lessons */}
                                         {selectedLearningType === 'quick_lessons' && currentQuestion.ai_explanation && (
                                             <div className="mt-8">
-                                                <div className="p-6 rounded-lg bg-indigo-500/20 border border-indigo-500/30">
+                                                <div className="p-3 lg:p-6 rounded-lg bg-indigo-500/20 border border-indigo-500/30">
                                                     {/* Context */}
                                                     {currentQuestion.context && (
                                                         <div className="mb-6">
@@ -1863,7 +1827,7 @@ export default function QuizPage() {
 
                 {/* AI Explanation Modal */}
                 {isExplanationModalVisible && (
-                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 lg:p-6">
                         <div className="rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col bg-[#1B1464]">
                             {/* Header - Fixed */}
                             <div className="flex justify-between items-center p-6 border-b border-gray-700">
@@ -1876,7 +1840,7 @@ export default function QuizPage() {
                                 </button>
                             </div>
                             {/* Content - Scrollable */}
-                            <div className="flex-1 overflow-y-auto p-6 min-h-0">
+                            <div className="flex-1 overflow-y-auto p-3 lg:p-6 min-h-0">
                                 <div className="prose prose-sm max-w-none prose-invert space-y-4">
                                     {aiExplanation?.split('\n').map((line, index) => {
                                         const trimmedLine = line.trim();
