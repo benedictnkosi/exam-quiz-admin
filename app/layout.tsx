@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: "%s | Exam Quiz"
   },
   description: "A comprehensive learning platform for students to practice and prepare for exams. Access thousands of practice questions and improve your academic performance.",
-  keywords: ["exam quiz", "education", "exam preparation", "online quiz", "learning platform", "student practice", "academic success"],
+  keywords: ["exam quiz", "education", "exam preparation", "online quiz", "learning platform", "student practice", "academic success", "past paper exam questions", "mathematics grade 12", "Matric live", "Grade 11 study", "grade 10 guide South Africa", "ieb", "nsc", "caps"],
   authors: [{ name: "Exam Quiz Team" }],
   creator: "Exam Quiz Team",
   publisher: "Exam Quiz",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://examquiz.co.za",
     siteName: "Exam Quiz",
-    title: "Exam Quiz - Your Path to Academic Success",
+    title: "Exam Quiz - Past Paper Exam Questions",
     description: "A comprehensive learning platform for students to practice and prepare for exams. Access thousands of practice questions and improve your academic performance.",
     images: [
       {
@@ -34,12 +34,13 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "Exam Quiz Learning Platform",
+        type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Exam Quiz - Past Papers, Notes, and Practice Questions",
+    title: "Exam Quiz - Past Paper Exam Questions",
     description: "A comprehensive learning platform for students to practice and prepare for exams. Access thousands of practice questions and improve your academic performance. For grade 10, 11, and 12 learners. mathematics grade 12,Matric live,Grade 11 study,grade 10 guide South Africa,ieb,nsc,caps",
     images: ["/og-image.png"],
     creator: "@examquiz",
