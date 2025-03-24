@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
-import { fetchMySubjects, getLearner } from '@/services/api'
+import { fetchMySubjects, getLearner, getRandomAIQuestion, RandomAIQuestion } from '@/services/api'
 
 interface Subject {
   id: number;
@@ -69,6 +69,7 @@ export default function Home() {
   const [learnerInfo, setLearnerInfo] = useState<LearnerInfo | null>(null)
   const [subjects, setSubjects] = useState<GroupedSubject[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [randomLesson, setRandomLesson] = useState<RandomAIQuestion['question'] | null>(null)
 
   useEffect(() => {
     async function loadData() {
@@ -76,9 +77,10 @@ export default function Home() {
 
       try {
         setIsLoading(true)
-        const [learnerData, subjectsData] = await Promise.all([
+        const [learnerData, subjectsData, randomLessonData] = await Promise.all([
           getLearner(user.uid),
-          fetchMySubjects(user.uid)
+          fetchMySubjects(user.uid),
+          getRandomAIQuestion(user.uid)
         ])
 
         setLearnerInfo(learnerData)
@@ -110,6 +112,7 @@ export default function Home() {
 
           setSubjects(Object.values(subjectGroups))
         }
+        setRandomLesson(randomLessonData.question)
       } catch (error) {
         console.error('Error loading data:', error)
       } finally {
@@ -245,6 +248,29 @@ export default function Home() {
             <span>Share on Twitter</span>
           </button>
         </div>
+
+        {/* Quick Lesson Section */}
+        {randomLesson && randomLesson.ai_explanation.includes('***Key Lesson') && (
+          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-12">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src={getSubjectIcon(randomLesson.subject.name.split(' P')[0])}
+                  alt={randomLesson.subject.name}
+                  width={32}
+                  height={32}
+                  onError={(e: any) => {
+                    e.target.src = '/images/subjects/icon.png'
+                  }}
+                />
+              </div>
+              <h2 className="text-xl font-bold">Quick Bite: {randomLesson.subject.name}</h2>
+            </div>
+            <div className="text-gray-300">
+              {randomLesson.ai_explanation.split('***Key Lesson:')[1]?.trim().replace('***', '').trim()}
+            </div>
+          </div>
+        )}
 
         {/* Subject Grid */}
         <h2 className="text-2xl font-bold mb-8">🤸‍♂️ Learn, Play, and Grow!</h2>

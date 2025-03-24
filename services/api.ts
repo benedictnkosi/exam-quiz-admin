@@ -147,6 +147,34 @@ export interface MySubjectsResponse {
   }[]
 }
 
+export interface RandomAIQuestion {
+  status: string;
+  question: {
+    id: number;
+    question: string;
+    type: string;
+    context: string;
+    answer: string;
+    options: string[];
+    term: number;
+    higher_grade: number;
+    active: boolean;
+    posted: boolean;
+    year: number;
+    ai_explanation: string;
+    subject: {
+      id: number;
+      name: string;
+      active: boolean;
+      grade: {
+        id: number;
+        number: number;
+        active: number;
+      };
+    };
+  };
+}
+
 // Helper functions
 function ensureHttps(url: string): string {
   return url
@@ -693,5 +721,20 @@ export async function getRandomQuestion(
   } catch (error) {
     console.error('Error fetching random question:', error)
     throw error
+  }
+}
+
+export async function getRandomAIQuestion(uid: string): Promise<RandomAIQuestion> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/question/random-ai?uid=${uid}`);
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch random AI question');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching random AI question:', error);
+    throw error;
   }
 } 
