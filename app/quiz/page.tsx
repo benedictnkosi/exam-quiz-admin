@@ -494,7 +494,6 @@ export default function QuizPage() {
         try {
             setLoading(true)
             const data = await getRandomQuestion(subjectName, paper, user.uid)
-            console.log("context ", data)
 
             if (data.status === "NOK" && data.message === "No more questions available") {
                 setNoMoreQuestions(true)
@@ -742,11 +741,6 @@ export default function QuizPage() {
             setIsThankYouModalVisible(true)
             setReportComment('')
 
-            // TODO: Implement analytics
-            console.log('Report submitted:', {
-                user_id: user?.uid,
-                question_id: currentQuestion?.id
-            })
         } catch (error) {
             console.error('Error reporting issue:', error)
             showMessage('Failed to report issue', 'error')
@@ -819,10 +813,7 @@ export default function QuizPage() {
     // Call fetchFavoriteQuestions when component mounts and when user changes
     useEffect(() => {
         if (user?.uid && subjectName && selectedPaper) {
-            console.log("fetching favorites")
             fetchFavoriteQuestions();
-        } else {
-            console.log("no user or subject name")
         }
     }, [user?.uid, subjectName, selectedPaper]);
 
@@ -966,7 +957,6 @@ export default function QuizPage() {
 
     const loadSpecificQuestion = async (questionId: number) => {
         if (!user?.uid || !subjectName) {
-            console.log("No user or subject name");
             return;
         }
         try {
@@ -1592,7 +1582,7 @@ export default function QuizPage() {
                                                     <div className="mt-8">
                                                         <div className="text-gray-200 space-y-4">
                                                             {currentQuestion.ai_explanation?.split('\n').map((line, index) => {
-                                                                console.log(line)
+
                                                                 const trimmedLine = line.trim();
                                                                 if (trimmedLine.startsWith('-')) {
                                                                     const content = trimmedLine.substring(1).trim();
