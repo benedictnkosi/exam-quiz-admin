@@ -1420,11 +1420,14 @@ export default function QuizPage() {
                                         {/* Question Context - Only show for quiz mode */}
                                         {selectedLearningType === 'quiz' && (currentQuestion.context || currentQuestion.image_path) && (
                                             <div className="mb-4">
-                                                <h3 className="text-lg font-semibold mb-2 text-white">Context</h3>
+
                                                 {currentQuestion.context && (
-                                                    <div className="p-4 bg-white/5 rounded-lg">
-                                                        {renderMixedContent(currentQuestion.context, true)}
-                                                    </div>
+                                                    <>
+                                                        <h3 className="text-lg font-semibold mb-2 text-white">Context</h3>
+                                                        <div className="p-4 bg-white/5 rounded-lg">
+                                                            {renderMixedContent(currentQuestion.context, true)}
+                                                        </div>
+                                                    </>
                                                 )}
                                                 {currentQuestion.image_path && currentQuestion.image_path !== 'NULL' && (
                                                     <div className="mt-4 flex justify-center">
@@ -1452,10 +1455,14 @@ export default function QuizPage() {
                                         {/* Question - Only show for quiz mode */}
                                         {selectedLearningType === 'quiz' && (
                                             <div className="mb-6">
-                                                <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
-                                                <div className="text-xl mb-2 text-white text-center">
-                                                    {renderMixedContent(currentQuestion.question, true)}
-                                                </div>
+                                                {currentQuestion.question && (
+                                                    <>
+                                                        <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
+                                                        <div className="text-xl mb-2 text-white text-center">
+                                                            {renderMixedContent(currentQuestion.question, true)}
+                                                        </div>
+                                                    </>
+                                                )}
                                                 {currentQuestion.question_image_path && currentQuestion.question_image_path !== 'NULL' && (
                                                     <div className="mt-4 flex justify-center">
                                                         <button
