@@ -9,6 +9,7 @@ import TotalQuestionsCard from '@/components/dashboard/TotalQuestionsCard'
 import DailyAnswersChart from '@/components/dashboard/DailyAnswersChart'
 import DailyRegistrationsChart from '@/components/dashboard/DailyRegistrationsChart'
 import LearnerActivityChart from '@/components/dashboard/LearnerActivityChart'
+import SubjectQuestionCountTable from '@/components/dashboard/SubjectQuestionCountTable'
 
 export default function AdminDashboard() {
     return (
@@ -33,8 +34,10 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 mt-6">
+
                         <QuestionStatsTable />
                         <ReviewerStatsTable />
+                        <SubjectQuestionCountTable />
                     </div>
                 </div>
             </div>
