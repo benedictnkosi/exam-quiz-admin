@@ -552,6 +552,7 @@ export default function QuizPage() {
         setIsImageLoading(false)
         setZoomImageUrl(null)
         setImageRotation(0)
+        setIsSidebarVisible(false)
 
         try {
             setLoading(true)
