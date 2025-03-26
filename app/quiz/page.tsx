@@ -1348,21 +1348,7 @@ export default function QuizPage() {
                         {loading ? (
                             <div className="h-full flex items-center justify-center">
                                 <div className="text-center">
-                                    <div className="relative w-32 h-32 mx-auto mb-6">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full animate-pulse"></div>
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <Image
-                                                src="/images/avatars/5.png"
-                                                alt="Loading"
-                                                width={96}
-                                                height={96}
-                                                className="rounded-full"
-                                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                                                    e.currentTarget.src = '/images/subjects/icon.png'
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
                                     <div className="text-white text-lg font-medium">
                                         {selectedLearningType === 'quick_lessons'
                                             ? getRandomLoadingMessage()
@@ -1689,17 +1675,15 @@ export default function QuizPage() {
                                             </div>
                                         )}
 
-                                        {/* Report Issue Button - Only show for quiz mode */}
-                                        {selectedLearningType === 'quiz' && (
-                                            <button
-                                                onClick={reportIssue}
-                                                className="w-full mt-4 p-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors text-left"
-                                            >
-                                                <span className="text-red-300 font-medium">
-                                                    🛑 Report an Issue with this Question
-                                                </span>
-                                            </button>
-                                        )}
+                                        {/* Report Issue Button - Show for both quiz and quick lessons */}
+                                        <button
+                                            onClick={reportIssue}
+                                            className="w-full mt-4 p-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors text-left"
+                                        >
+                                            <span className="text-red-300 font-medium">
+                                                🛑 Report an Issue with this {selectedLearningType === 'quiz' ? 'Question' : 'Lesson'}
+                                            </span>
+                                        </button>
 
                                         {/* Explanation - Only show for quiz mode */}
                                         {selectedLearningType === 'quiz' && showExplanation && (
