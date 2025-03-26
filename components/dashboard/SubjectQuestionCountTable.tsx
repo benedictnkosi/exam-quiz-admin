@@ -18,17 +18,25 @@ import {
 } from "@/components/ui/select"
 import { useAuth } from '@/contexts/AuthContext'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
+import GradeQuestionCountCards from './GradeQuestionCountCards'
 
 interface SubjectQuestionCount {
     subject_name: string
     grade: string
-    question_count: number
+    current_question_count: number
+    remaining_questions_needed: number
     capturer: string | null
     subject_id: number
 }
 
+interface GradeCount {
+    grade: string
+    total_remaining_questions_needed: number
+}
+
 export default function SubjectQuestionCountTable() {
     const [data, setData] = useState<SubjectQuestionCount[]>([])
+    const [gradeCounts, setGradeCounts] = useState<GradeCount[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedTerm, setSelectedTerm] = useState("2")
     const { user } = useAuth()
@@ -46,7 +54,21 @@ export default function SubjectQuestionCountTable() {
                 const updatedResponse = await fetch(`${HOST_URL}/api/subjects/questions/count/${selectedTerm}`)
                 const updatedResult = await updatedResponse.json()
                 if (updatedResult.status === 'success') {
-                    setData(updatedResult.data)
+                    setData(updatedResult.data.subjects)
+                    setGradeCounts([
+                        {
+                            grade: 'Grade 12',
+                            total_remaining_questions_needed: updatedResult.data.total_remaining_questions_needed_grade12
+                        },
+                        {
+                            grade: 'Grade 11',
+                            total_remaining_questions_needed: updatedResult.data.total_remaining_questions_needed_grade11
+                        },
+                        {
+                            grade: 'Grade 10',
+                            total_remaining_questions_needed: updatedResult.data.total_remaining_questions_needed_grade10
+                        }
+                    ])
                 }
             }
         } catch (error) {
@@ -69,7 +91,21 @@ export default function SubjectQuestionCountTable() {
                 const response = await fetch(`${HOST_URL}/api/subjects/questions/count/${selectedTerm}`)
                 const result = await response.json()
                 if (result.status === 'success') {
-                    setData(result.data)
+                    setData(result.data.subjects)
+                    setGradeCounts([
+                        {
+                            grade: 'Grade 12',
+                            total_remaining_questions_needed: result.data.total_remaining_questions_needed_grade12
+                        },
+                        {
+                            grade: 'Grade 11',
+                            total_remaining_questions_needed: result.data.total_remaining_questions_needed_grade11
+                        },
+                        {
+                            grade: 'Grade 10',
+                            total_remaining_questions_needed: result.data.total_remaining_questions_needed_grade10
+                        }
+                    ])
                 }
             } catch (error) {
                 console.error('Error fetching subject question counts:', error)
@@ -87,6 +123,7 @@ export default function SubjectQuestionCountTable() {
 
     return (
         <div className="space-y-4">
+            <GradeQuestionCountCards gradeCounts={gradeCounts} />
             <div className="flex items-center space-x-2">
                 <Select value={selectedTerm} onValueChange={setSelectedTerm}>
                     <SelectTrigger className="w-[180px]">
@@ -116,7 +153,7 @@ export default function SubjectQuestionCountTable() {
                             <TableRow key={index}>
                                 <TableCell>{item.subject_name}</TableCell>
                                 <TableCell>{item.grade}</TableCell>
-                                <TableCell className="text-right">{item.question_count}</TableCell>
+                                <TableCell className="text-right">{item.current_question_count}</TableCell>
                                 <TableCell>
                                     {item.capturer ? (
                                         item.capturer
@@ -126,14 +163,14 @@ export default function SubjectQuestionCountTable() {
                                 </TableCell>
                                 <TableCell>
                                     <button
-                                        className={`px-4 py-2 rounded-md ${item.question_count > 89
+                                        className={`px-4 py-2 rounded-md ${item.current_question_count > 89
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-blue-500 hover:bg-blue-600'
                                             } text-white`}
                                         onClick={() => handleAssignClick(item)}
-                                        disabled={item.question_count > 89}
+                                        disabled={item.current_question_count > 89}
                                     >
-                                        {item.question_count > 89 ? 'Maximum Questions Reached' : 'Assign to me'}
+                                        {item.current_question_count > 89 ? 'Maximum Questions Reached' : 'Assign to me'}
                                     </button>
                                 </TableCell>
                             </TableRow>
