@@ -194,6 +194,7 @@ let isOpeningDollarSign = false
 let isClosingDollarSignNextLine = false
 
 function renderMixedContent(text: string, isDark: boolean = false) {
+    console.log('text', text)
     if (!text) return null;
 
     if (text.includes('$') && text.trim().length < 3 && !isOpeningDollarSign && !isClosingDollarSignNextLine) {
@@ -295,6 +296,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
 
     // Handle formulas and regular text
     if (text.includes('$')) {
+        //replace \$ with $
+        text = text.replace(/\\\$/g, '$')
         //remove ** from the text
         text = text.replace(/\*\*/g, '')
 
@@ -561,26 +564,26 @@ export default function QuizPage() {
             )
             const data = await response.json()
 
-            if (data.status === "OK" && data.question) {
+            if (data.id) {
                 // Convert array options to object format
-                const optionsArray = Array.isArray(data.question.options) ? data.question.options : [
-                    data.question.options.option1,
-                    data.question.options.option2,
-                    data.question.options.option3,
-                    data.question.options.option4
+                const optionsArray = Array.isArray(data.options) ? data.options : [
+                    data.options.option1,
+                    data.options.option2,
+                    data.options.option3,
+                    data.options.option4
                 ]
 
                 // Shuffle the options
                 const shuffledOptions = [...optionsArray].sort(() => Math.random() - 0.5)
                 const questionData = {
-                    ...data.question,
+                    ...data,
                     options: {
                         option1: shuffledOptions[0],
                         option2: shuffledOptions[1],
                         option3: shuffledOptions[2],
                         option4: shuffledOptions[3]
                     },
-                    ai_explanation: data.question.ai_explanation ? data.question.ai_explanation
+                    ai_explanation: data.ai_explanation ? data.ai_explanation
                         .replace(/\\n/g, '\\newline')
                         .replace(/\\\(/g, '$')
                         .replace(/\\\),/g, '$')

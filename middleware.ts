@@ -15,9 +15,6 @@ export function middleware(request: NextRequest) {
   // Get the Firebase auth token from cookies
   const token = request.cookies.get('__firebase_auth_token')?.value
 
-  console.log('Token:', token)
-  console.log('Is public path:', isPublicPath)
-  console.log('Request URL:', request.url)
 
   if (!isPublicPath && !token) {
     return NextResponse.redirect(new URL('/login', request.url))

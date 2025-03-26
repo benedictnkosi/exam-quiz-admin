@@ -70,6 +70,28 @@ export default function Home() {
   const [subjects, setSubjects] = useState<GroupedSubject[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [randomLesson, setRandomLesson] = useState<RandomAIQuestion['question'] | null>(null)
+  const [hiddenSubjects, setHiddenSubjects] = useState<string[]>([])
+
+  // Load hidden subjects from localStorage on component mount
+  useEffect(() => {
+    const storedHiddenSubjects = localStorage.getItem('hiddenSubjects')
+    if (storedHiddenSubjects) {
+      setHiddenSubjects(JSON.parse(storedHiddenSubjects))
+    }
+  }, [])
+
+  // Function to handle hiding a subject
+  const handleHideSubject = (subjectId: string) => {
+    const newHiddenSubjects = [...hiddenSubjects, subjectId]
+    setHiddenSubjects(newHiddenSubjects)
+    localStorage.setItem('hiddenSubjects', JSON.stringify(newHiddenSubjects))
+  }
+
+  // Function to show all subjects
+  const handleShowAllSubjects = () => {
+    setHiddenSubjects([])
+    localStorage.removeItem('hiddenSubjects')
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -135,7 +157,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1B1464] text-white p-6">
+    <div className="min-h-screen bg-[#1B1464] text-white p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header with Logo and Profile */}
         <div className="flex justify-between items-center mb-8">
@@ -228,7 +250,7 @@ export default function Home() {
         </div>
 
         {/* Share Buttons */}
-        <div className="flex gap-4 mb-12">
+        <div className="flex flex-col sm:flex-row gap-4 mb-12">
           <button
             onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://examquiz.co.za')}`, '_blank', 'width=600,height=400')}
             className="flex-1 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2"
@@ -274,45 +296,69 @@ export default function Home() {
 
         {/* Subject Grid */}
         <h2 className="text-2xl font-bold mb-8">🤸‍♂️ Learn, Play, and Grow!</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {subjects.map(subject => {
-            const masteryPercentage = subject.answered_questions === 0 ? 0 :
-              Math.round((subject.correct_answers / subject.answered_questions) * 100)
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {subjects
+            .filter(subject => !hiddenSubjects.includes(subject.id))
+            .map(subject => {
+              const masteryPercentage = subject.answered_questions === 0 ? 0 :
+                Math.round((subject.correct_answers / subject.answered_questions) * 100)
 
-            return (
-              <Link
-                key={subject.id}
-                href={`/quiz?subjectId=${subject.id}&subjectName=${encodeURIComponent(subject.name)}`}
-                className="block"
-              >
-                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 relative hover:bg-white/20 transition-all cursor-pointer">
-                  <div className="absolute -top-6 left-4">
-                    <Image
-                      src={getSubjectIcon(subject.name)}
-                      alt={subject.name}
-                      width={72}
-                      height={72}
-                      onError={(e: any) => {
-                        e.target.src = '/images/subjects/icon.png'
-                      }}
-                    />
-                  </div>
-                  <div className="mt-12">
-                    <h3 className="font-semibold mb-2 min-h-[2.5rem]">{subject.name}</h3>
-                    <p className="text-sm text-gray-300 mb-4">{subject.total_questions} questions</p>
-                    <div className="w-full bg-gray-700 rounded-full h-1 mb-2">
-                      <div
-                        className="bg-green-500 h-1 rounded-full transition-all duration-500"
-                        style={{ width: `${masteryPercentage}%` }}
-                      ></div>
+              return (
+                <div key={subject.id} className="relative">
+                  <button
+                    onClick={() => handleHideSubject(subject.id)}
+                    className="absolute -top-2 -right-2 z-10 bg-gray-600/80 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-gray-500/80 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                  <Link
+                    href={`/quiz?subjectId=${subject.id}&subjectName=${encodeURIComponent(subject.name)}`}
+                    className="block"
+                  >
+                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 relative hover:bg-white/20 transition-all cursor-pointer">
+                      <div className="absolute -top-6 left-4">
+                        <Image
+                          src={getSubjectIcon(subject.name)}
+                          alt={subject.name}
+                          width={72}
+                          height={72}
+                          onError={(e: any) => {
+                            e.target.src = '/images/subjects/icon.png'
+                          }}
+                        />
+                      </div>
+                      <div className="mt-12">
+                        <h3 className="font-semibold mb-2 min-h-[2.5rem]">{subject.name}</h3>
+                        <p className="text-sm text-gray-300 mb-4">{subject.total_questions} questions</p>
+                        <div className="w-full bg-gray-700 rounded-full h-1 mb-2">
+                          <div
+                            className="bg-green-500 h-1 rounded-full transition-all duration-500"
+                            style={{ width: `${masteryPercentage}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-right text-sm text-gray-300">{masteryPercentage}% GOAT 🐐</p>
+                      </div>
                     </div>
-                    <p className="text-right text-sm text-gray-300">{masteryPercentage}% GOAT 🐐</p>
-                  </div>
+                  </Link>
                 </div>
-              </Link>
-            )
-          })}
+              )
+            })}
         </div>
+
+        {/* Show All Subjects Button */}
+        {hiddenSubjects.length > 0 && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={handleShowAllSubjects}
+              className="bg-white/20 hover:bg-white/30 text-white rounded-xl py-3 px-6 transition-colors"
+            >
+              Show All Subjects
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
