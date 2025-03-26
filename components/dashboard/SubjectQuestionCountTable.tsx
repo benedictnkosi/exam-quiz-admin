@@ -126,10 +126,14 @@ export default function SubjectQuestionCountTable() {
                                 </TableCell>
                                 <TableCell>
                                     <button
-                                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                                        className={`px-4 py-2 rounded-md ${item.question_count > 89
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-blue-500 hover:bg-blue-600'
+                                            } text-white`}
                                         onClick={() => handleAssignClick(item)}
+                                        disabled={item.question_count > 89}
                                     >
-                                        Assign to me
+                                        {item.question_count > 89 ? 'Maximum Questions Reached' : 'Assign to me'}
                                     </button>
                                 </TableCell>
                             </TableRow>
