@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { useAuth } from '@/contexts/AuthContext'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 
 interface SubjectQuestionCount {
     subject_name: string
@@ -31,6 +32,8 @@ export default function SubjectQuestionCountTable() {
     const [loading, setLoading] = useState(true)
     const [selectedTerm, setSelectedTerm] = useState("2")
     const { user } = useAuth()
+    const [showConfirmation, setShowConfirmation] = useState(false)
+    const [selectedSubject, setSelectedSubject] = useState<SubjectQuestionCount | null>(null)
 
     const handleAssign = async (subjectId: number) => {
         try {
@@ -48,6 +51,15 @@ export default function SubjectQuestionCountTable() {
             }
         } catch (error) {
             console.error('Error assigning subject:', error)
+        }
+    }
+
+    const handleAssignClick = (subject: SubjectQuestionCount) => {
+        if (subject.capturer) {
+            setSelectedSubject(subject)
+            setShowConfirmation(true)
+        } else {
+            handleAssign(subject.subject_id)
         }
     }
 
@@ -94,9 +106,9 @@ export default function SubjectQuestionCountTable() {
                         <TableRow>
                             <TableHead>Subject</TableHead>
                             <TableHead>Grade</TableHead>
-
                             <TableHead className="text-right">Question Count</TableHead>
                             <TableHead>Capturer</TableHead>
+                            <TableHead>Assign</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -104,25 +116,40 @@ export default function SubjectQuestionCountTable() {
                             <TableRow key={index}>
                                 <TableCell>{item.subject_name}</TableCell>
                                 <TableCell>{item.grade}</TableCell>
-
                                 <TableCell className="text-right">{item.question_count}</TableCell>
                                 <TableCell>
                                     {item.capturer ? (
                                         item.capturer
                                     ) : (
-                                        <button
-                                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                                            onClick={() => handleAssign(item.subject_id)}
-                                        >
-                                            Assign to me
-                                        </button>
+                                        <span className="text-gray-500">Not Assigned</span>
                                     )}
+                                </TableCell>
+                                <TableCell>
+                                    <button
+                                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                                        onClick={() => handleAssignClick(item)}
+                                    >
+                                        Assign to me
+                                    </button>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </div>
+
+            <ConfirmationDialog
+                isOpen={showConfirmation}
+                onClose={() => setShowConfirmation(false)}
+                onConfirm={() => {
+                    if (selectedSubject) {
+                        handleAssign(selectedSubject.subject_id)
+                        setShowConfirmation(false)
+                    }
+                }}
+                title="Confirm Assignment"
+                message={`This subject is currently assigned to ${selectedSubject?.capturer}. Are you sure you want to reassign it to yourself?`}
+            />
         </div>
     )
 } 
