@@ -215,6 +215,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
 
     // Handle headings first
     if (text.startsWith('# ') && !text.includes('$')) {
+        //replace ** with ""
+        text = text.replace(/\*\*/g, '')
         return (
             <h1 className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 🤖 {text.substring(2).trim()}
@@ -222,6 +224,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
         );
     }
     if (text.startsWith('## ') && !text.includes('$')) {
+        //replace ** with ""
+        text = text.replace(/\*\*/g, '')
         return (
             <h2 className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {text.substring(3).trim()}
@@ -229,6 +233,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
         );
     }
     if (text.startsWith('### ') && !text.includes('$')) {
+        //replace ** with ""
+        text = text.replace(/\*\*/g, '')
         return (
             <h3 className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {text.substring(4).trim()}
@@ -236,6 +242,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
         );
     }
     if (text.startsWith('#### ') && !text.includes('$')) {
+        //replace ** with ""
+        text = text.replace(/\*\*/g, '')
         return (
             <h4 className={`text-lg font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {text.substring(5).trim()}
@@ -338,6 +346,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                     }
                                     // Handle headings first
                                     if (boldPart.startsWith('# ') && !boldPart.includes('$')) {
+                                        //replace ** with ""
+                                        boldPart = boldPart.replace(/\*\*/g, '')
                                         return (
                                             <h1 key={`h1-${index}`} className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 🤖 {boldPart.substring(2).trim()}
@@ -345,6 +355,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                         );
                                     }
                                     if (boldPart.startsWith('## ') && !boldPart.includes('$')) {
+                                        //replace ** with ""
+                                        boldPart = boldPart.replace(/\*\*/g, '')
                                         return (
                                             <h2 key={`h2-${index}`} className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {boldPart.substring(3).trim()}
@@ -352,6 +364,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                         );
                                     }
                                     if (boldPart.startsWith('### ') && !boldPart.includes('$')) {
+                                        //replace ** with ""
+                                        boldPart = boldPart.replace(/\*\*/g, '')
                                         return (
                                             <h3 key={`h3-${index}`} className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {boldPart.substring(4).trim()}
@@ -359,6 +373,8 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                         );
                                     }
                                     if (boldPart.startsWith('#### ') && !boldPart.includes('$')) {
+                                        //replace ** with ""
+                                        boldPart = boldPart.replace(/\*\*/g, '')
                                         return (
                                             <h4 key={`h4-${index}`} className={`text-lg font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {boldPart.substring(5).trim()}
