@@ -1506,7 +1506,34 @@ export default function QuizPage() {
                                                     <>
                                                         <h3 className="text-lg font-semibold mb-2 text-white">Context</h3>
                                                         <div className="p-4 bg-white/5 rounded-lg">
-                                                            {renderMixedContent(currentQuestion.context, true)}
+                                                            {currentQuestion.context?.split('\n').map((line, index) => {
+
+                                                                const trimmedLine = line.trim();
+                                                                if (trimmedLine.startsWith('-')) {
+                                                                    const content = trimmedLine.substring(1).trim();
+                                                                    const indentLevel = line.indexOf('-') / 2;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={index}
+                                                                            className="flex items-start gap-3"
+                                                                            style={{ marginLeft: `${indentLevel * 20}px` }}
+                                                                        >
+                                                                            <span className="text-white mt-1">
+                                                                                {indentLevel > 0 ? '🎯' : '✅'}
+                                                                            </span>
+                                                                            <div className="flex-1">
+                                                                                {renderMixedContent(content, true)}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <div key={index}>
+                                                                        {renderMixedContent(line, true)}
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
                                                     </>
                                                 )}
@@ -1540,7 +1567,34 @@ export default function QuizPage() {
                                                     <>
                                                         <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
                                                         <div className="text-xl mb-2 text-white text-center">
-                                                            {renderMixedContent(currentQuestion.question, true)}
+                                                            {currentQuestion.question?.split('\n').map((line, index) => {
+
+                                                                const trimmedLine = line.trim();
+                                                                if (trimmedLine.startsWith('-')) {
+                                                                    const content = trimmedLine.substring(1).trim();
+                                                                    const indentLevel = line.indexOf('-') / 2;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={index}
+                                                                            className="flex items-start gap-3"
+                                                                            style={{ marginLeft: `${indentLevel * 20}px` }}
+                                                                        >
+                                                                            <span className="text-white mt-1">
+                                                                                {indentLevel > 0 ? '🎯' : '✅'}
+                                                                            </span>
+                                                                            <div className="flex-1">
+                                                                                {renderMixedContent(content, true)}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <div key={index}>
+                                                                        {renderMixedContent(line, true)}
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
                                                     </>
                                                 )}
@@ -1724,7 +1778,34 @@ export default function QuizPage() {
                                                         <div className="mb-6 bg-white/5 p-4 rounded-lg">
                                                             <p className="text-white font-semibold mb-2">📝 Explanation:</p>
                                                             <div className="text-gray-200">
-                                                                {renderMixedContent(currentQuestion.explanation, true)}
+                                                                {currentQuestion.explanation?.split('\n').map((line, index) => {
+
+                                                                    const trimmedLine = line.trim();
+                                                                    if (trimmedLine.startsWith('-')) {
+                                                                        const content = trimmedLine.substring(1).trim();
+                                                                        const indentLevel = line.indexOf('-') / 2;
+
+                                                                        return (
+                                                                            <div
+                                                                                key={index}
+                                                                                className="flex items-start gap-3"
+                                                                                style={{ marginLeft: `${indentLevel * 20}px` }}
+                                                                            >
+                                                                                <span className="text-white mt-1">
+                                                                                    {indentLevel > 0 ? '🎯' : '✅'}
+                                                                                </span>
+                                                                                <div className="flex-1">
+                                                                                    {renderMixedContent(content, true)}
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                    return (
+                                                                        <div key={index}>
+                                                                            {renderMixedContent(line, true)}
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
                                                         </div>
                                                     )}
