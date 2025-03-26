@@ -1304,7 +1304,9 @@ export default function QuizPage() {
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-white text-sm font-medium line-clamp-2 pr-8">
-                                                                {fav.question || fav.context || `Question #${fav.questionId}`}
+                                                                {fav.question?.includes('$') && fav.context?.includes('$')
+                                                                    ? `Question #${fav.questionId}`
+                                                                    : fav.question || fav.context || `Question #${fav.questionId}`}
                                                             </p>
                                                         </div>
                                                         <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
