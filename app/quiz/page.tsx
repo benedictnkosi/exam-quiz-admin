@@ -339,28 +339,28 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                     // Handle headings first
                                     if (boldPart.startsWith('# ') && !boldPart.includes('$')) {
                                         return (
-                                            <h1 className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                            <h1 key={`h1-${index}`} className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 🤖 {boldPart.substring(2).trim()}
                                             </h1>
                                         );
                                     }
                                     if (boldPart.startsWith('## ') && !boldPart.includes('$')) {
                                         return (
-                                            <h2 className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                            <h2 key={`h2-${index}`} className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {boldPart.substring(3).trim()}
                                             </h2>
                                         );
                                     }
                                     if (boldPart.startsWith('### ') && !boldPart.includes('$')) {
                                         return (
-                                            <h3 className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                            <h3 key={`h3-${index}`} className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {boldPart.substring(4).trim()}
                                             </h3>
                                         );
                                     }
                                     if (boldPart.startsWith('#### ') && !boldPart.includes('$')) {
                                         return (
-                                            <h4 className={`text-lg font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                            <h4 key={`h4-${index}`} className={`text-lg font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {boldPart.substring(5).trim()}
                                             </h4>
                                         );
@@ -1347,11 +1347,27 @@ export default function QuizPage() {
                     <div className={`flex-1 p-3 mt-6 lg:p-6 min-h-screen ${isSidebarVisible ? 'hidden lg:block' : 'block'}`}>
                         {loading ? (
                             <div className="h-full flex items-center justify-center">
-                                <div className="text-white text-center">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                                    <p>{selectedLearningType === 'quick_lessons'
-                                        ? getRandomLoadingMessage()
-                                        : 'Loading your question...'}</p>
+                                <div className="text-center">
+                                    <div className="relative w-32 h-32 mx-auto mb-6">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full animate-pulse"></div>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Image
+                                                src="/images/avatars/5.png"
+                                                alt="Loading"
+                                                width={96}
+                                                height={96}
+                                                className="rounded-full"
+                                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                                    e.currentTarget.src = '/images/subjects/icon.png'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="text-white text-lg font-medium">
+                                        {selectedLearningType === 'quick_lessons'
+                                            ? getRandomLoadingMessage()
+                                            : 'Loading your question...'}
+                                    </div>
                                 </div>
                             </div>
                         ) : !isQuizStarted ? (
