@@ -274,7 +274,7 @@ export default function Home() {
 
         {/* Subject Grid */}
         <h2 className="text-2xl font-bold mb-8">🤸‍♂️ Learn, Play, and Grow!</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {subjects.map(subject => {
             const masteryPercentage = subject.answered_questions === 0 ? 0 :
               Math.round((subject.correct_answers / subject.answered_questions) * 100)
@@ -298,7 +298,7 @@ export default function Home() {
                     />
                   </div>
                   <div className="mt-12">
-                    <h3 className="font-semibold mb-2">{subject.name}</h3>
+                    <h3 className="font-semibold mb-2 min-h-[2.5rem]">{subject.name}</h3>
                     <p className="text-sm text-gray-300 mb-4">{subject.total_questions} questions</p>
                     <div className="w-full bg-gray-700 rounded-full h-1 mb-2">
                       <div

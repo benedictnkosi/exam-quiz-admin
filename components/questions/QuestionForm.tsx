@@ -176,7 +176,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         subject: initialData.subject?.name || '',
         term: initialData.term?.toString() || '',
         context: initialData.context || '',
-        answer: cleanAnswer(initialData.answer || ''),
+        answer: initialData.answer || '',
         explanation: initialData.explanation || '',
         options: initialOptions,
         contextImage: initialData.image_path ? {
@@ -555,13 +555,22 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   }
 
   const renderLatex = (text: string) => {
-    return text.split(/(\$.*?\$)/).map((chunk, index) => {
+    // Handle LaTeX content first
+    if (text.startsWith('$') && text.endsWith('$')) {
+      const latex = text.slice(1, -1);
+      return <InlineMath math={latex} />;
+    }
+
+    // Split by LaTeX delimiters and preserve them
+    const parts = text.split(/(\$[^$]+\$)/g);
+
+    return parts.map((chunk, index) => {
       if (chunk.startsWith('$') && chunk.endsWith('$')) {
-        const latex = chunk.slice(1, -1)
-        return <InlineMath key={index} math={latex} />
+        const latex = chunk.slice(1, -1).trim();
+        return <InlineMath key={index} math={latex} />;
       }
-      return <span key={index}>{chunk}</span>
-    })
+      return <span key={index}>{chunk}</span>;
+    });
   }
 
   const handleConvertImageToText = async () => {
@@ -817,7 +826,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             {showLatexContext && formData.context && (
               <div className="mt-2 p-3 bg-gray-50 rounded-md">
                 <p className="text-sm text-gray-700">
-                  {renderMixedContent(formData.context)}
+                  {renderLatex(formData.context)}
                 </p>
               </div>
             )}
@@ -978,7 +987,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             {showLatexExplanation && formData.explanation && (
               <div className="mt-2 p-3 bg-gray-50 rounded-md">
                 <p className="text-sm text-gray-700">
-                  {renderMixedContent(formData.explanation)}
+                  {renderLatex(formData.explanation)}
                 </p>
               </div>
             )}

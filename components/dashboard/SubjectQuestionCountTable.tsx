@@ -16,17 +16,40 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { useAuth } from '@/contexts/AuthContext'
 
 interface SubjectQuestionCount {
     subject_name: string
     grade: string
     question_count: number
+    capturer: string | null
+    id: number
 }
 
 export default function SubjectQuestionCountTable() {
     const [data, setData] = useState<SubjectQuestionCount[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedTerm, setSelectedTerm] = useState("2")
+    const { user } = useAuth()
+
+    const handleAssign = async (subjectId: number) => {
+        try {
+            const response = await fetch(`${HOST_URL}/api/subjects/${subjectId}/assign/${user?.uid}`, {
+                method: 'POST'
+            })
+            const result = await response.json()
+            if (result.status === 'success') {
+                // Refresh the data after successful assignment
+                const updatedResponse = await fetch(`${HOST_URL}/api/subjects/questions/count/${selectedTerm}`)
+                const updatedResult = await updatedResponse.json()
+                if (updatedResult.status === 'success') {
+                    setData(updatedResult.data)
+                }
+            }
+        } catch (error) {
+            console.error('Error assigning subject:', error)
+        }
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -71,6 +94,7 @@ export default function SubjectQuestionCountTable() {
                         <TableRow>
                             <TableHead>Subject</TableHead>
                             <TableHead>Grade</TableHead>
+                            <TableHead>Capturer</TableHead>
                             <TableHead className="text-right">Question Count</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -79,6 +103,18 @@ export default function SubjectQuestionCountTable() {
                             <TableRow key={index}>
                                 <TableCell>{item.subject_name}</TableCell>
                                 <TableCell>{item.grade}</TableCell>
+                                <TableCell>
+                                    {item.capturer ? (
+                                        item.capturer
+                                    ) : (
+                                        <button
+                                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                                            onClick={() => handleAssign(item.id)}
+                                        >
+                                            Assign to me
+                                        </button>
+                                    )}
+                                </TableCell>
                                 <TableCell className="text-right">{item.question_count}</TableCell>
                             </TableRow>
                         ))}
