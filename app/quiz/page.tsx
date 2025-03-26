@@ -214,28 +214,28 @@ function renderMixedContent(text: string, isDark: boolean = false) {
     }
 
     // Handle headings first
-    if (text.startsWith('# ')) {
+    if (text.startsWith('# ') && !text.includes('$')) {
         return (
             <h1 className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 🤖 {text.substring(2).trim()}
             </h1>
         );
     }
-    if (text.startsWith('## ')) {
+    if (text.startsWith('## ') && !text.includes('$')) {
         return (
             <h2 className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {text.substring(3).trim()}
             </h2>
         );
     }
-    if (text.startsWith('### ')) {
+    if (text.startsWith('### ') && !text.includes('$')) {
         return (
             <h3 className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {text.substring(4).trim()}
             </h3>
         );
     }
-    if (text.startsWith('#### ')) {
+    if (text.startsWith('#### ') && !text.includes('$')) {
         return (
             <h4 className={`text-lg font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {text.substring(5).trim()}
@@ -322,6 +322,7 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                     } else {
                         // Regular text with potential bold formatting
                         const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+
                         return (
                             <span key={index} className={`content-text ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                 {boldParts.map((boldPart, boldIndex) => {
@@ -335,6 +336,36 @@ function renderMixedContent(text: string, isDark: boolean = false) {
                                             </span>
                                         );
                                     }
+                                    // Handle headings first
+                                    if (boldPart.startsWith('# ') && !boldPart.includes('$')) {
+                                        return (
+                                            <h1 className={`text-3xl font-bold text-center mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                🤖 {boldPart.substring(2).trim()}
+                                            </h1>
+                                        );
+                                    }
+                                    if (boldPart.startsWith('## ') && !boldPart.includes('$')) {
+                                        return (
+                                            <h2 className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                {boldPart.substring(3).trim()}
+                                            </h2>
+                                        );
+                                    }
+                                    if (boldPart.startsWith('### ') && !boldPart.includes('$')) {
+                                        return (
+                                            <h3 className={`text-xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                {boldPart.substring(4).trim()}
+                                            </h3>
+                                        );
+                                    }
+                                    if (boldPart.startsWith('#### ') && !boldPart.includes('$')) {
+                                        return (
+                                            <h4 className={`text-lg font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                {boldPart.substring(5).trim()}
+                                            </h4>
+                                        );
+                                    }
+
                                     return boldPart;
                                 })}
                             </span>
