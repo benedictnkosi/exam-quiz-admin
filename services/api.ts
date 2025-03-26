@@ -30,6 +30,7 @@ export interface QuestionPayload {
   question: string
   type: string
   subject: string
+  subject_id: number
   context: string
   answer: string
   options: {

@@ -23,7 +23,7 @@ interface SubjectQuestionCount {
     grade: string
     question_count: number
     capturer: string | null
-    id: number
+    subject_id: number
 }
 
 export default function SubjectQuestionCountTable() {
@@ -94,8 +94,9 @@ export default function SubjectQuestionCountTable() {
                         <TableRow>
                             <TableHead>Subject</TableHead>
                             <TableHead>Grade</TableHead>
-                            <TableHead>Capturer</TableHead>
+
                             <TableHead className="text-right">Question Count</TableHead>
+                            <TableHead>Capturer</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -103,19 +104,20 @@ export default function SubjectQuestionCountTable() {
                             <TableRow key={index}>
                                 <TableCell>{item.subject_name}</TableCell>
                                 <TableCell>{item.grade}</TableCell>
+
+                                <TableCell className="text-right">{item.question_count}</TableCell>
                                 <TableCell>
                                     {item.capturer ? (
                                         item.capturer
                                     ) : (
                                         <button
                                             className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                                            onClick={() => handleAssign(item.id)}
+                                            onClick={() => handleAssign(item.subject_id)}
                                         >
                                             Assign to me
                                         </button>
                                     )}
                                 </TableCell>
-                                <TableCell className="text-right">{item.question_count}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

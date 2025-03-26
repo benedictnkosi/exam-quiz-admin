@@ -29,6 +29,7 @@ interface FormData {
   examYear: number
   grade: string
   subject: string
+  subjectId: number
   term: string
   context: string
   answer: string
@@ -142,6 +143,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     examYear: new Date().getFullYear(),
     grade: '',
     subject: '',
+    subjectId: 0,
     term: '',
     context: '',
     answer: '',
@@ -174,6 +176,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         examYear: initialData.year || new Date().getFullYear(),
         grade: gradeValue,
         subject: initialData.subject?.name || '',
+        subjectId: initialData.subject?.id || 0,
         term: initialData.term?.toString() || '',
         context: initialData.context || '',
         answer: initialData.answer || '',
@@ -450,6 +453,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         question: formData.questionText,
         type: 'multiple_choice',
         subject: formData.subject,
+        subject_id: formData.subjectId,
         context: formData.context || '',
         answer: formData.answer,
         options: {
@@ -732,7 +736,14 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             </label>
             <select
               value={formData.subject}
-              onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+              onChange={(e) => {
+                const selectedSubject = subjects.find(s => s.name === e.target.value);
+                setFormData(prev => ({
+                  ...prev,
+                  subject: e.target.value,
+                  subjectId: selectedSubject?.id || 0
+                }));
+              }}
               className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               disabled={loadingSubjects || !formData.grade}
