@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Head from 'next/head'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer } from '@/services/api'
+import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer, getLearner } from '@/services/api'
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 import { logAnalyticsEvent } from '@/lib/analytics'
@@ -431,6 +431,22 @@ export default function QuizPage() {
     const [selectedLearningType, setSelectedLearningType] = useState<'quiz' | 'quick_lessons' | null>('quiz')
     const [isQuizStarted, setIsQuizStarted] = useState(false)
     const [selectedPaper, setSelectedPaper] = useState<string>('P1')
+    const [learnerRole, setLearnerRole] = useState<string>('learner')
+
+    // Add effect to fetch learner role
+    useEffect(() => {
+        async function fetchLearnerRole() {
+            if (!user?.uid) return;
+            try {
+                const learnerData = await getLearner(user.uid);
+                setLearnerRole(learnerData.role || 'learner');
+            } catch (error) {
+                console.error('Error fetching learner role:', error);
+                setLearnerRole('learner');
+            }
+        }
+        fetchLearnerRole();
+    }, [user?.uid]);
 
     // Add audio refs
     const correctAudioRef = typeof Audio !== 'undefined' ? new Audio('/audio/correct_answer.mp3') : null
@@ -1755,14 +1771,41 @@ export default function QuizPage() {
                                         )}
 
                                         {/* Report Issue Button - Show for both quiz and quick lessons */}
-                                        <button
-                                            onClick={reportIssue}
-                                            className="w-full mt-4 p-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors text-left"
-                                        >
-                                            <span className="text-red-300 font-medium">
-                                                🛑 Report an Issue with this {selectedLearningType === 'quiz' ? 'Question' : 'Lesson'}
-                                            </span>
-                                        </button>
+                                        <div className="flex gap-4 mt-4">
+                                            <button
+                                                onClick={reportIssue}
+                                                className="flex-1 p-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors text-left"
+                                            >
+                                                <span className="text-red-300 font-medium">
+                                                    🛑 Report an Issue with this {selectedLearningType === 'quiz' ? 'Question' : 'Lesson'}
+                                                </span>
+                                            </button>
+                                            {learnerRole === 'admin' && (
+                                                <button
+                                                    onClick={async () => {
+                                                        if (!user?.uid || !user?.email || !currentQuestion) return;
+                                                        try {
+                                                            await setQuestionStatus({
+                                                                question_id: currentQuestion.id,
+                                                                status: 'approved',
+                                                                email: user.email,
+                                                                uid: user.uid,
+                                                                comment: 'Question approved by admin'
+                                                            });
+                                                            showMessage('Question approved successfully', 'success');
+                                                        } catch (error) {
+                                                            console.error('Error approving question:', error);
+                                                            showMessage('Failed to approve question', 'error');
+                                                        }
+                                                    }}
+                                                    className="flex-1 p-4 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors text-left"
+                                                >
+                                                    <span className="text-green-300 font-medium">
+                                                        ✅ Approve this {selectedLearningType === 'quiz' ? 'Question' : 'Lesson'}
+                                                    </span>
+                                                </button>
+                                            )}
+                                        </div>
 
                                         {/* Explanation - Only show for quiz mode */}
                                         {selectedLearningType === 'quiz' && showExplanation && (
