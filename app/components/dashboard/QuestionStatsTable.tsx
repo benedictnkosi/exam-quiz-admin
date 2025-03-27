@@ -49,7 +49,9 @@ export default function QuestionStatsTable() {
     const [error, setError] = useState<string | null>(null);
     const [selectedFromDate, setSelectedFromDate] = useState<Date>(() => {
         const date = new Date();
-        date.setDate(date.getDate() - 7);
+        const day = date.getDay();
+        const diff = date.getDate() - day - 1; // Get last Saturday
+        date.setDate(diff);
         return date;
     });
     const [selectedEndDate, setSelectedEndDate] = useState<Date>(() => {
