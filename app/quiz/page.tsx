@@ -545,7 +545,7 @@ export default function QuizPage() {
             setLoading(true)
             const data = await getRandomQuestion(subjectName, paper, user.uid)
 
-            if (data.status === "NOK" && data.message === "No more questions available") {
+            if (data.status === "NOK") {
                 setNoMoreQuestions(true)
                 setCurrentQuestion(null)
             } else {
@@ -611,7 +611,10 @@ export default function QuizPage() {
             )
             const data = await response.json()
 
-            if (data.id) {
+            if (data.status === "NOK") {
+                setNoMoreQuestions(true)
+                setCurrentQuestion(null)
+            } else {
                 // Convert array options to object format
                 const optionsArray = Array.isArray(data.options) ? data.options : [
                     data.options.option1,
