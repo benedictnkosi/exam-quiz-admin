@@ -10,18 +10,29 @@ export function middleware(request: NextRequest) {
     path === '/reset-password' ||
     path === '/onboarding' ||
     path === '/privacy' ||
+    path === '/info' ||
     path.startsWith('/images/')
 
   // Get the Firebase auth token from cookies
   const token = request.cookies.get('__firebase_auth_token')?.value
 
-
-  if (!isPublicPath && !token) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // Handle privacy and info pages - always accessible
+  if (path === '/privacy' || path === '/info') {
+    return NextResponse.next()
   }
 
-  if (isPublicPath && token) {
-    return NextResponse.redirect(new URL('/', request.url))
+  // Handle other public paths
+  if (isPublicPath) {
+    // Redirect authenticated users away from public paths (except privacy and info)
+    if (token) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+    return NextResponse.next()
+  }
+
+  // Handle protected paths
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return NextResponse.next()
