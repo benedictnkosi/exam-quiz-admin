@@ -1030,6 +1030,8 @@ export default function QuizPage() {
             return;
         }
         try {
+            setIsQuizStarted(true);
+            setSelectedLearningType('quiz');
             setLoading(true);
             // Close the sidebar on mobile when a favorite is clicked
             setIsSidebarVisible(false);
