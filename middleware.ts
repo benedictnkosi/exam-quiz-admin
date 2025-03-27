@@ -4,26 +4,24 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
+  // Handle privacy, info, and delete-account pages - always accessible
+  if (path === '/privacy' || path === '/info' || path === '/info/delete-account') {
+    return NextResponse.next()
+  }
+
   // Define public paths that don't require authentication
   const isPublicPath = path === '/login' ||
     path === '/register' ||
     path === '/reset-password' ||
     path === '/onboarding' ||
-    path === '/privacy' ||
-    path === '/info' ||
     path.startsWith('/images/')
 
   // Get the Firebase auth token from cookies
   const token = request.cookies.get('__firebase_auth_token')?.value
 
-  // Handle privacy and info pages - always accessible
-  if (path === '/privacy' || path === '/info') {
-    return NextResponse.next()
-  }
-
   // Handle other public paths
   if (isPublicPath) {
-    // Redirect authenticated users away from public paths (except privacy and info)
+    // Redirect authenticated users away from public paths
     if (token) {
       return NextResponse.redirect(new URL('/', request.url))
     }

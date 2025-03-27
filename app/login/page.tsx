@@ -226,6 +226,10 @@ export default function LoginPage() {
               <Link href="/privacy" className="text-[#6366f1] hover:text-[#818cf8] underline transition-colors duration-300">
                 Privacy Policy
               </Link>
+              {' '}and{' '}
+              <Link href="/info" className="text-[#6366f1] hover:text-[#818cf8] underline transition-colors duration-300">
+                Terms of Service
+              </Link>
             </p>
           </div>
         </div>
