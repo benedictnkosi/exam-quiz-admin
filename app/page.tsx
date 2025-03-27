@@ -286,7 +286,7 @@ export default function Home() {
                   }}
                 />
               </div>
-              <h2 className="text-xl font-bold">Quick Bite: {randomLesson.subject.name}</h2>
+              <h2 className="text-lg font-bold">Quick Bite: {randomLesson.subject.name}</h2>
             </div>
             <div className="text-gray-300">
               {randomLesson.ai_explanation.split('***Key Lesson:')[1]?.trim().replace('***', '').trim()}
