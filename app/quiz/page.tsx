@@ -525,7 +525,7 @@ export default function QuizPage() {
     }, []);
 
     const loadRandomQuestion = async (paper: string) => {
-        if (!user?.uid || !subjectName) {
+        if (!user?.uid || !subjectName || !subjectId) {
             return
         }
         // Set the selected paper
@@ -546,9 +546,11 @@ export default function QuizPage() {
             const data = await getRandomQuestion(subjectName, paper, user.uid)
 
             if (data.status === "NOK") {
+                console.log("No more questions")
                 setNoMoreQuestions(true)
                 setCurrentQuestion(null)
             } else {
+                console.log("Question loaded")
                 // Convert array options to object format
                 const optionsArray = Array.isArray(data.options) ? data.options : [
                     data.options.option1,
@@ -653,9 +655,6 @@ export default function QuizPage() {
                 setCurrentQuestion(questionData)
                 setNoMoreQuestions(false)
                 startTimer()
-            } else {
-                setNoMoreQuestions(true)
-                setCurrentQuestion(null)
             }
 
             const newStats = await getSubjectStats(user.uid, subjectName + " " + paper)
@@ -851,6 +850,7 @@ export default function QuizPage() {
             if (!response.ok) {
                 throw new Error('Failed to fetch favorites')
             }
+
 
             const data = await response.json()
             if (data.status === "OK") {
@@ -1184,10 +1184,11 @@ export default function QuizPage() {
                                         </button>
                                         <button
                                             onClick={() => setSelectedPaper('P2')}
+                                            disabled={subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')}
                                             className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P2'
                                                 ? 'bg-green-600 shadow-lg shadow-green-500/50 scale-105 border-2 border-white/50'
                                                 : 'bg-green-600/50 hover:bg-green-600/70'
-                                                }`}
+                                                } ${(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             {selectedPaper === 'P2' && (
                                                 <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
@@ -1197,6 +1198,9 @@ export default function QuizPage() {
                                             <div className="flex flex-col items-center">
                                                 <span className="text-2xl mb-1">📖</span>
                                                 <span className="font-semibold">Paper 2</span>
+                                                {(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) && (
+                                                    <span className="text-xs text-white/60 mt-1">Not Available</span>
+                                                )}
                                             </div>
                                         </button>
                                     </div>

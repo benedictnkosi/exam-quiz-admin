@@ -70,6 +70,8 @@ export default function SubjectQuestionCountTable() {
                         }
                     ])
                 }
+            } else {
+                console.log(result.message)
             }
         } catch (error) {
             console.error('Error assigning subject:', error)
