@@ -8,6 +8,15 @@ import Link from 'next/link'
 import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'
 import { logAnalyticsEvent } from '@/lib/analytics'
 
+declare global {
+    interface Window {
+        grecaptcha: {
+            ready: (callback: () => void) => void;
+            execute: (siteKey: string, options: { action: string }) => Promise<string>;
+        };
+    }
+}
+
 export default function RegisterPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -31,6 +40,22 @@ export default function RegisterPage() {
         name: searchParams.get('name') || '',
     }
 
+    const executeRecaptcha = async (): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            window.grecaptcha.ready(async () => {
+                try {
+                    const token = await window.grecaptcha.execute(
+                        process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '',
+                        { action: 'register' }
+                    );
+                    resolve(token);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        });
+    };
+
     const handleEmailSignUp = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
@@ -43,6 +68,9 @@ export default function RegisterPage() {
         }
 
         try {
+            // Execute reCAPTCHA v3
+            const recaptchaToken = await executeRecaptcha();
+
             const userCredential = await createUserWithEmailAndPassword(auth, email, password)
             const user = userCredential.user
 
@@ -56,6 +84,7 @@ export default function RegisterPage() {
                     uid: user.uid,
                     email: user.email,
                     terms: "1,2,3,4",
+                    recaptchaToken,
                     ...onboardingData
                 }),
             })
@@ -85,6 +114,18 @@ export default function RegisterPage() {
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        // Load reCAPTCHA v3 script
+        const script = document.createElement('script')
+        script.src = `https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`
+        script.async = true
+        document.body.appendChild(script)
+
+        return () => {
+            document.body.removeChild(script)
+        }
+    }, [])
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1B1464] to-[#2B2F77]">
