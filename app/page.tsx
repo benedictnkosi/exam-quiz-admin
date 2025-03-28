@@ -333,6 +333,19 @@ export default function Home() {
                       <div className="mt-12">
                         <h3 className="font-semibold mb-2 min-h-[2.5rem]">{subject.name}</h3>
                         <p className="text-sm text-gray-300 mb-4">{subject.total_questions} questions</p>
+
+                        {/* Stats Display */}
+                        <div className="flex justify-between items-center mb-4">
+                          <div>
+                            <p className="text-gray-300">Correct</p>
+                            <p className="text-xl font-bold text-green-500">{subject.correct_answers}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-300">Total</p>
+                            <p className="text-xl font-bold text-blue-500">{subject.answered_questions}</p>
+                          </div>
+                        </div>
+
                         <div className="w-full bg-gray-700 rounded-full h-1 mb-2">
                           <div
                             className="bg-green-500 h-1 rounded-full transition-all duration-500"
