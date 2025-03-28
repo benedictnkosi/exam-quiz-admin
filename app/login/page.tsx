@@ -80,13 +80,15 @@ export default function LoginPage() {
             <span className="font-semibold">Download on App Store</span>
           </a>
 
-          <button
-            onClick={() => setShowAndroidModal(true)}
+          <a
+            href="https://play.google.com/store/apps/details?id=za.co.examquizafrica"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02]"
           >
             <IoLogoGooglePlaystore size={24} />
             <span className="font-semibold">Get it on Google Play</span>
-          </button>
+          </a>
         </div>
       </div>
 
