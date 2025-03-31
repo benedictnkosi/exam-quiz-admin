@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     description: "A comprehensive learning platform for students to practice and prepare for exams. Access thousands of practice questions and improve your academic performance.",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://examquiz.co.za/og-image.png",
         width: 1200,
         height: 630,
         alt: "Exam Quiz Learning Platform",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     title: "Exam Quiz - Past Paper Exam Questions",
     description: "A comprehensive learning platform for students to practice and prepare for exams. Access thousands of practice questions and improve your academic performance. For grade 10, 11, and 12 learners. mathematics grade 12,Matric live,Grade 11 study,grade 10 guide South Africa,ieb,nsc,caps",
     images: [{
-      url: "/og-image.png",
+      url: "https://examquiz.co.za/og-image.png",
       width: 1200,
       height: 630,
       alt: "Exam Quiz Learning Platform",
