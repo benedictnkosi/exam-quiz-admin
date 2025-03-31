@@ -86,6 +86,16 @@ export default function RootLayout({
         <meta name="grammarly-disable-extension" content="true" />
         {/* Disable other extensions that might modify the DOM */}
         <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:url" content="https://examquiz.co.za" />
+        <meta property="og:site_name" content="Exam Quiz" />
+        <meta property="og:title" content="Exam Quiz - Past Paper Exam Questions" />
+        <meta property="og:description" content="A comprehensive learning platform for students to practice and prepare for exams. Access thousands of practice questions and improve your academic performance." />
+        <meta property="og:image" content="https://examquiz.co.za/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Exam Quiz Learning Platform" />
       </head>
       <body
         className={inter.className}
