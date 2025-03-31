@@ -24,6 +24,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/og-image.png',
+        destination: '/public/og-image.png',
+      },
+    ]
+  },
   webpack: (config, { isServer }) => {
     // Add a rule to handle the undici module
     config.module.rules.push({
