@@ -14,6 +14,7 @@ export function middleware(request: NextRequest) {
     path === '/register' ||
     path === '/reset-password' ||
     path === '/onboarding' ||
+    path === '/landing' ||
     path.startsWith('/images/')
 
   // Get the Firebase auth token from cookies
@@ -30,6 +31,10 @@ export function middleware(request: NextRequest) {
 
   // Handle protected paths
   if (!token) {
+    // Redirect to landing page if accessing root path
+    if (path === '/') {
+      return NextResponse.redirect(new URL('/landing', request.url))
+    }
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

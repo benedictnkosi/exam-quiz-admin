@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Remove the token cookie when signed out
         console.log('Removing token cookie')
         Cookies.remove('__firebase_auth_token')
-        const publicPaths = ['/login', '/register', '/reset-password', '/onboarding', '/privacy', '/info', '/info/delete-account']
+        const publicPaths = ['/login', '/register', '/reset-password', '/onboarding', '/privacy', '/info', '/info/delete-account', '/landing']
         if (!publicPaths.includes(pathname)) {
           router.push('/login')
         }
