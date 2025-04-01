@@ -311,7 +311,7 @@ function renderMixedContent(text: string, isDark: boolean = false) {
 
         // Clean up LaTeX commands
         text = text.replace(/\\newlineeq/g, '=')  // Replace \newlineeq with =
-        text = text.replace(/\\newline/g, ' ')    // Replace \newline with space
+        //text = text.replace(/\\newline/g, ' ')    // Replace \newline with space
 
         // First split by LaTeX delimiters
         const parts = text.split(/(\$[^$]+\$)/g);
