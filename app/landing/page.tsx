@@ -63,7 +63,7 @@ export default function LandingPage() {
           {/* Mobile Mock Image */}
           <div className="lg:hidden flex justify-center">
             <div className="relative w-[40%] max-w-[200px]" style={{ transform: 'rotate(12deg)' }}>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#312e81] via-transparent to-transparent z-10" />
+              <div className="absolute  via-transparent to-transparent z-10" />
               <Image
                 src="/images/mock.png"
                 alt="Exam Quiz App Interface"

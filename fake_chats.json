@@ -1,0 +1,102 @@
+[
+  {
+    "userName": "Student1",
+    "text": "Let me try to solve this problem.",
+    "timestamp": "2025-03-31T14:23:22.913Z"
+  },
+  {
+    "userName": "AI_Tutor",
+    "text": "Let me try to solve this problem.",
+    "timestamp": "2025-03-31T15:08:57.913Z"
+  },
+  {
+    "userName": "Student2",
+    "text": "Could you give me an example?",
+    "timestamp": "2025-03-31T16:51:57.913Z"
+  },
+  {
+    "userName": "AI_Tutor",
+    "text": "Let me try to solve this problem.",
+    "timestamp": "2025-03-31T17:13:57.913Z"
+  },
+  {
+    "userName": "Student2",
+    "text": "That makes sense! Thanks for the explanation.",
+    "timestamp": "2025-03-31T17:34:54.913Z"
+  },
+  {
+    "userName": "Student1",
+    "text": "Can you help me understand this concept?",
+    "timestamp": "2025-03-31T19:19:39.913Z"
+  },
+  {
+    "userName": "AI_Tutor",
+    "text": "Could you break it down step by step?",
+    "timestamp": "2025-03-31T22:24:40.902Z"
+  },
+  {
+    "userName": "Student2",
+    "text": "That's interesting! I never thought about it that way.",
+    "timestamp": "2025-04-01T00:09:40.913Z"
+  },
+  {
+    "userName": "Student1",
+    "text": "That's interesting! I never thought about it that way.",
+    "timestamp": "2025-04-01T00:22:47.913Z"
+  },
+  {
+    "userName": "AI_Tutor",
+    "text": "Is there another way to approach this?",
+    "timestamp": "2025-04-01T00:50:00.913Z"
+  },
+  {
+    "userName": "Student2",
+    "text": "That's interesting! I never thought about it that way.",
+    "timestamp": "2025-04-01T02:37:37.913Z"
+  },
+  {
+    "userName": "Student1",
+    "text": "Could you give me an example?",
+    "timestamp": "2025-04-01T03:41:59.913Z"
+  },
+  {
+    "userName": "Student2",
+    "text": "Could you break it down step by step?",
+    "timestamp": "2025-04-01T03:54:11.913Z"
+  },
+  {
+    "userName": "Student1",
+    "text": "Could you break it down step by step?",
+    "timestamp": "2025-04-01T05:40:19.913Z"
+  },
+  {
+    "userName": "AI_Tutor",
+    "text": "I'm still a bit confused about the last part.",
+    "timestamp": "2025-04-01T08:15:41.913Z"
+  },
+  {
+    "userName": "Student1",
+    "text": "Can you help me understand this concept?",
+    "timestamp": "2025-04-01T09:26:07.913Z"
+  },
+  {
+    "userName": "Student1",
+    "text": "Could you give me an example?",
+    "timestamp": "2025-04-01T10:18:38.913Z"
+  },
+  {
+    "userName": "Student2",
+    "text": "I'm still a bit confused about the last part.",
+    "timestamp": "2025-04-01T11:38:16.913Z"
+  },
+  {
+    "userName": "Student1",
+    "text": "I'm still a bit confused about the last part.",
+    "timestamp": "2025-04-01T12:01:49.913Z"
+  },
+  {
+    "userName": "Student2",
+    "text": "Let me try to solve this problem.",
+    "timestamp": "2025-04-01T13:58:06.913Z"
+  }
+]
