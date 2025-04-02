@@ -107,33 +107,36 @@ export default function ThreadsPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-[#1B1464] text-white p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="text-white hover:text-gray-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="sticky top-0 z-10 bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 mb-8">
+          <div className="flex items-center justify-between gap-4 sm:gap-8">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <Link href="/" className="text-white hover:text-gray-300 flex-shrink-0">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <Image
                   src={getSubjectIcon(subjectName)}
                   alt={subjectName}
-                  width={40}
-                  height={40}
-                  className="rounded-lg"
+                  width={32}
+                  height={32}
+                  className="rounded-lg flex-shrink-0 sm:w-10 sm:h-10"
                 />
-                <div>
-                  <h1 className="text-2xl font-bold">{subjectName}</h1>
-                  <p className="text-sm text-gray-300">Grade {grade}</p>
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-2xl font-bold truncate">{subjectName}</h1>
+                  <p className="text-xs sm:text-sm text-gray-300">Grade {grade}</p>
                 </div>
               </div>
             </div>
             <button
               onClick={() => setShowNewThreadModal(true)}
-              className="bg-white/20 hover:bg-white/30 text-white rounded-xl py-2 px-4 transition-colors"
+              className="bg-white/20 hover:bg-white/30 text-white rounded-xl py-2 px-2 sm:px-4 transition-colors flex-shrink-0"
             >
-              New Discussion
+              <span className="hidden sm:inline">New Discussion</span>
+              <svg className="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
             </button>
           </div>
         </div>

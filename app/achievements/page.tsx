@@ -2,14 +2,37 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { getAllBadges, getLearnerBadges, Badge, LearnerBadge } from '@/services/api'
+import { getAllBadges, getLearnerBadges, Badge, LearnerBadge, getLearner } from '@/services/api'
 import Image from 'next/image'
 import { useTheme } from '@/contexts/ThemeContext'
 import Link from 'next/link'
+import MainMenu from '@/components/MainMenu'
 
 interface BadgeCategory {
   title: string
   badges: (Badge & { earned: boolean })[]
+}
+
+interface LearnerInfo {
+  id: number;
+  uid: string;
+  name: string;
+  grade: {
+    id: number;
+    number: number;
+    active: number;
+  };
+  school_name: string;
+  school_address: string;
+  school_latitude: number;
+  school_longitude: number;
+  curriculum: string;
+  terms: string;
+  email: string;
+  role?: string;
+  points: number;
+  streak: number;
+  avatar: string;
 }
 
 export default function AchievementsPage() {
@@ -17,20 +40,20 @@ export default function AchievementsPage() {
   const { isDark } = useTheme()
   const [badgeCategories, setBadgeCategories] = useState<BadgeCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [learnerInfo, setLearnerInfo] = useState<{
-    name: string
-    grade: string
-    school?: string
-    avatar?: string
-  } | null>(null)
+  const [learnerInfo, setLearnerInfo] = useState<LearnerInfo | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.uid) return
       setIsLoading(true)
       try {
-        const allBadges = await getAllBadges()
-        const learnerBadges = await getLearnerBadges(user.uid)
+        const [allBadges, learnerBadges, learnerData] = await Promise.all([
+          getAllBadges(),
+          getLearnerBadges(user.uid),
+          getLearner(user.uid)
+        ])
+        
+        setLearnerInfo(learnerData)
         const earnedBadgeIds = new Set(learnerBadges.map(badge => badge.badge_id))
 
         const badgesWithStatus = allBadges.map(badge => ({
@@ -92,10 +115,13 @@ export default function AchievementsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#1B1464] flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Loading...</p>
+      <div className="min-h-screen bg-[#1B1464]">
+        <div className="max-w-4xl mx-auto">
+          <MainMenu learnerInfo={learnerInfo} />
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white">Loading...</p>
+          </div>
         </div>
       </div>
     )
@@ -104,6 +130,8 @@ export default function AchievementsPage() {
   return (
     <div className="min-h-screen bg-[#1B1464] text-white p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
+        <MainMenu learnerInfo={learnerInfo} />
+
         <Link 
           href="/"
           className="inline-flex items-center text-white hover:text-gray-300 mb-8 transition-colors"

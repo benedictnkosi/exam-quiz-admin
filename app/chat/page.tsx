@@ -6,6 +6,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { fetchMySubjects, getLearner } from '@/services/api';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import MainMenu from '@/components/MainMenu';
+import Image from 'next/image';
 
 interface Subject {
     id: string;
@@ -13,6 +15,28 @@ interface Subject {
     total_questions: number;
     answered_questions: number;
     correct_answers: number;
+}
+
+interface LearnerInfo {
+    id: number;
+    uid: string;
+    name: string;
+    grade: {
+        id: number;
+        number: number;
+        active: number;
+    };
+    school_name: string;
+    school_address: string;
+    school_latitude: number;
+    school_longitude: number;
+    curriculum: string;
+    terms: string;
+    email: string;
+    role?: string;
+    points: number;
+    streak: number;
+    avatar: string;
 }
 
 // Helper function to get subject icon
@@ -42,6 +66,7 @@ export default function ChatPage() {
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [learnerGrade, setLearnerGrade] = useState<number | null>(null);
+    const [learnerInfo, setLearnerInfo] = useState<LearnerInfo | null>(null);
 
     useEffect(() => {
         if (!user?.uid) {
@@ -58,6 +83,7 @@ export default function ChatPage() {
                 ]);
                 
                 setLearnerGrade(learnerData.grade.number);
+                setLearnerInfo(learnerData);
                 console.log('Raw response:', response);
                 
                 if (response?.subjects && Array.isArray(response.subjects)) {
@@ -98,11 +124,12 @@ export default function ChatPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="min-h-screen bg-[#1B1464]">
+                <div className="max-w-4xl mx-auto">
+                    <MainMenu learnerInfo={learnerInfo} />
                     <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-                        <span className="ml-4 text-gray-700 dark:text-gray-300">Loading subjects...</span>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                        <span className="ml-4 text-white">Loading subjects...</span>
                     </div>
                 </div>
             </div>
@@ -110,58 +137,64 @@ export default function ChatPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Study Buddies Chat 💬</h1>
-                </div>
-
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-                    <p className="text-red-800 dark:text-red-200">
-                        ⚠️ Let's keep it friendly and on topic! No profanity or bullying. Violations will lead to account suspension.
-                    </p>
-                </div>
-
-                {subjects.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 dark:text-gray-400">No subjects available</p>
+        <div className="min-h-screen bg-[#1B1464]">
+            <div className="max-w-4xl mx-auto">
+                <MainMenu learnerInfo={learnerInfo} />
+                <div className="px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="flex items-center gap-4 mb-6">
+                        
+                        <div className="bg-white/10 backdrop-blur-lg shadow rounded-lg p-6 flex-1">
+                            <h1 className="text-2xl font-bold text-white">Study Buddies Chat 💬</h1>
+                        </div>
                     </div>
-                ) : (
-                    <div className="grid gap-4">
-                        {subjects.map((subject) => (
-                            <Link
-                                key={subject.id}
-                                href={`/threads/${subject.id}?subjectName=${encodeURIComponent(subject.name)}&grade=${learnerGrade}`}
-                                className="block bg-white dark:bg-gray-800 shadow rounded-lg p-4 hover:shadow-md transition-shadow"
-                            >
-                                <div className="flex items-center">
-                                    <div className="flex-shrink-0">
-                                        <img
-                                            src={getSubjectIcon(subject.name)}
-                                            alt={subject.name}
-                                            className="h-10 w-10 rounded-full"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/images/subjects/default.png';
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="ml-4 flex-1">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                            {subject.name}
-                                        </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Tap to join chat
-                                        </p>
-                                    </div>
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </Link>
-                        ))}
+
+                    <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6">
+                        <p className="text-red-200">
+                            ⚠️ Let&apos;s keep it friendly and on topic! No profanity or bullying. Violations will lead to account suspension.
+                        </p>
                     </div>
-                )}
+
+                    {subjects.length === 0 ? (
+                        <div className="text-center py-12">
+                            <p className="text-gray-300">No subjects available</p>
+                        </div>
+                    ) : (
+                        <div className="grid gap-4">
+                            {subjects.map((subject) => (
+                                <Link
+                                    key={subject.id}
+                                    href={`/threads/${subject.id}?subjectName=${encodeURIComponent(subject.name)}&grade=${learnerGrade}`}
+                                    className="block bg-white/10 backdrop-blur-lg shadow rounded-lg p-4 hover:bg-white/20 transition-all"
+                                >
+                                    <div className="flex items-center">
+                                        <div className="flex-shrink-0">
+                                            <img
+                                                src={getSubjectIcon(subject.name)}
+                                                alt={subject.name}
+                                                className="h-10 w-10 rounded-full"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/images/subjects/default.png';
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="ml-4 flex-1">
+                                            <h3 className="text-lg font-medium text-white">
+                                                {subject.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-300">
+                                                Tap to join chat
+                                            </p>
+                                        </div>
+                                        <svg className="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

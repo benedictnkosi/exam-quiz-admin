@@ -57,6 +57,33 @@ function containsProfanity(text: string): boolean {
   return PROFANITY_WORDS.some(word => lowerText.includes(word))
 }
 
+// Add ImageModal component
+const ImageModal = ({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
+  return (
+    <div 
+      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="relative max-w-full max-h-full">
+        <button
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-white hover:text-gray-300"
+        >
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <img
+          src={imageUrl}
+          alt="Full size"
+          className="max-w-full max-h-[90vh] object-contain"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    </div>
+  )
+}
+
 export default function ThreadMessagesPage() {
   const params = useParams()
   const router = useRouter()
@@ -74,6 +101,7 @@ export default function ThreadMessagesPage() {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [contextMenu, setContextMenu] = useState<{x: number; y: number; message: Message} | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!threadId) {
@@ -373,8 +401,8 @@ export default function ThreadMessagesPage() {
   return (
     <div className="min-h-screen bg-[#1B1464] text-white" onClick={() => setContextMenu(null)}>
       {/* Header */}
-      <div className="bg-white/10 backdrop-blur-lg p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-[#1B1464]/95 backdrop-blur-lg border-b border-white/10">
+        <div className="max-w-4xl mx-auto flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
@@ -459,25 +487,34 @@ export default function ThreadMessagesPage() {
                             </div>
                           )}
                           {message.text && <p className="text-white">{message.text}</p>}
-                          {message.attachment && (
+                          {message.attachment && 'type' in message.attachment && (
                             <div className="mt-2">
                               {message.attachment.type === 'image' ? (
-                                <img
-                                  src={message.attachment.url}
-                                  alt={message.attachment.name}
-                                  className="rounded-lg max-w-full"
-                                />
+                                <div className="relative inline-block group">
+                                  <img
+                                    src={message.attachment?.url}
+                                    alt="Image attachment"
+                                    className="rounded-lg max-w-full cursor-zoom-in hover:opacity-90 transition-opacity"
+                                    onClick={(e) => {
+                                      e.stopPropagation() // Prevent reply action
+                                      if (message.attachment?.url) {
+                                        setSelectedImage(message.attachment.url)
+                                      }
+                                    }}
+                                  />
+                                </div>
                               ) : (
                                 <a
                                   href={message.attachment.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-2 text-sm text-white/80 hover:text-white"
+                                  className="inline-flex items-center justify-center w-12 h-12 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                  onClick={(e) => e.stopPropagation()} // Prevent reply action
+                                  title="Open PDF"
                                 >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                   </svg>
-                                  {message.attachment.name}
                                 </a>
                               )}
                             </div>
@@ -537,24 +574,23 @@ export default function ThreadMessagesPage() {
               />
               <label
                 htmlFor="file-input"
-                className="bg-white/20 hover:bg-white/30 text-white rounded-xl p-2 cursor-pointer"
+                className={`bg-white/20 hover:bg-white/30 text-white rounded-xl p-2 cursor-pointer transition-colors ${selectedFile ? 'ring-2 ring-green-400' : ''}`}
+                title="Attach file"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
               </label>
               {selectedFile && (
-                <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-1">
-                  <span className="text-sm">{selectedFile.name}</span>
-                  <button
-                    onClick={() => setSelectedFile(null)}
-                    className="text-white/60 hover:text-white"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="bg-white/10 hover:bg-white/20 text-white rounded-xl p-2 transition-colors"
+                  title="Remove file"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               )}
               <textarea
                 value={newMessage}
@@ -577,6 +613,14 @@ export default function ThreadMessagesPage() {
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <ImageModal
+          imageUrl={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
 
       {/* Context Menu */}
       {contextMenu && (

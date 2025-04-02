@@ -8,6 +8,7 @@ import { auth } from '@/lib/firebase'
 import { signOut as firebaseSignOut, deleteUser } from 'firebase/auth'
 import { Autocomplete, LoadScriptNext } from '@react-google-maps/api'
 import { FiInfo } from 'react-icons/fi'
+import MainMenu from '@/components/MainMenu'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api'
 
@@ -36,14 +37,24 @@ interface Grade {
 }
 
 interface LearnerInfo {
+    id: number
+    uid: string
     name: string
-    grade: string
+    grade: {
+        id: number
+        number: number
+        active: number
+    }
     school_name: string
     school_address: string
     school_latitude: number
     school_longitude: number
     curriculum: string
     terms: string
+    email: string
+    role?: string
+    points: number
+    streak: number
     avatar: string
 }
 
@@ -93,14 +104,20 @@ export default function ProfilePage() {
                 const gradeNumber = learner.grade?.number?.toString() || ''
 
                 setLearnerInfo({
+                    id: learner.id || 0,
+                    uid: user.uid,
                     name,
-                    grade: gradeNumber,
+                    grade: learner.grade || { id: 0, number: 0, active: 1 },
                     school_name: learner.school_name || '',
                     school_address: learner.school_address || '',
                     school_latitude: learner.school_latitude || 0,
                     school_longitude: learner.school_longitude || 0,
                     curriculum: learner.curriculum || '',
                     terms: learner.terms || '',
+                    email: user.email || '',
+                    role: learner.role,
+                    points: learner.points || 0,
+                    streak: learner.streak || 0,
                     avatar: learner.avatar || ''
                 })
 
@@ -166,7 +183,7 @@ export default function ProfilePage() {
             return
         }
 
-        if (editGrade !== learnerInfo?.grade) {
+        if (editGrade !== learnerInfo?.grade.number.toString()) {
             setShowGradeChangeModal(true)
             return
         }
@@ -203,14 +220,20 @@ export default function ProfilePage() {
             })
 
             setLearnerInfo({
+                id: learnerInfo?.id || 0,
+                uid: user.uid,
                 name: editName.trim(),
-                grade: editGrade,
+                grade: { id: 0, number: parseInt(editGrade), active: 1 },
                 school_name: editSchool,
                 school_address: editSchoolAddress,
                 school_latitude: editSchoolLatitude,
                 school_longitude: editSchoolLongitude,
                 curriculum: cleanCurriculum,
                 terms: cleanTerms,
+                email: user.email || '',
+                role: learnerInfo?.role,
+                points: learnerInfo?.points || 0,
+                streak: learnerInfo?.streak || 0,
                 avatar: learnerInfo?.avatar || ''
             })
 
@@ -343,15 +366,7 @@ export default function ProfilePage() {
                 libraries={['places']}
             >
                 <div className="max-w-4xl mx-auto">
-                    {/* Header */}
-                    <div className="flex items-center gap-4 mb-8">
-                        <Link href="/" className="text-white hover:text-gray-300">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </Link>
-                        <h1 className="text-2xl font-bold">Profile Settings</h1>
-                    </div>
+                    <MainMenu learnerInfo={learnerInfo} />
 
                     {/* Profile Form */}
                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8">

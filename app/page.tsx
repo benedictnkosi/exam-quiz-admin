@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { fetchMySubjects, getLearner, getRandomAIQuestion, RandomAIQuestion } from '@/services/api'
+import MainMenu from '@/components/MainMenu'
 
 interface Subject {
   id: number;
@@ -159,68 +160,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#1B1464] text-white p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header with Logo and Profile */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <Image
-                src="/images/icon.png"
-                alt="Exam Quiz"
-                width={40}
-                height={40}
-                onError={(e: any) => {
-                  e.target.src = '/images/icon.png'
-                }}
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Exam Quiz ✨</h1>
-              <p className="text-gray-300">Explore the Joy of Learning! 🎓</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            {learnerInfo?.role === 'admin' && (
-              <Link
-                href="/admin"
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </Link>
-            )}
-            <Link
-              href="/info"
-              className="text-white hover:text-gray-300 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </Link>
-            <Link
-              href="/achievements"
-              className="text-white hover:text-gray-300 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </Link>
-            <Link href="/profile" className="block">
-              <div className="w-12 h-12 rounded-full bg-blue-400 overflow-hidden hover:opacity-80 transition-opacity">
-                <Image
-                  src={learnerInfo?.avatar ? `/images/avatars/${learnerInfo.avatar}.png` : '/images/avatars/1.png'}
-                  alt="Profile"
-                  width={48}
-                  height={48}
-                  onError={(e: any) => {
-                    e.target.src = '/images/subjects/icon.png'
-                  }}
-                />
-              </div>
-            </Link>
-          </div>
-        </div>
+        <MainMenu learnerInfo={learnerInfo} />
 
         {/* Stats Cards */}
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-8">
