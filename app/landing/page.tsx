@@ -3,8 +3,25 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { IoLogoApple, IoLogoGooglePlaystore } from 'react-icons/io5'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function LandingPage() {
+  const { user } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (user) {
+      router.push('/')
+    }
+  }, [user, router])
+
+  // Don't render the landing page if user is authenticated
+  if (user) {
+    return null
+  }
+
   return (
     <div className="min-h-screen flex bg-[#1e1b4b]">
       {/* Left Section - Marketing Content */}
