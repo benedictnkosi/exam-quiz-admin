@@ -176,6 +176,22 @@ export interface RandomAIQuestion {
   };
 }
 
+export interface Badge {
+  id: number
+  name: string
+  image: string
+  rules: string
+  category: string
+}
+
+export interface LearnerBadge {
+  id: number
+  badge_id: number
+  learner_id: number
+  earned_at: string
+  badge: Badge
+}
+
 // Helper functions
 function ensureHttps(url: string): string {
   return url
@@ -737,5 +753,41 @@ export async function getRandomAIQuestion(uid: string): Promise<RandomAIQuestion
   } catch (error) {
     console.error('Error fetching random AI question:', error);
     throw error;
+  }
+}
+
+export async function getAllBadges(): Promise<Badge[]> {
+  try {
+    const response = await fetch(`${HOST_URL}/api/badges`, {
+      method: 'GET',
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch badges')
+    }
+
+    const data = await response.json()
+    return data.badges
+  } catch (error) {
+    console.error('Error fetching badges:', error)
+    throw error
+  }
+}
+
+export async function getLearnerBadges(uid: string): Promise<LearnerBadge[]> {
+  try {
+    const response = await fetch(`${HOST_URL}/api/badges/learner/${uid}`, {
+      method: 'GET',
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch learner badges')
+    }
+
+    const data = await response.json()
+    return data.badges
+  } catch (error) {
+    console.error('Error fetching learner badges:', error)
+    throw error
   }
 } 
