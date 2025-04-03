@@ -54,7 +54,7 @@ export default function AchievementsPage() {
         ])
         
         setLearnerInfo(learnerData)
-        const earnedBadgeIds = new Set(learnerBadges.map(badge => badge.badge_id))
+        const earnedBadgeIds = new Set(learnerBadges.map(badge => badge.id))
 
         const badgesWithStatus = allBadges.map(badge => ({
           ...badge,
@@ -97,16 +97,23 @@ export default function AchievementsPage() {
 
   const handleShareBadge = async (badge: Badge) => {
     try {
+      const badgeImageUrl = `${window.location.origin}/images/badges/${badge.image}`
       const message = `I just earned the ${badge.name} badge on Exam Quiz! 🎉\n\n${badge.rules}\n\nJoin me on Exam Quiz and start earning badges too! https://examquiz.co.za`
       
       if (navigator.share) {
+        const response = await fetch(badgeImageUrl)
+        const blob = await response.blob()
+        const file = new File([blob], badge.image, { type: blob.type })
+        
         await navigator.share({
           title: 'Share Badge Achievement',
-          text: message
+          text: message,
+          files: [file]
         })
       } else {
-        await navigator.clipboard.writeText(message)
-        alert('Achievement copied to clipboard!')
+        // Fallback for browsers that don't support sharing files
+        await navigator.clipboard.writeText(`${message}\n\nBadge image: ${badgeImageUrl}`)
+        alert('Achievement and image URL copied to clipboard!')
       }
     } catch (error) {
       console.error('Error sharing badge:', error)
@@ -132,25 +139,6 @@ export default function AchievementsPage() {
       <div className="max-w-4xl mx-auto">
         <MainMenu learnerInfo={learnerInfo} />
 
-        <Link 
-          href="/"
-          className="inline-flex items-center text-white hover:text-gray-300 mb-8 transition-colors"
-        >
-          <svg
-            className="w-6 h-6 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          Back to Home
-        </Link>
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">🏆 Achievements</h1>
@@ -172,7 +160,7 @@ export default function AchievementsPage() {
                 >
                   <div className="relative aspect-square mb-4">
                     <Image
-                      src={`/badges/${badge.image}`}
+                      src={`/images/badges/${badge.image}`}
                       alt={badge.name}
                       fill
                       className={`object-contain ${!badge.earned ? 'opacity-50' : ''}`}

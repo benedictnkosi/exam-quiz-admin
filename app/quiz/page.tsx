@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Head from 'next/head'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer, getLearner } from '@/services/api'
+import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer, getLearner, HOST_URL } from '@/services/api'
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 import { logAnalyticsEvent } from '@/lib/analytics'
@@ -137,6 +137,54 @@ const MessageModal: React.FC<MessageModalProps> = ({ isVisible, message, type = 
                     className="py-2 px-8 rounded-lg bg-white/20 text-white hover:bg-white/30 transition-colors"
                 >
                     Close
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// Add Badge Modal Component after MessageModal component
+interface BadgeModalProps {
+    isVisible: boolean;
+    onClose: () => void;
+    badge: {
+        name: string;
+        description: string;
+        image: string;
+    } | null;
+}
+
+const BadgeModal = ({ isVisible, onClose, badge }: BadgeModalProps) => {
+    if (!isVisible || !badge) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1B1464] rounded-3xl p-8 max-w-lg w-full text-center">
+                <div className="relative w-32 h-32 mx-auto mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
+                    <Image
+                        src={`/images/badges/${badge.image}`}
+                        alt={badge.name}
+                        width={128}
+                        height={128}
+                        className="relative z-10 rounded-full"
+                    />
+                </div>
+
+                <h2 className="text-3xl font-bold text-white mb-2">
+                    🎉 New Badge Unlocked! 🎉
+                </h2>
+                <h3 className="text-2xl font-bold text-yellow-400 mb-4">
+                    {badge.name}
+                </h3>
+                <p className="text-gray-300 mb-8">
+                    {badge.description}
+                </p>
+                <button
+                    onClick={onClose}
+                    className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
+                >
+                    AWESOME!
                 </button>
             </div>
         </div>
@@ -514,6 +562,10 @@ export default function QuizPage() {
     const [isRestartModalVisible, setIsRestartModalVisible] = useState(false)
     const [isSidebarVisible, setIsSidebarVisible] = useState(true)
 
+    // Add new state for badge modal
+    const [newBadge, setNewBadge] = useState<{name: string; description: string; image: string} | null>(null);
+    const [isBadgeModalVisible, setIsBadgeModalVisible] = useState(false);
+
     const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'https://api.examquiz.co.za'
     const startTimer = () => {
         // Implement timer logic here
@@ -721,6 +773,11 @@ export default function QuizPage() {
             // Play sound based on answer correctness
             playSound(response.correct)
             setCorrectAnswer(response.correctAnswer)
+
+            if (response.correct) {
+                // Check for new badges when answer is correct
+                checkForNewBadges(user.uid);
+            }
 
             // Always award 1 point for correct answers
             const points = response.correct ? 1 : 0
@@ -1052,7 +1109,7 @@ export default function QuizPage() {
             setIsFromFavorites(true);
 
             const response = await fetch(
-                `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=P1&uid=${user.uid}&question_id=${questionId}`
+                `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=P1&uid=${user.uid}&question_id=${questionId}&platform=web`
             );
 
             if (!response.ok) {
@@ -1104,6 +1161,35 @@ export default function QuizPage() {
             showMessage('Failed to load saved question', 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Add checkForNewBadges function
+    const checkForNewBadges = async (uid: string) => {
+        try {
+            const response = await fetch(`${HOST_URL}/api/badges/check/${uid}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            
+            if (data.status === "OK" && data.new_badges && data.new_badges.length > 0) {
+                // Show badges in sequence with a delay between each
+                data.new_badges.forEach((badge: { name: string; rules: string; image: string }, index: number) => {
+                    setTimeout(() => {
+                        setNewBadge({
+                            name: badge.name,
+                            description: badge.rules,
+                            image: badge.image
+                        });
+                        setIsBadgeModalVisible(true);
+                    }, 10000 + (index * 5000)); // Show each badge 5 seconds after the previous one
+                });
+            }
+        } catch (error) {
+            console.error('Error checking badges:', error);
         }
     };
 
@@ -2117,6 +2203,13 @@ export default function QuizPage() {
                         </div>
                     </div>
                 )}
+
+                {/* Add BadgeModal */}
+                <BadgeModal
+                    isVisible={isBadgeModalVisible}
+                    onClose={() => setIsBadgeModalVisible(false)}
+                    badge={newBadge}
+                />
             </div>
         </>
     )

@@ -720,7 +720,7 @@ export async function getRandomQuestion(
 ): Promise<DetailedQuestion> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=${paper}&uid=${uid}&question_id=0`
+      `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=${paper}&uid=${uid}&question_id=0&platform=web`
     )
 
     if (!response.ok) {
