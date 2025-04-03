@@ -1124,7 +1124,7 @@ export default function QuizPage() {
 
                 <div className="flex h-full">
                     {/* Left Panel - Subject Info */}
-                    <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block fixed lg:static w-full lg:w-1/3 bg-[#00B894] p-6 flex flex-col h-screen overflow-y-auto z-40`}>
+                    <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block fixed lg:static w-full lg:w-1/3 bg-[#1B1464]/90 backdrop-blur-sm p-6 flex flex-col h-screen overflow-y-auto z-40`}>
                         {/* Close button - Only visible on mobile when paper is selected */}
                         {selectedPaper && (
                             <button
