@@ -8,6 +8,9 @@ import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, ch
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 import { logAnalyticsEvent } from '@/lib/analytics'
+import { motion, AnimatePresence } from "framer-motion"
+import confetti from "canvas-confetti"
+import { Star } from "lucide-react"
 
 // Interfaces
 interface Question {
@@ -155,38 +158,169 @@ interface BadgeModalProps {
 }
 
 const BadgeModal = ({ isVisible, onClose, badge }: BadgeModalProps) => {
+    const [hasClicked, setHasClicked] = useState<boolean>(false)
+
+    useEffect(() => {
+        if (isVisible && badge) {
+            // Trigger confetti when badge appears
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+            })
+
+        }
+    }, [isVisible, badge])
+
+    const handleClick = () => {
+        setHasClicked(true)
+
+        // More confetti on click!
+        confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.7 },
+        })
+
+        // Fade out after celebration
+        setTimeout(() => {
+            onClose()
+        }, 2000)
+    }
+
     if (!isVisible || !badge) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-            <div className="bg-[#1B1464] rounded-3xl p-8 max-w-lg w-full text-center">
-                <div className="relative w-32 h-32 mx-auto mb-6">
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
-                    <Image
-                        src={`/images/badges/${badge.image}`}
-                        alt={badge.name}
-                        width={128}
-                        height={128}
-                        className="relative z-10 rounded-full"
-                    />
-                </div>
-
-                <h2 className="text-3xl font-bold text-white mb-2">
-                    🎉 New Badge Unlocked! 🎉
-                </h2>
-                <h3 className="text-2xl font-bold text-yellow-400 mb-4">
-                    {badge.name}
-                </h3>
-                <p className="text-gray-300 mb-8">
-                    {badge.description}
-                </p>
-                <button
-                    onClick={onClose}
-                    className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <AnimatePresence>
+                <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{
+                        scale: 1,
+                        opacity: 1,
+                        rotate: [0, -2, 2, -2, 0],
+                        y: [0, -10, 0],
+                    }}
+                    exit={{ scale: 0.5, opacity: 0, y: 50 }}
+                    transition={{
+                        duration: 0.5,
+                        rotate: { repeat: 2, duration: 0.3 },
+                        y: { repeat: 3, duration: 0.5 },
+                    }}
+                    className="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
                 >
-                    AWESOME!
-                </button>
-            </div>
+                    {/* Background with gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 to-purple-900 rounded-3xl" />
+
+                    {/* Stars animation in background */}
+                    <div className="absolute inset-0 overflow-hidden">
+                        {Array.from({ length: 20 }).map((_, i) => (
+                            <motion.div
+                                key={i}
+                                className="absolute text-yellow-300"
+                                initial={{
+                                    x: Math.random() * 100 - 50 + "%",
+                                    y: Math.random() * 100 + "%",
+                                    opacity: 0,
+                                }}
+                                animate={{
+                                    opacity: [0, 1, 0],
+                                    scale: [0.5, 1.5, 0.5],
+                                }}
+                                transition={{
+                                    duration: 2 + Math.random() * 3,
+                                    repeat: Number.POSITIVE_INFINITY,
+                                    delay: Math.random() * 5,
+                                }}
+                            >
+                                <Star size={10 + Math.random() * 10} />
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Badge content */}
+                    <div className="relative p-6 flex flex-col items-center">
+                        {/* Badge circle */}
+                        <motion.div
+                            className="w-32 h-32 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 flex items-center justify-center border-4 border-amber-600 shadow-lg mb-4"
+                            animate={{
+                                rotate: 360,
+                                scale: [1, 1.05, 1],
+                            }}
+                            transition={{
+                                rotate: { duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
+                                scale: { duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
+                            }}
+                        >
+                            <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                                <Image
+                                    src={`/images/badges/${badge.image}`}
+                                    alt={badge.name}
+                                    width={96}
+                                    height={96}
+                                    className="object-contain"
+                                />
+                            </div>
+                        </motion.div>
+
+                        {/* Text content */}
+                        <motion.div
+                            className="text-center"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                                <motion.span
+                                    animate={{ rotate: [-10, 10, -10] }}
+                                    transition={{ duration: 0.5, repeat: Number.POSITIVE_INFINITY }}
+                                    className="text-2xl"
+                                >
+                                    🎉
+                                </motion.span>
+                                <h2 className="text-2xl font-bold text-white">New Badge Unlocked!</h2>
+                                <motion.span
+                                    animate={{ rotate: [10, -10, 10] }}
+                                    transition={{ duration: 0.5, repeat: Number.POSITIVE_INFINITY }}
+                                    className="text-2xl"
+                                >
+                                    🎉
+                                </motion.span>
+                            </div>
+
+                            <motion.h3
+                                className="text-3xl font-extrabold text-yellow-300 mb-2"
+                                animate={{
+                                    scale: [1, 1.1, 1],
+                                    textShadow: ["0 0 0px #fff", "0 0 10px #fff", "0 0 0px #fff"],
+                                }}
+                                transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                            >
+                                {badge.name}
+                            </motion.h3>
+
+                            <p className="text-white/80 mb-6">{badge.description}</p>
+
+                            <motion.button
+                                className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold text-xl shadow-lg"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleClick}
+                                animate={
+                                    hasClicked
+                                        ? {
+                                            backgroundColor: ["#4F46E5", "#10B981", "#4F46E5"],
+                                            transition: { duration: 1, repeat: 3 },
+                                        }
+                                        : {}
+                                }
+                            >
+                                {hasClicked ? "WOOHOO!" : "AWESOME!"}
+                            </motion.button>
+                        </motion.div>
+                    </div>
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 };
@@ -567,6 +701,18 @@ export default function QuizPage() {
     const [isBadgeModalVisible, setIsBadgeModalVisible] = useState(false);
 
     const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'https://api.examquiz.co.za'
+
+    // Add useEffect for streak modal confetti
+    useEffect(() => {
+        if (showStreakModal) {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+            });
+        }
+    }, [showStreakModal]);
+
     const startTimer = () => {
         // Implement timer logic here
         // This is a placeholder for the timer implementation
@@ -1353,7 +1499,7 @@ export default function QuizPage() {
                                     <div className="absolute right-0 animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
                                 )}
                             </div>
-                            <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[calc(100vh-600px)] lg:max-h-[400px]">
+                            <div className="flex-1 min-h-[200px]">
                                 {favoriteQuestions.length > 0 ? (
                                     <div className="space-y-3">
                                         {favoriteQuestions.map((fav, index) => {
@@ -2083,40 +2229,119 @@ export default function QuizPage() {
                 {/* Streak Modal */}
                 {showStreakModal && (
                     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                        <div className="bg-[#1B1464] rounded-xl p-8 max-w-md w-full text-center">
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.5, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="bg-gradient-to-br from-[#1B1464] to-[#2B1F84] rounded-xl p-8 max-w-md w-full text-center relative overflow-hidden"
+                        >
+                            {/* Animated stars in background */}
+                            {[...Array(5)].map((_, i) => (
+                                <motion.div
+                                    key={i}
+                                    className="absolute"
+                                    initial={{ scale: 0, rotate: 0 }}
+                                    animate={{
+                                        scale: [0, 1, 0],
+                                        rotate: [0, 180, 360],
+                                        x: [0, Math.random() * 100 - 50],
+                                        y: [0, Math.random() * 100 - 50],
+                                    }}
+                                    transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        delay: i * 0.2,
+                                    }}
+                                >
+                                    <Star className="w-6 h-6 text-yellow-400" />
+                                </motion.div>
+                            ))}
+
                             {/* Days of the week */}
-                            <div className="mb-6">
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                                className="mb-6"
+                            >
                                 <div className="grid grid-cols-7 gap-2 mb-4">
                                     {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                                        <div
+                                        <motion.div
                                             key={index}
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ delay: 0.3 + index * 0.1 }}
                                             className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto"
                                         >
                                             <span className="text-white font-medium">{day}</span>
-                                        </div>
+                                        </motion.div>
                                     ))}
                                 </div>
-                                <div className="relative w-20 h-20 mx-auto mb-4">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
+                                <motion.div
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    animate={{ scale: 1, rotate: 0 }}
+                                    transition={{ delay: 0.5, type: "spring" }}
+                                    className="relative w-20 h-20 mx-auto mb-4"
+                                >
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.1, 1],
+                                            rotate: [0, 5, -5, 0],
+                                        }}
+                                        transition={{
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            ease: "easeInOut",
+                                        }}
+                                        className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+                                    />
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.2, 1],
+                                        }}
+                                        transition={{
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            ease: "easeInOut",
+                                        }}
+                                        className="absolute inset-0 flex items-center justify-center"
+                                    >
                                         <span className="text-4xl">⭐</span>
-                                    </div>
-                                </div>
-                            </div>
+                                    </motion.div>
+                                </motion.div>
+                            </motion.div>
 
-                            <h2 className="text-3xl font-bold text-white mb-2">
-                                🔥 {currentStreak}-Day Streak! 🔥
-                            </h2>
-                            <p className="text-gray-300 mb-8">
-                                Keep the fire going — get 3 right answers every day to grow your streak!
-                            </p>
-                            <button
-                                onClick={() => setShowStreakModal(false)}
-                                className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
+                            <motion.h2
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.6 }}
+                                className="text-3xl font-bold text-white mb-2"
                             >
-                                CONTINUE
-                            </button>
-                        </div>
+                                🔥 {currentStreak}-Day Streak! 🔥
+                            </motion.h2>
+                            <motion.p
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.7 }}
+                                className="text-gray-300 mb-8"
+                            >
+                                Keep the fire going — get 3 right answers every day to grow your streak!
+                            </motion.p>
+                            <motion.button
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.8 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => {
+                                    setShowStreakModal(false);
+                                }}
+                                className="w-full py-4 px-8 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                            >
+                                Keep Going! 🚀
+                            </motion.button>
+                        </motion.div>
                     </div>
                 )}
 
