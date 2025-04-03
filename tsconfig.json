@@ -4,7 +4,8 @@
     "module": "commonjs",
     "lib": [
       "es2017",
-      "dom"
+      "dom",
+      "dom.iterable"
     ],
     "strict": true,
     "esModuleInterop": true,
@@ -19,6 +20,7 @@
     "moduleResolution": "node",
     "isolatedModules": true,
     "jsx": "preserve",
+    "jsxImportSource": "react",
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -29,13 +31,18 @@
       {
         "name": "next"
       }
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
     ]
   },
   "include": [
     "scripts/**/*",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

@@ -159,7 +159,7 @@ export default function ChatPage() {
                             <p className="text-gray-300">No subjects available</p>
                         </div>
                     ) : (
-                        <div className="grid gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {subjects.map((subject) => (
                                 <Link
                                     key={subject.id}

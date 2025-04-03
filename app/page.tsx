@@ -284,13 +284,23 @@ export default function Home() {
 
                         {/* Stats Display */}
                         <div className="flex justify-between items-center mb-4">
-                          <div>
-                            <p className="text-gray-300">Correct</p>
-                            <p className="text-xl font-bold text-green-500">{subject.correct_answers}</p>
+                          <div className="bg-white/5 backdrop-blur-lg rounded-xl p-4 flex-1 mr-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">🎯</span>
+                              <div>
+                                <div className="text-2xl font-bold text-white">{subject.correct_answers}</div>
+                                <div className="text-gray-300">Bullseyes</div>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-gray-300">Total</p>
-                            <p className="text-xl font-bold text-blue-500">{subject.answered_questions}</p>
+                          <div className="bg-white/5 backdrop-blur-lg rounded-xl p-4 flex-1 ml-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">💥</span>
+                              <div>
+                                <div className="text-2xl font-bold text-white">{subject.answered_questions - subject.correct_answers}</div>
+                                <div className="text-gray-300">Oopsies</div>
+                              </div>
+                            </div>
                           </div>
                         </div>
 

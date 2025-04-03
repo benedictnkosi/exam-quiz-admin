@@ -1,10 +1,4 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-
-interface Learner {
-  id: number
-  uid: string
-}
 
 interface LearnerBadge {
   id: number
@@ -17,6 +11,44 @@ interface LearnerBadge {
   category: string
 }
 
+// Mock data for learner badges
+const mockLearnerBadges: Record<string, LearnerBadge[]> = {
+  'user123': [
+    {
+      id: 1,
+      badge_id: 1,
+      learner_id: 101,
+      earned_at: '2023-01-15T10:30:00Z',
+      name: 'First Quiz',
+      image: '/badges/first-quiz.png',
+      rules: 'Complete your first quiz',
+      category: 'Achievement'
+    },
+    {
+      id: 2,
+      badge_id: 3,
+      learner_id: 101,
+      earned_at: '2023-02-20T14:45:00Z',
+      name: 'Streak Master',
+      image: '/badges/streak-master.png',
+      rules: 'Maintain a 7-day quiz streak',
+      category: 'Streak'
+    }
+  ],
+  'user456': [
+    {
+      id: 3,
+      badge_id: 2,
+      learner_id: 102,
+      earned_at: '2023-03-10T09:15:00Z',
+      name: 'Perfect Score',
+      image: '/badges/perfect-score.png',
+      rules: 'Get 100% on a quiz',
+      category: 'Achievement'
+    }
+  ]
+}
+
 export async function GET(
   request: Request,
   { params }: { params: { uid: string } }
@@ -24,29 +56,8 @@ export async function GET(
   try {
     const { uid } = params
 
-    // First get the learner's ID
-    const learners = await db.query<Learner>(
-      'SELECT id FROM learners WHERE uid = ?',
-      [uid]
-    )
-
-    if (!learners || learners.length === 0) {
-      return NextResponse.json(
-        { error: 'Learner not found' },
-        { status: 404 }
-      )
-    }
-
-    // Get the learner's badges
-    const badges = await db.query<LearnerBadge>(
-      `SELECT lb.id, lb.badge_id, lb.learner_id, lb.earned_at,
-              b.name, b.image, b.rules, b.category
-       FROM learner_badges lb
-       JOIN badges b ON lb.badge_id = b.id
-       WHERE lb.learner_id = ?
-       ORDER BY lb.earned_at DESC`,
-      [learners[0].id]
-    )
+    // Return mock data for the specific user
+    const badges = mockLearnerBadges[uid] || []
 
     return NextResponse.json({ badges })
   } catch (error) {

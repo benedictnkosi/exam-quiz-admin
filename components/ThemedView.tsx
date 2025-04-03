@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export const ThemedView: React.FC<ViewProps> = ({ style, ...props }) => {
+interface ThemedViewProps extends React.HTMLAttributes<HTMLDivElement> {
+  style?: React.CSSProperties;
+}
+
+export const ThemedView: React.FC<ThemedViewProps> = ({ style, ...props }) => {
     const { colors } = useTheme();
-    return <View style={[{ backgroundColor: colors.background }, style]} {...props} />;
+    return <div style={{ backgroundColor: colors.background, ...style }} {...props} />;
 }; 

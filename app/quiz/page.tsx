@@ -430,7 +430,7 @@ export default function QuizPage() {
     // Add new state variables
     const [selectedLearningType, setSelectedLearningType] = useState<'quiz' | 'quick_lessons' | null>('quiz')
     const [isQuizStarted, setIsQuizStarted] = useState(false)
-    const [selectedPaper, setSelectedPaper] = useState<string>('P1')
+    const [selectedPaper, setSelectedPaper] = useState<string>('')
     const [learnerRole, setLearnerRole] = useState<string>('learner')
 
     // Add effect to fetch learner role
@@ -477,6 +477,7 @@ export default function QuizPage() {
     const [stats, setStats] = useState<SubjectStats['data']['stats'] | null>(null)
     const [favoriteQuestions, setFavoriteQuestions] = useState<FavoriteQuestion[]>([])
     const [isCurrentQuestionFavorited, setIsCurrentQuestionFavorited] = useState(false)
+    const [isFromFavorites, setIsFromFavorites] = useState(false)
     const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
     const [isImageLoading, setIsImageLoading] = useState(false)
     const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
@@ -556,6 +557,7 @@ export default function QuizPage() {
         setIsImageLoading(false)
         setZoomImageUrl(null)
         setImageRotation(0)
+        setIsFromFavorites(false)
 
         try {
             setLoading(true)
@@ -621,6 +623,7 @@ export default function QuizPage() {
         setZoomImageUrl(null)
         setImageRotation(0)
         setIsSidebarVisible(false)
+        setIsFromFavorites(false)
 
         try {
             setLoading(true)
@@ -680,6 +683,16 @@ export default function QuizPage() {
             showMessage('Failed to load quick lesson: ' + error, 'error')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const startQuizLesson = (paper: string) => {
+        setIsQuizStarted(true)
+        setSelectedPaper(paper)
+        if (selectedLearningType === 'quiz') {
+            loadRandomQuestion(paper)
+        } else {
+            loadQuickLesson(paper)
         }
     }
 
@@ -855,12 +868,12 @@ export default function QuizPage() {
 
     // Add fetchFavoriteQuestions function
     const fetchFavoriteQuestions = async () => {
-        if (!user?.uid || !subjectName || !selectedPaper) return;
+        if (!user?.uid || !subjectName) return;
 
         try {
             setIsFavoritesLoading(true)
             const response = await fetch(
-                `${API_BASE_URL}/question/favorite?uid=${user.uid}&subject_name=${subjectName} ${selectedPaper}`
+                `${API_BASE_URL}/question/favorite?uid=${user.uid}&subject_name=${subjectName}`
             )
 
             if (!response.ok) {
@@ -882,10 +895,10 @@ export default function QuizPage() {
 
     // Call fetchFavoriteQuestions when component mounts and when user changes
     useEffect(() => {
-        if (user?.uid && subjectName && selectedPaper) {
+        if (user?.uid && subjectName) {
             fetchFavoriteQuestions();
         }
-    }, [user?.uid, subjectName, selectedPaper]);
+    }, [user?.uid, subjectName]);
 
     // Add handleFavoriteQuestion function
     const handleFavoriteQuestion = async () => {
@@ -1035,6 +1048,8 @@ export default function QuizPage() {
             setLoading(true);
             // Close the sidebar on mobile when a favorite is clicked
             setIsSidebarVisible(false);
+            // Set that this question is from favorites
+            setIsFromFavorites(true);
 
             const response = await fetch(
                 `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=P1&uid=${user.uid}&question_id=${questionId}`
@@ -1122,6 +1137,15 @@ export default function QuizPage() {
                         )}
 
                         <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
+                            <button
+                                onClick={() => router.push('/')}
+                                className="text-white hover:text-white/80 transition-colors"
+                                aria-label="Go back to home"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                            </button>
                             <Image
                                 src={getSubjectIcon(subjectName || '')}
                                 alt={subjectName || ''}
@@ -1133,7 +1157,7 @@ export default function QuizPage() {
                         </div>
 
                         {/* Selection Screen */}
-                        {!isQuizStarted && (
+                        
                             <div className="bg-white/10 rounded-xl p-6">
                                 <h2 className="text-xl font-bold text-white mb-6 text-center">Choose Your Learning Mode</h2>
 
@@ -1141,7 +1165,10 @@ export default function QuizPage() {
                                 <div className="mb-6">
                                     <div className="grid grid-cols-2 gap-4">
                                         <button
-                                            onClick={() => setSelectedLearningType('quiz')}
+                                            onClick={() => {
+                                                setSelectedLearningType('quiz')
+                                                setSelectedPaper('')
+                                            }}
                                             className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quiz'
                                                 ? 'bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50'
                                                 : 'bg-purple-600/50 hover:bg-purple-600/70'
@@ -1159,7 +1186,10 @@ export default function QuizPage() {
                                             </div>
                                         </button>
                                         <button
-                                            onClick={() => setSelectedLearningType('quick_lessons')}
+                                            onClick={() => {
+                                                setSelectedLearningType('quick_lessons')
+                                                setSelectedPaper('')
+                                            }}  
                                             className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quick_lessons'
                                                 ? 'bg-orange-500 shadow-lg shadow-orange-500/50 scale-105 border-2 border-white/50'
                                                 : 'bg-orange-500/50 hover:bg-orange-500/70'
@@ -1184,7 +1214,7 @@ export default function QuizPage() {
                                     <h3 className="text-lg font-semibold text-white mb-4">Choose Paper</h3>
                                     <div className="grid grid-cols-2 gap-4">
                                         <button
-                                            onClick={() => setSelectedPaper('P1')}
+                                            onClick={() => startQuizLesson('P1')}
                                             className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P1'
                                                 ? 'bg-blue-600 shadow-lg shadow-blue-500/50 scale-105 border-2 border-white/50'
                                                 : 'bg-blue-600/50 hover:bg-blue-600/70'
@@ -1201,7 +1231,7 @@ export default function QuizPage() {
                                             </div>
                                         </button>
                                         <button
-                                            onClick={() => setSelectedPaper('P2')}
+                                            onClick={() => startQuizLesson('P2')}
                                             disabled={subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')}
                                             className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P2'
                                                 ? 'bg-green-600 shadow-lg shadow-green-500/50 scale-105 border-2 border-white/50'
@@ -1223,76 +1253,10 @@ export default function QuizPage() {
                                         </button>
                                     </div>
                                 </div>
-
-                                {/* Start Button */}
-                                {selectedPaper && selectedLearningType && (
-                                    <button
-                                        onClick={() => {
-                                            setIsQuizStarted(true);
-                                            if (selectedLearningType === 'quiz') {
-                                                loadRandomQuestion(selectedPaper);
-                                            } else {
-                                                loadQuickLesson(selectedPaper);
-                                            }
-                                        }}
-                                        className="w-full py-4 px-8 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                                    >
-                                        <span className="text-xl">🚀</span>
-                                        <span>Start {selectedLearningType === 'quiz' ? 'Quiz' : 'Quick Lessons'}</span>
-                                    </button>
-                                )}
                             </div>
-                        )}
+                        
 
-                        {/* Stats Card */}
-                        {isQuizStarted && selectedPaper && (
-                            <div className="bg-white rounded-xl p-6 mb-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-black text-xl font-bold flex items-center gap-2">
-                                        {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
-                                    </h2>
-                                    <button className="text-2xl"
-                                        onClick={() => setIsRestartModalVisible(true)}
-                                    >🔄</button>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">🎯</span>
-                                            <div>
-                                                <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
-                                                <div className="text-gray-500">Bullseyes</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">💥</span>
-                                            <div>
-                                                <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
-                                                <div className="text-gray-500">Oopsies</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-4">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="text-gray-600 text-sm">Progress</span>
-                                        <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
-                                    </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div
-                                            className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
-                                            style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
+                        
                         {/* Favorites Section */}
 
                         <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
@@ -1358,32 +1322,7 @@ export default function QuizPage() {
                         </div>
 
 
-                        {/* Back to Home and Change Path Buttons */}
-                        <div className="mt-6 grid grid-cols-2 gap-4">
-                            <button
-                                onClick={() => router.push('/')}
-                                className="bg-white/20 text-white rounded-xl p-4 hover:bg-white/30 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <span className="text-xl">🏠</span>
-                                <span className="font-semibold">Back to Home</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIsQuizStarted(false);
-                                    setCurrentQuestion(null);
-                                    setSelectedAnswer(null);
-                                    setShowExplanation(false);
-                                    setIsCorrect(null);
-                                    setShowFeedback(false);
-                                    setNoMoreQuestions(false);
-                                    stopTimer();
-                                }}
-                                className="bg-white/20 text-white rounded-xl p-4 hover:bg-white/30 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <span className="text-xl">🛣️</span>
-                                <span className="font-semibold">Change Mode</span>
-                            </button>
-                        </div>
+                    
                     </div>
 
                     {/* Right Panel - Quiz Content */}
@@ -1488,6 +1427,56 @@ export default function QuizPage() {
                                 {currentQuestion && (
                                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-0 lg:p-6 mb-8 mt-12 lg:mt-0">
                                         {/* Question Metadata */}
+                                        {/* Stats Card */}
+                        {selectedLearningType === 'quiz' && (
+                            <div className="bg-white rounded-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-black text-xl font-bold flex items-center gap-2">
+                                        {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
+                                    </h2>
+                                    <button className="text-2xl"
+                                        onClick={() => setIsRestartModalVisible(true)}
+                                    >🔄</button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 rounded-xl p-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">🎯</span>
+                                            <div>
+                                                <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
+                                                <div className="text-gray-500">Bullseyes</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-xl p-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">💥</span>
+                                            <div>
+                                                <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
+                                                <div className="text-gray-500">Oopsies</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-gray-600 text-sm">Progress</span>
+                                        <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div
+                                            className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
+                                            style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+
                                         <div className="flex flex-wrap gap-3 mb-4 text-sm p-6">
                                             <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
                                                 <span className="text-xs">📅</span>
@@ -1884,7 +1873,7 @@ export default function QuizPage() {
                                 )}
 
                                 {/* Next Question Button */}
-                                {currentQuestion && (
+                                {currentQuestion && !isFromFavorites && (
                                     <div className="flex justify-center mb-8">
                                         <button
                                             onClick={handleNext}

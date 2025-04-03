@@ -1,8 +1,11 @@
 import React from 'react';
-import { Text, TextProps } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export const ThemedText: React.FC<TextProps> = ({ style, ...props }) => {
+interface ThemedTextProps extends React.HTMLAttributes<HTMLSpanElement> {
+  style?: React.CSSProperties;
+}
+
+export const ThemedText: React.FC<ThemedTextProps> = ({ style, ...props }) => {
     const { colors } = useTheme();
-    return <Text style={[{ color: colors.text }, style]} {...props} />;
+    return <span style={{ color: colors.text, ...style }} {...props} />;
 }; 

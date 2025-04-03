@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { Thread, getThreadsBySubject, createThread } from '@/services/threads'
 import { useSearchParams } from 'next/navigation'
+import MainMenu from '@/components/MainMenu'
+import { getLearner } from '@/services/api'
 
 // Helper function to get subject icon
 function getSubjectIcon(subjectName: string): string {
@@ -36,6 +38,7 @@ export default function ThreadsPage({ params }: { params: { id: string } }) {
   const [newThreadTitle, setNewThreadTitle] = useState('')
   const [subjectName, setSubjectName] = useState<string>('')
   const [grade, setGrade] = useState<number>(0)
+  const [learnerInfo, setLearnerInfo] = useState<any>(null)
 
   useEffect(() => {
     const fetchThreads = async () => {
@@ -58,9 +61,14 @@ export default function ThreadsPage({ params }: { params: { id: string } }) {
         setSubjectName(name)
         setGrade(gradeNumber)
 
-        // Fetch threads for this subject and grade
-        const threadsData = await getThreadsBySubject(name, gradeNumber)
+        // Fetch threads and learner info in parallel
+        const [threadsData, learnerData] = await Promise.all([
+          getThreadsBySubject(name, gradeNumber),
+          user?.uid ? getLearner(user.uid) : null
+        ])
+        
         setThreads(threadsData)
+        setLearnerInfo(learnerData)
       } catch (error) {
         console.error('Error loading threads:', error)
       } finally {
@@ -69,7 +77,7 @@ export default function ThreadsPage({ params }: { params: { id: string } }) {
     }
 
     fetchThreads()
-  }, [searchParams])
+  }, [searchParams, user?.uid])
 
   const handleCreateThread = async () => {
     if (!newThreadTitle.trim() || !user?.uid) return
@@ -106,11 +114,13 @@ export default function ThreadsPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-[#1B1464] text-white p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
+        <MainMenu learnerInfo={learnerInfo} />
+        
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 mb-8">
           <div className="flex items-center justify-between gap-4 sm:gap-8">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-              <Link href="/" className="text-white hover:text-gray-300 flex-shrink-0">
+              <Link href="/chat" className="text-white hover:text-gray-300 flex-shrink-0">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
