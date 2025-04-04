@@ -89,6 +89,13 @@ export default function MainMenu({ learnerInfo }: MainMenuProps) {
             <span className="text-xl">💬</span>
             <span>Chat</span>
           </Link>
+          <Link
+            href="/todo"
+            className="text-white hover:text-gray-300 transition-colors flex items-center gap-2"
+          >
+            <span className="text-xl">📋</span>
+            <span>Todo</span>
+          </Link>
           <Link href="/profile" className="block">
             <div className="w-12 h-12 rounded-full bg-blue-400 overflow-hidden hover:opacity-80 transition-opacity">
               <Image
@@ -181,6 +188,14 @@ export default function MainMenu({ learnerInfo }: MainMenuProps) {
             >
               <span className="text-2xl">💬</span>
               <span>Chat</span>
+            </Link>
+            <Link
+              href="/todo"
+              className="text-white hover:text-gray-300 transition-colors flex items-center gap-3 text-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <span className="text-2xl">📋</span>
+              <span>Todo</span>
             </Link>
             <Link
               href="/profile"

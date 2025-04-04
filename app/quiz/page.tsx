@@ -63,6 +63,13 @@ interface Question {
     ai_explanation?: string | null
 }
 
+interface Todo {
+    id: number;
+    title: string;
+    completed: boolean;
+    created_at: string;
+    due_date?: string;
+}
 
 function getSubjectIcon(subjectName: string): string {
     const nameMap: { [key: string]: string } = {
@@ -751,20 +758,15 @@ export default function QuizPage() {
     const [isCreatingNote, setIsCreatingNote] = useState(false)
     const [showNoteForm, setShowNoteForm] = useState(false)
     const [noteToDelete, setNoteToDelete] = useState<number | null>(null)
-    const [todos, setTodos] = useState([
-        { id: 1, text: 'Task 1', completed: false, created_at: new Date().toISOString() },
-        { id: 2, text: 'Task 2', completed: true, created_at: new Date().toISOString() },
-        { id: 3, text: 'Task 3', completed: false, created_at: new Date().toISOString() },
-    ]);
+    const [noteToEdit, setNoteToEdit] = useState<Note | null>(null)
+    const [editNoteText, setEditNoteText] = useState('')
+    const [isEditingNote, setIsEditingNote] = useState(false)
+    const [todoToDelete, setTodoToDelete] = useState<number | null>(null);
+    const [todos, setTodos] = useState<Todo[]>([]);
     const [newTodoText, setNewTodoText] = useState('');
-    const [newTodoDescription, setNewTodoDescription] = useState('');
     const [isCreatingTodo, setIsCreatingTodo] = useState(false);
     const [showTodoForm, setShowTodoForm] = useState(false);
-    const [todoDueDate, setTodoDueDate] = useState(() => {
-        const nextWeek = new Date();
-        nextWeek.setDate(nextWeek.getDate() + 7);
-        return nextWeek.toISOString().split('T')[0];
-    });
+    const [todoDueDate, setTodoDueDate] = useState('');
 
     // Add new state for badge modal
     const [newBadge, setNewBadge] = useState<{name: string; description: string; image: string} | null>(null);
@@ -1216,8 +1218,8 @@ export default function QuizPage() {
     }
 
     // Add handleUnfavoriteQuestion function
-    const handleUnfavoriteQuestion = async () => {
-        if (!user?.uid || !currentQuestion) return;
+    const handleUnfavoriteQuestion = async (favoriteId: string) => {
+        if (!user?.uid) return;
 
         // Optimistically update UI
         setIsCurrentQuestionFavorited(false)
@@ -1231,7 +1233,7 @@ export default function QuizPage() {
                 },
                 body: JSON.stringify({
                     uid: user.uid,
-                    question_id: currentQuestion.id
+                    favorite_id: favoriteId
                 })
             })
 
@@ -1490,88 +1492,106 @@ export default function QuizPage() {
 
     // Add createTodo function
     const createTodo = async () => {
-        if (!user?.uid || !subjectName || !newTodoText.trim()) return;
+        if (!user?.uid || !subjectName || !newTodoText.trim() || !todoDueDate) return;
 
         try {
-            setIsCreatingTodo(true);
-            const response = await fetch(`${API_BASE_URL}/todos`, {
+            const response = await fetch(`${HOST_URL}/api/todos`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    uid: user.uid,
-                    text: newTodoText,
-                    subject_name: subjectName,
-                    due_date: todoDueDate || null
+                    learnerUid: user.uid,
+                    title: newTodoText,
+                    subjectName: subjectName,
+                    dueDate: todoDueDate
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to create todo');
-            }
-
-            const data = await response.json();
-            if (data.status === "OK") {
-                setTodos(prevTodos => [...prevTodos, data.todo]);
+            if (response.ok) {
+                const data = await response.json();
+                const newTodo: Todo = {
+                    id: data.todo.id,
+                    title: data.todo.title,
+                    completed: data.todo.status === 'completed',
+                    created_at: data.todo.created_at,
+                    due_date: new Date(data.todo.due_date).toISOString().split('T')[0]
+                };
+                setTodos(prevTodos => [...prevTodos, newTodo]);
                 setNewTodoText('');
+                setTodoDueDate('');
             }
         } catch (error) {
             console.error('Error creating todo:', error);
             showMessage('Failed to create todo', 'error');
-        } finally {
-            setIsCreatingTodo(false);
         }
     };
 
-    // Add toggleTodoStatus function
-    const toggleTodoStatus = async (todoId: number) => {
+    // Add updateTodo function
+    const updateTodo = async (todoId: number, updates: {
+        title?: string;
+        dueDate?: string;
+        status?: 'pending' | 'completed';
+    }) => {
+        if (!user?.uid) return;
+
         try {
-            const response = await fetch(`${API_BASE_URL}/todos/${todoId}/toggle`, {
-                method: 'PATCH',
+            const response = await fetch(`${HOST_URL}/api/todos/${todoId}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    uid: user?.uid
+                    learnerUid: user.uid,
+                    ...updates
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to toggle todo status');
+            if (response.ok) {
+                setTodos(prevTodos => prevTodos.map(todo => 
+                    todo.id === todoId ? {
+                        ...todo,
+                        title: updates.title || todo.title,
+                        completed: updates.status === 'completed',
+                        due_date: updates.dueDate || todo.due_date
+                    } : todo
+                ));
             }
-
-            setTodos(prevTodos => 
-                prevTodos.map(todo => 
-                    todo.id === todoId 
-                        ? { ...todo, completed: !todo.completed }
-                        : todo
-                )
-            );
         } catch (error) {
-            console.error('Error toggling todo status:', error);
-            showMessage('Failed to update task status', 'error');
+            console.error('Error updating todo:', error);
+            showMessage('Failed to update todo', 'error');
         }
+    };
+
+    // Update toggleTodoStatus function to use updateTodo
+    const toggleTodoStatus = async (todoId: number) => {
+        const todo = todos.find(t => t.id === todoId);
+        if (!todo) return;
+
+        await updateTodo(todoId, {
+            status: todo.completed ? 'pending' : 'completed'
+        });
     };
 
     // Add deleteTodo function
     const deleteTodo = async (todoId: number) => {
+        if (!user?.uid) return;
+
         try {
-            const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+            const response = await fetch(`${HOST_URL}/api/todos/${todoId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    uid: user?.uid
+                    learnerUid: user.uid
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete todo');
+            if (response.ok) {
+                setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
+                setTodoToDelete(null);
             }
-
-            setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
         } catch (error) {
             console.error('Error deleting todo:', error);
             showMessage('Failed to delete task', 'error');
@@ -1590,20 +1610,162 @@ export default function QuizPage() {
         if (!user?.uid) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/notes/${noteId}?uid=${user.uid}`, {
+            const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    learnerUid: user.uid
+                })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete note');
+            if (response.ok) {
+                setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
             }
-
-            // Remove the deleted note from state
-            setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
-            showMessage('Note deleted successfully', 'success');
         } catch (error) {
             console.error('Error deleting note:', error);
             showMessage('Failed to delete note', 'error');
+        }
+    };
+
+    // Add fetchTodos function
+    const fetchTodos = async () => {
+        if (!user?.uid || !subjectName) return;
+
+        try {
+            const response = await fetch(`${HOST_URL}/api/todos?learnerUid=${user.uid}&subjectName=${subjectName}`);
+            if (response.ok) {
+                const data = await response.json();
+                const mappedTodos: Todo[] = data.map((todo: any) => ({
+                    id: todo.id,
+                    title: todo.title,
+                    completed: todo.status === 'completed',
+                    created_at: todo.created_at,
+                    due_date: todo.due_date ? new Date(todo.due_date).toISOString().split('T')[0] : undefined
+                }));
+                
+                // Sort todos by due date
+                mappedTodos.sort((a, b) => {
+                    if (!a.due_date && !b.due_date) return 0;
+                    if (!a.due_date) return 1;
+                    if (!b.due_date) return -1;
+                    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+                });
+                
+                setTodos(mappedTodos);
+            }
+        } catch (error) {
+            console.error('Error fetching todos:', error);
+            showMessage('Failed to fetch todos', 'error');
+        }
+    };
+
+    // Update useEffect to fetch todos when component mounts and when user changes
+    useEffect(() => {
+        if (user?.uid) {
+            fetchTodos();
+        }
+    }, [user?.uid]);
+
+    // Add updateNote function
+    const updateNote = async (noteId: number, newText: string) => {
+        if (!user?.uid) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/notes/${noteId}/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    text: newText,
+                    subject_name: subjectName                })
+            });
+
+            if (response.ok) {
+                setNotes(prevNotes => prevNotes.map(note => 
+                    note.id === noteId ? { ...note, text: newText } : note
+                ));
+                setNoteToEdit(null);
+                setEditNoteText('');
+            }
+        } catch (error) {
+            console.error('Error updating note:', error);
+            showMessage('Failed to update note', 'error');
+        }
+    };
+
+    // Add useEffect to fetch notes when component mounts and when subject changes
+    useEffect(() => {
+        if (user?.uid && subjectName) {
+            fetchNotes();
+        }
+    }, [user?.uid, subjectName]);
+
+    
+
+    // Add useEffect to fetch todos when component mounts and when subject changes
+    useEffect(() => {
+        if (user?.uid && subjectName) {
+            fetchNotes();
+        }
+    }, [user?.uid, subjectName]);
+
+    
+
+   
+
+    // Update useEffect to fetch todos when component mounts and when user changes
+    useEffect(() => {
+        if (user?.uid) {
+            fetchTodos();
+        }
+    }, [user?.uid]);
+
+    const [editingTodo, setEditingTodo] = useState<{id: number, title: string, due_date: string} | null>(null);
+
+    const handleEditTodo = (todo: Todo) => {
+        setEditingTodo({
+            id: todo.id,
+            title: todo.title,
+            due_date: todo.due_date || ''
+        });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingTodo(null);
+    };
+
+    const handleUpdateTodo = async () => {
+        if (!editingTodo) return;
+
+        try {
+            const response = await fetch(`${HOST_URL}/api/todos/${editingTodo.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    learnerUid: user?.uid,
+                    title: editingTodo.title,
+                    dueDate: editingTodo.due_date
+                })
+            });
+
+            if (response.ok) {
+                setTodos(prevTodos => prevTodos.map(todo => 
+                    todo.id === editingTodo.id 
+                        ? { ...todo, title: editingTodo.title, due_date: editingTodo.due_date }
+                        : todo
+                ));
+                setEditingTodo(null);
+                showMessage('Task updated successfully', 'success');
+            }
+        } catch (error) {
+            console.error('Error updating todo:', error);
+            showMessage('Failed to update task', 'error');
         }
     };
 
@@ -1806,40 +1968,48 @@ export default function QuizPage() {
                                     favoriteQuestions.length > 0 ? (
                                         <div className="space-y-3">
                                             {favoriteQuestions.map((fav, index) => {
-                                                // Rotate through background colors with better opacity
-                                                const bgColors = [
-                                                    'bg-pink-500/20',
-                                                    'bg-orange-500/20',
-                                                    'bg-green-500/20',
-                                                    'bg-blue-500/20',
-                                                    'bg-purple-500/20'
+                                                const colors = [
+                                                    'bg-yellow-200',
+                                                    'bg-pink-200',
+                                                    'bg-blue-200',
+                                                    'bg-green-200',
+                                                    'bg-purple-200',
+                                                    'bg-orange-200'
                                                 ];
-                                                const bgColor = bgColors[index % bgColors.length];
-
+                                                const color = colors[index % colors.length];
                                                 return (
-                                                    <button
+                                                    <div
                                                         key={fav.id}
-                                                        onClick={() => loadSpecificQuestion(fav.questionId)}
-                                                        className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
+                                                        className={`${color} p-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 relative group`}
                                                     >
                                                         <div className="flex items-start gap-3">
-                                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                                                                <span className="text-white text-sm">#{index + 1}</span>
+                                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/30 flex items-center justify-center">
+                                                                <span className="text-gray-600 text-sm">⭐</span>
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="text-white text-sm font-medium line-clamp-2 pr-8">
-                                                                    {(fav.question?.includes('$') || fav.context?.includes('$'))
-                                                                        ? `Question #${fav.questionId}`
-                                                                        : fav.question || fav.context || `Question #${fav.questionId}`}
+                                                                <p className="text-gray-800 text-sm font-medium mb-2 whitespace-pre-wrap pr-16">
+                                                                    {fav.question}
+                                                                </p>
+                                                                <p className="text-gray-600 text-xs">
+                                                                    {new Date(fav.createdAt.date).toLocaleDateString()}
                                                                 </p>
                                                             </div>
-                                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                                                    <span className="text-white">→</span>
-                                                                </div>
+                                                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/50 rounded-lg p-1">
+                                                                <button
+                                                                    onClick={() => loadSpecificQuestion(fav.questionId)}
+                                                                    className="p-1 hover:bg-black/10 rounded"
+                                                                >
+                                                                    <span className="text-gray-600">▶️</span>
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleUnfavoriteQuestion(fav.id)}
+                                                                    className="p-1 hover:bg-black/10 rounded"
+                                                                >
+                                                                    <span className="text-gray-600">✕</span>
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                    </button>
+                                                    </div>
                                                 );
                                             })}
                                         </div>
@@ -1916,19 +2086,63 @@ export default function QuizPage() {
                                                                     <span className="text-gray-600 text-sm">📝</span>
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className="text-gray-800 text-sm font-medium mb-2 whitespace-pre-wrap">
-                                                                        {note.text}
-                                                                    </p>
-                                                                    <p className="text-gray-500 text-xs">
-                                                                        {new Date(note.created_at).toLocaleDateString()}
-                                                                    </p>
+                                                                    {noteToEdit?.id === note.id ? (
+                                                                        <div className="space-y-2">
+                                                                            <textarea
+                                                                                value={editNoteText}
+                                                                                onChange={(e) => setEditNoteText(e.target.value)}
+                                                                                className="w-full bg-white/50 text-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                                rows={3}
+                                                                            />
+                                                                            <div className="flex gap-2">
+                                                                                <button
+                                                                                    onClick={() => updateNote(note.id, editNoteText)}
+                                                                                    disabled={isEditingNote || !editNoteText.trim()}
+                                                                                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+                                                                                >
+                                                                                    {isEditingNote ? 'Saving...' : 'Save'}
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setNoteToEdit(null);
+                                                                                        setEditNoteText('');
+                                                                                    }}
+                                                                                    className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                                                                >
+                                                                                    Cancel
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <p className="text-gray-800 text-sm font-medium mb-2 whitespace-pre-wrap pr-16">
+                                                                                {note.text}
+                                                                            </p>
+                                                                            <p className="text-gray-500 text-xs">
+                                                                                {new Date(note.created_at).toLocaleDateString()}
+                                                                            </p>
+                                                                        </>
+                                                                    )}
                                                                 </div>
-                                                                <button
-                                                                    onClick={() => setNoteToDelete(note.id)}
-                                                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-black/10 rounded"
-                                                                >
-                                                                    <span className="text-gray-600">✕</span>
-                                                                </button>
+                                                                {!noteToEdit?.id && (
+                                                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/50 rounded-lg p-1">
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setNoteToEdit(note);
+                                                                                setEditNoteText(note.text);
+                                                                            }}
+                                                                            className="p-1 hover:bg-black/10 rounded"
+                                                                        >
+                                                                            <span className="text-gray-600">✏️</span>
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => setNoteToDelete(note.id)}
+                                                                            className="p-1 hover:bg-black/10 rounded"
+                                                                        >
+                                                                            <span className="text-gray-600">✕</span>
+                                                                        </button>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     );
@@ -1962,35 +2176,32 @@ export default function QuizPage() {
                                                 <textarea
                                                     value={newTodoText}
                                                     onChange={(e) => setNewTodoText(e.target.value)}
-                                                    placeholder="sWrite your task here..."
+                                                    placeholder="Write your task here..."
                                                     className="w-full bg-transparent text-white placeholder-white/50 border border-white/10 rounded-lg p-3 mb-3 focus:outline-none focus:border-white/20"
                                                     rows={3}
                                                 />
-                                                <textarea
-                                                    value={newTodoDescription}
-                                                    onChange={(e) => setNewTodoDescription(e.target.value)}
-                                                    placeholder="sAdd a description (optional)..."
-                                                    className="w-full bg-transparent text-white placeholder-white/50 border border-white/10 rounded-lg p-3 mb-3 focus:outline-none focus:border-white/20"
-                                                    rows={2}
-                                                />
+                                                
                                                 <div className="mb-3">
-                                                    <label className="block text-white/70 text-sm mb-1">Due Date</label>
+                                                    <label className="block text-white/70 text-sm mb-1">Due Date *</label>
                                                     <div className="relative">
                                                         <input
                                                             type="date"
                                                             value={todoDueDate}
                                                             onChange={(e) => setTodoDueDate(e.target.value)}
-                                                            className="w-full bg-transparent text-white border border-white/10 rounded-lg p-2 pr-10 focus:outline-none focus:border-white/20 [&::-webkit-calendar-picker-indicator]:bg-none [&::-webkit-calendar-picker-indicator]:px-2 [&::-webkit-calendar-picker-indicator]:py-2 [&::-webkit-calendar-picker-indicator]:text-white [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:hover:opacity-70"
+                                                            className="w-full bg-transparent text-white border border-white/10 rounded-lg p-2 pr-10 focus:outline-none focus:border-white/20 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                                                            required
                                                             min={new Date().toISOString().split('T')[0]}
                                                         />
-                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                            <span className="text-xl">📅</span>
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <button
                                                     onClick={createTodo}
-                                                    disabled={isCreatingTodo || !newTodoText.trim()}
+                                                    disabled={isCreatingTodo || !newTodoText.trim() || !todoDueDate}
                                                     className="w-full py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     {isCreatingTodo ? (
@@ -2008,41 +2219,137 @@ export default function QuizPage() {
                                         {/* To Do List */}
                                         {todos.length > 0 ? (
                                             <div className="space-y-3">
-                                                {todos.map((todo, index) => (
+                                                {todos.map((todo, index) => {
+                                                    // Define different colors for todos
+                                                    const colors = [
+                                                        'bg-yellow-200',
+                                                        'bg-pink-200',
+                                                        'bg-blue-200',
+                                                        'bg-green-200',
+                                                        'bg-purple-200',
+                                                        'bg-orange-200'
+                                                    ];
+                                                    const color = colors[index % colors.length];
+                                                    
+                                                    return (
                                                     <div
                                                         key={todo.id}
-                                                        className="bg-white/5 rounded-lg p-4 flex items-start gap-3"
+                                                        className={`rounded-lg p-4 flex items-start gap-3 shadow-lg transform transition-transform hover:scale-105 ${
+                                                            todo.completed ? `${color} opacity-60` : 
+                                                            todo.due_date ? (() => {
+                                                                const dueDate = new Date(todo.due_date);
+                                                                const today = new Date();
+                                                                today.setHours(0, 0, 0, 0);
+                                                                dueDate.setHours(0, 0, 0, 0);
+                                                                const diffTime = dueDate.getTime() - today.getTime();
+                                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                                
+                                                                if (diffDays <= 3) return `${color} border-2 border-red-400`;
+                                                                if (diffDays <= 7) return `${color} border-2 border-amber-400`;
+                                                                return color;
+                                                            })() : color
+                                                        }`}
                                                     >
                                                         <button
                                                             onClick={() => toggleTodoStatus(todo.id)}
                                                             className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                                                                 todo.completed
-                                                                    ? 'border-green-500 bg-green-500/20'
-                                                                    : 'border-white/30'
+                                                                    ? 'border-green-600 bg-green-600/20'
+                                                                    : 'border-gray-600'
                                                             }`}
                                                         >
                                                             {todo.completed && (
-                                                                <span className="text-green-500">✓</span>
+                                                                <span className="text-green-600">✓</span>
                                                             )}
                                                         </button>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className={`text-white text-sm ${
-                                                                todo.completed ? 'line-through text-white/50' : ''
-                                                            }`}>
-                                                                {todo.text}
-                                                            </p>
-                                                            <p className="text-white/40 text-xs mt-2">
-                                                                {new Date(todo.created_at).toLocaleDateString()}
-                                                            </p>
+                                                            {editingTodo?.id === todo.id ? (
+                                                                <div className="space-y-2">
+                                                                    <textarea
+                                                                        value={editingTodo.title}
+                                                                        onChange={(e) => setEditingTodo({...editingTodo, title: e.target.value})}
+                                                                        className="w-full bg-white/50 text-gray-800 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                        rows={3}
+                                                                        placeholder="Update your task here..."
+                                                                    />
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="date"
+                                                                            value={editingTodo.due_date}
+                                                                            onChange={(e) => setEditingTodo({...editingTodo, due_date: e.target.value})}
+                                                                            className="w-full bg-white/50 text-gray-800 border border-gray-300 rounded-lg p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                            min={new Date().toISOString().split('T')[0]}
+                                                                        />
+                                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex gap-2">
+                                                                        <button
+                                                                            onClick={handleUpdateTodo}
+                                                                            disabled={!editingTodo.title.trim()}
+                                                                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        >
+                                                                            Save
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={handleCancelEdit}
+                                                                            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm"
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <p className={`text-gray-800 text-sm font-medium whitespace-pre-wrap ${todo.completed ? 'line-through opacity-60' : ''}`}>
+                                                                        {todo.title}
+                                                                    </p>
+                                                                    {todo.due_date && (
+                                                                        <p className={`text-sm mt-1 ${
+                                                                            todo.completed ? 'text-gray-500' :
+                                                                            (() => {
+                                                                                const dueDate = new Date(todo.due_date);
+                                                                                const today = new Date();
+                                                                                today.setHours(0, 0, 0, 0);
+                                                                                dueDate.setHours(0, 0, 0, 0);
+                                                                                const diffTime = dueDate.getTime() - today.getTime();
+                                                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                                                
+                                                                                if (diffDays <= 3) return 'text-red-600 font-medium';
+                                                                                if (diffDays <= 7) return 'text-amber-600 font-medium';
+                                                                                return 'text-gray-600';
+                                                                            })()
+                                                                        }`}>
+                                                                            Due: {todo.due_date}
+                                                                        </p>
+                                                                    )}
+                                                                </>
+                                                            )}
                                                         </div>
-                                                        <button
-                                                            onClick={() => deleteTodo(todo.id)}
-                                                            className="text-white/40 hover:text-white/80 transition-colors"
-                                                        >
-                                                            ✕
-                                                        </button>
+                                                        <div className="flex gap-2">
+                                                            {!editingTodo && (
+                                                                <button
+                                                                    onClick={() => handleEditTodo(todo)}
+                                                                    className="text-gray-600 hover:text-gray-800 transition-colors"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={() => setTodoToDelete(todo.id)}
+                                                                className="text-gray-600 hover:text-gray-800 transition-colors"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         ) : (
                                             <div className="h-full flex items-center justify-center">
@@ -2221,7 +2528,7 @@ export default function QuizPage() {
                                                 <span>Term {currentQuestion.term}</span>
                                             </div>
                                             <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
-                                                <span className="text-xs">📆</span>
+                                                <span className="text-xs">📅</span>
                                                 <span>{currentQuestion.year}</span>
                                             </div>
                                             <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
@@ -2230,7 +2537,7 @@ export default function QuizPage() {
                                             </div>
                                             {currentQuestion && (
                                                 <button
-                                                    onClick={isCurrentQuestionFavorited ? handleUnfavoriteQuestion : handleFavoriteQuestion}
+                                                    onClick={isCurrentQuestionFavorited ? () => handleUnfavoriteQuestion(currentQuestion?.id?.toString() || '') : handleFavoriteQuestion}
                                                     disabled={isFavoriting}
                                                     className={`bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5 transition-colors ${isCurrentQuestionFavorited
                                                         ? 'text-yellow-400 hover:text-yellow-500'
@@ -2965,6 +3272,30 @@ export default function QuizPage() {
                                         }
                                     }}
                                     className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Add confirmation modal for todo deletion */}
+                {todoToDelete !== null && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+                            <h3 className="text-lg font-semibold mb-4">Delete Task</h3>
+                            <p className="text-gray-600 mb-6">Are you sure you want to delete this task? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setTodoToDelete(null)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => deleteTodo(todoToDelete)}
+                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                                 >
                                     Delete
                                 </button>
