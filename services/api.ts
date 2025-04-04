@@ -8,6 +8,22 @@ export interface Grade {
   active: number
 }
 
+export interface LeaderboardEntry {
+  name: string
+  points: number
+  position: number
+  isCurrentLearner: boolean
+  avatar: string
+}
+
+export interface LeaderboardResponse {
+  status: string
+  rankings: LeaderboardEntry[]
+  currentLearnerPoints: number
+  currentLearnerPosition: number | null
+  totalLearners: number
+}
+
 export interface Subject {
   id: number
   name: string
@@ -501,9 +517,9 @@ export async function getNextNewQuestion(questionId: string): Promise<DetailedQu
   }
 }
 
-export async function getRejectedQuestions(email: string): Promise<Question[]> {
+export async function getRejectedQuestions(uid: string): Promise<Question[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
+    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${uid}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch rejected questions')
@@ -517,9 +533,9 @@ export async function getRejectedQuestions(email: string): Promise<Question[]> {
   }
 }
 
-export async function getRejectedQuestionsCount(email: string): Promise<number> {
+export async function getRejectedQuestionsCount(uid: string): Promise<number> {
   try {
-    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${email}`)
+    const response = await fetch(`${API_BASE_URL}/questions/rejected?capturer=${uid}`)
     const data = await response.json()
     return data.count || 0
   } catch (error) {
@@ -788,6 +804,20 @@ export async function getLearnerBadges(uid: string): Promise<LearnerBadge[]> {
     return data.badges
   } catch (error) {
     console.error('Error fetching learner badges:', error)
+    throw error
+  }
+}
+
+export async function getLeaderboard(uid: string, limit: number = 10): Promise<LeaderboardResponse> {
+  try {
+    const response = await fetch(`${HOST_URL}/api/leaderboard?uid=${uid}&limit=${limit}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch leaderboard')
+    }
+    const data = await response.json()
+    return data.data
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error)
     throw error
   }
 } 

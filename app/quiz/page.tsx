@@ -115,6 +115,56 @@ interface FavoriteQuestion {
     context: string;
 }
 
+// Add Note interface
+interface Note {
+    id: number;
+    created_at: string;
+    text: string;
+    description?: string;
+    subject_name: string;
+    learner: {
+        id: number;
+        uid: string;
+        name: string;
+        grade: {
+            id: number;
+            number: number;
+            active: number;
+        };
+        points: number;
+        notification_hour: number;
+        role: string;
+        created: string;
+        last_seen: string;
+        school_address: string;
+        school_name: string;
+        school_latitude: number;
+        school_longitude: number;
+        terms: string;
+        curriculum: string;
+        private_school: boolean;
+        email: string;
+        rating: number;
+        streak: number;
+        streak_last_updated: string;
+        avatar: string;
+        expo_push_token: string;
+        learner_badges: Array<{
+            id: number;
+            created_at: string;
+            badge: {
+                id: number;
+                created_at: string;
+                name: string;
+                rules: string;
+                image: string;
+                learner_badges: any[];
+            };
+        }>;
+        notes: Array<Note> | Record<string, Note>;
+    };
+}
+
 // Add MessageModal interface
 interface MessageModalProps {
     isVisible: boolean;
@@ -695,6 +745,26 @@ export default function QuizPage() {
     });
     const [isRestartModalVisible, setIsRestartModalVisible] = useState(false)
     const [isSidebarVisible, setIsSidebarVisible] = useState(true)
+    const [activeTab, setActiveTab] = useState<'favorites' | 'notes' | 'todo'>('todo')
+    const [notes, setNotes] = useState<Note[]>([])
+    const [newNoteText, setNewNoteText] = useState('')
+    const [isCreatingNote, setIsCreatingNote] = useState(false)
+    const [showNoteForm, setShowNoteForm] = useState(false)
+    const [noteToDelete, setNoteToDelete] = useState<number | null>(null)
+    const [todos, setTodos] = useState([
+        { id: 1, text: 'Task 1', completed: false, created_at: new Date().toISOString() },
+        { id: 2, text: 'Task 2', completed: true, created_at: new Date().toISOString() },
+        { id: 3, text: 'Task 3', completed: false, created_at: new Date().toISOString() },
+    ]);
+    const [newTodoText, setNewTodoText] = useState('');
+    const [newTodoDescription, setNewTodoDescription] = useState('');
+    const [isCreatingTodo, setIsCreatingTodo] = useState(false);
+    const [showTodoForm, setShowTodoForm] = useState(false);
+    const [todoDueDate, setTodoDueDate] = useState(() => {
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        return nextWeek.toISOString().split('T')[0];
+    });
 
     // Add new state for badge modal
     const [newBadge, setNewBadge] = useState<{name: string; description: string; image: string} | null>(null);
@@ -1339,6 +1409,204 @@ export default function QuizPage() {
         }
     };
 
+    // Add fetchNotes function
+    const fetchNotes = async () => {
+        if (!user?.uid || !subjectName) return;
+
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/notes?uid=${user.uid}&subject_name=${subjectName}`
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch notes');
+            }
+
+            const data = await response.json();
+            if (data.status === "OK") {
+                // Flatten the notes array and remove duplicates
+                const uniqueNotes = data.notes.reduce((acc: Note[], note: Note) => {
+                    // Check if we already have this note
+                    if (!acc.find(n => n.id === note.id)) {
+                        acc.push(note);
+                    }
+                    return acc;
+                }, []);
+                
+                // Sort notes by creation date (newest first)
+                uniqueNotes.sort((a: Note, b: Note) => 
+                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                );
+                
+                setNotes(uniqueNotes);
+            }
+        } catch (error) {
+            console.error('Error fetching notes:', error);
+            showMessage('Failed to load notes', 'error');
+        }
+    };
+
+    // Add createNote function
+    const createNote = async () => {
+        if (!user?.uid || !subjectName || !newNoteText.trim()) return;
+
+        try {
+            setIsCreatingNote(true);
+            const response = await fetch(`${API_BASE_URL}/notes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    text: newNoteText,
+                    subject_name: subjectName
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create note');
+            }
+
+            const data = await response.json();
+            if (data.status === "OK") {
+                setNotes(prevNotes => [...prevNotes, data.note]);
+                setNewNoteText('');
+            }
+        } catch (error) {
+            console.error('Error creating note:', error);
+            showMessage('Failed to create note', 'error');
+        } finally {
+            setIsCreatingNote(false);
+        }
+    };
+
+    // Add useEffect to fetch notes when component mounts and when subject changes
+    useEffect(() => {
+        if (user?.uid && subjectName) {
+            fetchNotes();
+        }
+    }, [user?.uid, subjectName]);
+
+    // Add createTodo function
+    const createTodo = async () => {
+        if (!user?.uid || !subjectName || !newTodoText.trim()) return;
+
+        try {
+            setIsCreatingTodo(true);
+            const response = await fetch(`${API_BASE_URL}/todos`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    text: newTodoText,
+                    subject_name: subjectName,
+                    due_date: todoDueDate || null
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create todo');
+            }
+
+            const data = await response.json();
+            if (data.status === "OK") {
+                setTodos(prevTodos => [...prevTodos, data.todo]);
+                setNewTodoText('');
+            }
+        } catch (error) {
+            console.error('Error creating todo:', error);
+            showMessage('Failed to create todo', 'error');
+        } finally {
+            setIsCreatingTodo(false);
+        }
+    };
+
+    // Add toggleTodoStatus function
+    const toggleTodoStatus = async (todoId: number) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/todos/${todoId}/toggle`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    uid: user?.uid
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to toggle todo status');
+            }
+
+            setTodos(prevTodos => 
+                prevTodos.map(todo => 
+                    todo.id === todoId 
+                        ? { ...todo, completed: !todo.completed }
+                        : todo
+                )
+            );
+        } catch (error) {
+            console.error('Error toggling todo status:', error);
+            showMessage('Failed to update task status', 'error');
+        }
+    };
+
+    // Add deleteTodo function
+    const deleteTodo = async (todoId: number) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    uid: user?.uid
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete todo');
+            }
+
+            setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
+        } catch (error) {
+            console.error('Error deleting todo:', error);
+            showMessage('Failed to delete task', 'error');
+        }
+    };
+
+    // Add useEffect to fetch todos when component mounts and when subject changes
+    useEffect(() => {
+        if (user?.uid && subjectName) {
+            fetchNotes();
+        }
+    }, [user?.uid, subjectName]);
+
+    // Add deleteNote function
+    const deleteNote = async (noteId: number) => {
+        if (!user?.uid) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/notes/${noteId}?uid=${user.uid}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete note');
+            }
+
+            // Remove the deleted note from state
+            setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+            showMessage('Note deleted successfully', 'success');
+        } catch (error) {
+            console.error('Error deleting note:', error);
+            showMessage('Failed to delete note', 'error');
+        }
+    };
+
     // Remove the initial loading check
     return (
         <>
@@ -1490,64 +1758,302 @@ export default function QuizPage() {
 
                         
                         {/* Favorites Section */}
-
                         <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
                             <div className="flex items-center justify-center gap-2 mb-4 relative">
                                 <span className="text-2xl">⭐</span>
-                                <h2 className="text-xl font-bold text-white">Favorite Questions</h2>
+                                <h2 className="text-xl font-bold text-white">My Collection</h2>
                                 {isFavoritesLoading && (
                                     <div className="absolute right-0 animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
                                 )}
                             </div>
-                            <div className="flex-1 min-h-[200px]">
-                                {favoriteQuestions.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {favoriteQuestions.map((fav, index) => {
-                                            // Rotate through background colors with better opacity
-                                            const bgColors = [
-                                                'bg-pink-500/20',
-                                                'bg-orange-500/20',
-                                                'bg-green-500/20',
-                                                'bg-blue-500/20',
-                                                'bg-purple-500/20'
-                                            ];
-                                            const bgColor = bgColors[index % bgColors.length];
 
-                                            return (
-                                                <button
-                                                    key={fav.id}
-                                                    onClick={() => loadSpecificQuestion(fav.questionId)}
-                                                    className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
-                                                >
-                                                    <div className="flex items-start gap-3">
-                                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                                                            <span className="text-white text-sm">#{index + 1}</span>
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-white text-sm font-medium line-clamp-2 pr-8">
-                                                                {(fav.question?.includes('$') || fav.context?.includes('$'))
-                                                                    ? `Question #${fav.questionId}`
-                                                                    : fav.question || fav.context || `Question #${fav.questionId}`}
-                                                            </p>
-                                                        </div>
-                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                                                <span className="text-white">→</span>
+                            {/* Tab Buttons */}
+                            <div className="flex gap-2 mb-4">
+                                <button
+                                    onClick={() => setActiveTab('todo')}
+                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${
+                                        activeTab === 'todo'
+                                            ? 'bg-purple-600 text-white'
+                                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                    }`}
+                                >
+                                    To Do
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('favorites')}
+                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${
+                                        activeTab === 'favorites'
+                                            ? 'bg-purple-600 text-white'
+                                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                    }`}
+                                >
+                                    Favorites
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('notes')}
+                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${
+                                        activeTab === 'notes'
+                                            ? 'bg-purple-600 text-white'
+                                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                    }`}
+                                >
+                                    Notes
+                                </button>
+                            </div>
+
+                            <div className="flex-1 min-h-[200px]">
+                                {activeTab === 'favorites' ? (
+                                    favoriteQuestions.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {favoriteQuestions.map((fav, index) => {
+                                                // Rotate through background colors with better opacity
+                                                const bgColors = [
+                                                    'bg-pink-500/20',
+                                                    'bg-orange-500/20',
+                                                    'bg-green-500/20',
+                                                    'bg-blue-500/20',
+                                                    'bg-purple-500/20'
+                                                ];
+                                                const bgColor = bgColors[index % bgColors.length];
+
+                                                return (
+                                                    <button
+                                                        key={fav.id}
+                                                        onClick={() => loadSpecificQuestion(fav.questionId)}
+                                                        className={`w-full text-left p-4 ${bgColor} rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-30 relative group backdrop-blur-sm border border-white/10`}
+                                                    >
+                                                        <div className="flex items-start gap-3">
+                                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                                                <span className="text-white text-sm">#{index + 1}</span>
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-white text-sm font-medium line-clamp-2 pr-8">
+                                                                    {(fav.question?.includes('$') || fav.context?.includes('$'))
+                                                                        ? `Question #${fav.questionId}`
+                                                                        : fav.question || fav.context || `Question #${fav.questionId}`}
+                                                                </p>
+                                                            </div>
+                                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                                                    <span className="text-white">→</span>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center">
+                                            <div className="text-center">
+                                                <div className="text-4xl mb-2">⭐</div>
+                                                <p className="text-white/60 text-sm">
+                                                    No saved questions yet
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )
+                                ) : activeTab === 'notes' ? (
+                                    <div className="space-y-4">
+                                        {/* Add Note Button */}
+                                        <button
+                                            onClick={() => setShowNoteForm(!showNoteForm)}
+                                            className="w-full p-3 bg-white/5 rounded-lg flex items-center justify-center gap-2 text-white hover:bg-white/10 transition-colors"
+                                        >
+                                            <span className="text-xl">+</span>
+                                            <span>Add New Note</span>
+                                        </button>
+
+                                        {/* Add Note Form - Only show when showNoteForm is true */}
+                                        {showNoteForm && (
+                                            <div className="bg-white/5 rounded-lg p-4">
+                                                <textarea
+                                                    value={newNoteText}
+                                                    onChange={(e) => setNewNoteText(e.target.value)}
+                                                    placeholder="Write your note here..."
+                                                    className="w-full bg-transparent text-white placeholder-white/50 border border-white/10 rounded-lg p-3 mb-3 focus:outline-none focus:border-white/20"
+                                                    rows={2}
+                                                />
+                                                <button
+                                                    onClick={createNote}
+                                                    disabled={isCreatingNote || !newNoteText.trim()}
+                                                    className="w-full py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {isCreatingNote ? (
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                            <span>Creating...</span>
+                                                        </div>
+                                                    ) : (
+                                                        'Add Note'
+                                                    )}
                                                 </button>
-                                            );
-                                        })}
+                                            </div>
+                                        )}
+
+                                        {/* Notes List */}
+                                        {notes.length > 0 ? (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {notes.map((note, index) => {
+                                                    // Define different colors for sticky notes
+                                                    const colors = [
+                                                        'bg-yellow-200',
+                                                        'bg-pink-200',
+                                                        'bg-blue-200',
+                                                        'bg-green-200',
+                                                        'bg-purple-200',
+                                                        'bg-orange-200'
+                                                    ];
+                                                    const color = colors[index % colors.length];
+
+                                                    return (
+                                                        <div
+                                                            key={note.id}
+                                                            className={`${color} p-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 relative group`}
+                                                        >
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/30 flex items-center justify-center">
+                                                                    <span className="text-gray-600 text-sm">📝</span>
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-gray-800 text-sm font-medium mb-2 whitespace-pre-wrap">
+                                                                        {note.text}
+                                                                    </p>
+                                                                    <p className="text-gray-500 text-xs">
+                                                                        {new Date(note.created_at).toLocaleDateString()}
+                                                                    </p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => setNoteToDelete(note.id)}
+                                                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-black/10 rounded"
+                                                                >
+                                                                    <span className="text-gray-600">✕</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div className="h-full flex items-center justify-center">
+                                                <div className="text-center">
+                                                    <div className="text-4xl mb-2">📝</div>
+                                                    <p className="text-white/60 text-sm">
+                                                        No notes yet. Add your first note!
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
-                                    <div className="h-full flex items-center justify-center">
-                                        <div className="text-center">
-                                            <div className="text-4xl mb-2">⭐</div>
-                                            <p className="text-white/60 text-sm">
-                                                No saved questions yet
-                                            </p>
-                                        </div>
+                                    <div className="space-y-4">
+                                        {/* Add To Do Button */}
+                                        <button
+                                            onClick={() => setShowTodoForm(!showTodoForm)}
+                                            className="w-full p-3 bg-white/5 rounded-lg flex items-center justify-center gap-2 text-white hover:bg-white/10 transition-colors"
+                                        >
+                                            <span className="text-xl">+</span>
+                                            <span>Add New Task</span>
+                                        </button>
+
+                                        {/* Add To Do Form - Only show when showTodoForm is true */}
+                                        {showTodoForm && (
+                                            <div className="bg-white/5 rounded-lg p-4">
+                                                <textarea
+                                                    value={newTodoText}
+                                                    onChange={(e) => setNewTodoText(e.target.value)}
+                                                    placeholder="sWrite your task here..."
+                                                    className="w-full bg-transparent text-white placeholder-white/50 border border-white/10 rounded-lg p-3 mb-3 focus:outline-none focus:border-white/20"
+                                                    rows={3}
+                                                />
+                                                <textarea
+                                                    value={newTodoDescription}
+                                                    onChange={(e) => setNewTodoDescription(e.target.value)}
+                                                    placeholder="sAdd a description (optional)..."
+                                                    className="w-full bg-transparent text-white placeholder-white/50 border border-white/10 rounded-lg p-3 mb-3 focus:outline-none focus:border-white/20"
+                                                    rows={2}
+                                                />
+                                                <div className="mb-3">
+                                                    <label className="block text-white/70 text-sm mb-1">Due Date</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="date"
+                                                            value={todoDueDate}
+                                                            onChange={(e) => setTodoDueDate(e.target.value)}
+                                                            className="w-full bg-transparent text-white border border-white/10 rounded-lg p-2 pr-10 focus:outline-none focus:border-white/20 [&::-webkit-calendar-picker-indicator]:bg-none [&::-webkit-calendar-picker-indicator]:px-2 [&::-webkit-calendar-picker-indicator]:py-2 [&::-webkit-calendar-picker-indicator]:text-white [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:hover:opacity-70"
+                                                            min={new Date().toISOString().split('T')[0]}
+                                                        />
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                            <span className="text-xl">📅</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={createTodo}
+                                                    disabled={isCreatingTodo || !newTodoText.trim()}
+                                                    className="w-full py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {isCreatingTodo ? (
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                            <span>Creating...</span>
+                                                        </div>
+                                                    ) : (
+                                                        'Add Task'
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* To Do List */}
+                                        {todos.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {todos.map((todo, index) => (
+                                                    <div
+                                                        key={todo.id}
+                                                        className="bg-white/5 rounded-lg p-4 flex items-start gap-3"
+                                                    >
+                                                        <button
+                                                            onClick={() => toggleTodoStatus(todo.id)}
+                                                            className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                                                todo.completed
+                                                                    ? 'border-green-500 bg-green-500/20'
+                                                                    : 'border-white/30'
+                                                            }`}
+                                                        >
+                                                            {todo.completed && (
+                                                                <span className="text-green-500">✓</span>
+                                                            )}
+                                                        </button>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className={`text-white text-sm ${
+                                                                todo.completed ? 'line-through text-white/50' : ''
+                                                            }`}>
+                                                                {todo.text}
+                                                            </p>
+                                                            <p className="text-white/40 text-xs mt-2">
+                                                                {new Date(todo.created_at).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => deleteTodo(todo.id)}
+                                                            className="text-white/40 hover:text-white/80 transition-colors"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="h-full flex items-center justify-center">
+                                                <div className="text-center">
+                                                    <div className="text-4xl mb-2">📋</div>
+                                                    <p className="text-white/60 text-sm">
+                                                        No tasks yet. Add your first task!
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -2435,6 +2941,37 @@ export default function QuizPage() {
                     onClose={() => setIsBadgeModalVisible(false)}
                     badge={newBadge}
                 />
+
+                {/* Delete Note Confirmation Modal */}
+                {noteToDelete !== null && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl p-6 max-w-sm w-full">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">Delete Note</h3>
+                            <p className="text-gray-600 mb-6">
+                                Are you sure you want to delete this note? This action cannot be undone.
+                            </p>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setNoteToDelete(null)}
+                                    className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (noteToDelete) {
+                                            deleteNote(noteToDelete);
+                                            setNoteToDelete(null);
+                                        }
+                                    }}
+                                    className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     )
