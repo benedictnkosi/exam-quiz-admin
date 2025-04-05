@@ -15,6 +15,7 @@ export function middleware(request: NextRequest) {
     path === '/reset-password' ||
     path === '/onboarding' ||
     path === '/landing' ||
+    path === '/app-ads.txt' ||
     path.startsWith('/images/')
 
   // Get the Firebase auth token from cookies
