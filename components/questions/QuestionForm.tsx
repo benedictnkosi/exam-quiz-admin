@@ -430,6 +430,40 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         throw new Error('User email not found')
       }
 
+      // Check for image-related words in question text and context
+      const imageRelatedWords = [
+        'diagram',
+        'illustration',
+        'image',
+        'picture',
+        'pictures',
+        'scenario',
+        'extract',
+        'graph',
+        'annexure',
+        'information below',
+        'map'
+      ]
+
+      const questionText = formData.questionText.toLowerCase()
+      const contextText = formData.context.toLowerCase()
+      
+      const hasImageRelatedWords = imageRelatedWords.some(word => 
+        questionText.includes(word) || contextText.includes(word)
+      )
+
+      if (hasImageRelatedWords && !formData.contextImage && !formData.questionImage) {
+        const shouldProceed = window.confirm(
+          'The question or context contains words that suggest an image might be needed. ' +
+          'Are you sure you want to proceed without uploading an image?'
+        )
+        
+        if (!shouldProceed) {
+          setLoading(false)
+          return
+        }
+      }
+
       // Create a copy of the options array
       const options = [...formData.options];
 
