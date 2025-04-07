@@ -61,6 +61,7 @@ export default function LandingPage() {
               height={800}
               className="w-full h-auto relative z-0 drop-shadow-2xl"
               priority
+              loading="eager"
             />
           </div>
         </div>
@@ -92,49 +93,35 @@ export default function LandingPage() {
       </div>
 
       {/* Right Section - Marketing Content */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-10">
-          <div className="text-center space-y-4">
-            <h1 className="text-5xl font-bold text-white flex items-center justify-center gap-3">
-              Exam Quiz <span className="text-3xl">��</span>
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-10">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white flex items-center justify-center gap-3">
+              Exam Quiz <span className="text-2xl sm:text-3xl"></span>
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-lg sm:text-xl text-white/90">
               Ready to ace those exams? Let&apos;s get started! 🚀
             </p>
           </div>
 
-          {/* Mobile Mock Image */}
-          <div className="lg:hidden flex justify-center">
-            <div className="relative w-[40%] max-w-[200px]" style={{ transform: 'rotate(12deg)' }}>
-              <div className="absolute  via-transparent to-transparent z-10" />
-              <Image
-                src="/images/mock.png"
-                alt="Exam Quiz App Interface"
-                width={200}
-                height={400}
-                className="w-full h-auto relative z-0 drop-shadow-2xl"
-              />
-            </div>
-          </div>
-
           {/* Features Section */}
           <div className="text-center space-y-4">
-            <div className="bg-white/5 rounded-2xl p-6 space-y-4">
-              <h2 className="text-2xl font-bold text-white">Comprehensive Exam Prep</h2>
-              <p className="text-white/90">
+            <div className="bg-white/5 rounded-2xl p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Comprehensive Exam Prep</h2>
+              <p className="text-white/90 text-sm sm:text-base">
                 Covering Grades 10, 11, and 12 with over 16,000+ practice questions
               </p>
-              <div className="flex justify-center gap-4">
-                <span className="px-4 py-2 bg-white/10 rounded-full text-white">Grade 10</span>
-                <span className="px-4 py-2 bg-white/10 rounded-full text-white">Grade 11</span>
-                <span className="px-4 py-2 bg-white/10 rounded-full text-white">Grade 12</span>
+              <div className="flex justify-center gap-2 sm:gap-4">
+                <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 rounded-full text-white text-sm">Grade 10</span>
+                <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 rounded-full text-white text-sm">Grade 11</span>
+                <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 rounded-full text-white text-sm">Grade 12</span>
               </div>
             </div>
           </div>
 
           {/* Download Buttons - Mobile Only */}
-          <div className="lg:hidden space-y-4 text-center">
-            <p className="text-lg text-white/90">
+          <div className="lg:hidden space-y-3 sm:space-y-4 text-center">
+            <p className="text-base sm:text-lg text-white/90">
               Join thousands of students acing their exams! 🎯
             </p>
             <a
