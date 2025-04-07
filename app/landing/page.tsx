@@ -17,7 +17,10 @@ export default function LandingPage() {
     if (user) {
       router.push('/')
     }
-    pageView()
+    // Defer pageView tracking to improve initial load
+    setTimeout(() => {
+      pageView()
+    }, 0)
   }, [user, router, pageView])
 
   // Don't render the landing page if user is authenticated
@@ -50,21 +53,25 @@ export default function LandingPage() {
     <div className="min-h-screen flex bg-[#1e1b4b]">
       {/* Left Section - Marketing Content */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#312e81] to-[#1e1b4b] p-16 flex-col justify-between relative overflow-hidden">
-        {/* Mock Image */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-[60%] max-w-[400px]" style={{ transform: 'rotate(12deg)' }}>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#312e81] via-transparent to-transparent z-10" />
-            <Image
-              src="/images/mock.png"
-              alt="Exam Quiz App Interface"
-              width={400}
-              height={800}
-              className="w-full h-auto relative z-0 drop-shadow-2xl"
-              priority
-              loading="eager"
-            />
+        {/* Mock Image - Only render on desktop */}
+        {typeof window !== 'undefined' && window.innerWidth >= 1024 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-[60%] max-w-[400px]" style={{ transform: 'rotate(12deg)' }}>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#312e81] via-transparent to-transparent z-10" />
+              <Image
+                src="/images/mock.png"
+                alt="Exam Quiz App Interface"
+                width={400}
+                height={800}
+                className="w-full h-auto relative z-0 drop-shadow-2xl"
+                priority
+                loading="eager"
+                quality={75}
+                sizes="(max-width: 400px) 100vw, 400px"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Download Buttons - Desktop Only */}
         <div className="relative z-20 mt-auto space-y-4">
