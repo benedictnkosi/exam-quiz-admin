@@ -6,6 +6,7 @@ import { IoLogoApple, IoLogoGooglePlaystore } from 'react-icons/io5'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { initMetaPixel, trackMetaPixelEvent } from '@/lib/metaPixel'
 
 export default function LandingPage() {
   const { user } = useAuth()
@@ -15,11 +16,25 @@ export default function LandingPage() {
     if (user) {
       router.push('/')
     }
+    // Initialize Meta Pixel
+    initMetaPixel(process.env.NEXT_PUBLIC_META_PIXEL_ID || '')
   }, [user, router])
 
   // Don't render the landing page if user is authenticated
   if (user) {
     return null
+  }
+
+  const handleAppStoreClick = () => {
+    trackMetaPixelEvent('AppStoreDownload', { platform: 'iOS' })
+  }
+
+  const handlePlayStoreClick = () => {
+    trackMetaPixelEvent('PlayStoreDownload', { platform: 'Android' })
+  }
+
+  const handleLoginClick = () => {
+    trackMetaPixelEvent('LoginButtonClick')
   }
 
   return (
@@ -48,6 +63,7 @@ export default function LandingPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white text-[#1e1b4b] hover:bg-white/90 transition-all duration-300 transform hover:scale-[1.02]"
+            onClick={handleAppStoreClick}
           >
             <IoLogoApple size={24} />
             <span className="font-semibold">Download on App Store</span>
@@ -58,6 +74,7 @@ export default function LandingPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02]"
+            onClick={handlePlayStoreClick}
           >
             <IoLogoGooglePlaystore size={24} />
             <span className="font-semibold">Get it on Google Play</span>
@@ -70,7 +87,7 @@ export default function LandingPage() {
         <div className="w-full max-w-md space-y-10">
           <div className="text-center space-y-4">
             <h1 className="text-5xl font-bold text-white flex items-center justify-center gap-3">
-              Exam Quiz <span className="text-3xl">👋</span>
+              Exam Quiz <span className="text-3xl">��</span>
             </h1>
             <p className="text-xl text-white/90">
               Ready to ace those exams? Let&apos;s get started! 🚀
@@ -106,7 +123,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-        
           {/* Download Buttons - Mobile Only */}
           <div className="lg:hidden space-y-4 text-center">
             <p className="text-lg text-white/90">
@@ -117,6 +133,7 @@ export default function LandingPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white text-[#1e1b4b] hover:bg-white/90 transition-all duration-300 transform hover:scale-[1.02]"
+              onClick={handleAppStoreClick}
             >
               <IoLogoApple size={24} />
               <span className="font-semibold">Download on App Store</span>
@@ -127,6 +144,7 @@ export default function LandingPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02]"
+              onClick={handlePlayStoreClick}
             >
               <IoLogoGooglePlaystore size={24} />
               <span className="font-semibold">Get it on Google Play</span>
@@ -141,6 +159,7 @@ export default function LandingPage() {
             <Link
               href="/login"
               className="block w-full py-4 px-6 rounded-full text-lg font-semibold bg-gradient-to-r from-[#4338ca] to-[#6366f1] text-white hover:from-[#4338ca]/90 hover:to-[#6366f1]/90 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#1e1b4b]"
+              onClick={handleLoginClick}
             >
               Login Here
             </Link>
