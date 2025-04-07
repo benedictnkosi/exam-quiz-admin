@@ -6,16 +6,19 @@ import { IoLogoApple, IoLogoGooglePlaystore } from 'react-icons/io5'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { useMetaPixel } from '@/app/hooks/useMetaPixel'
 
 export default function LandingPage() {
   const { user } = useAuth()
   const router = useRouter()
+  const { trackEvent, pageView } = useMetaPixel()
 
   useEffect(() => {
     if (user) {
       router.push('/')
     }
-  }, [user, router])
+    pageView()
+  }, [user, router, pageView])
 
   // Don't render the landing page if user is authenticated
   if (user) {
@@ -23,15 +26,24 @@ export default function LandingPage() {
   }
 
   const handleAppStoreClick = () => {
-    // App store click handler without tracking
+    trackEvent('AppStoreClick', {
+      value: 0,
+      currency: 'USD',
+    })
   }
 
   const handlePlayStoreClick = () => {
-    // Play store click handler without tracking
+    trackEvent('PlayStoreClick', {
+      value: 0,
+      currency: 'USD',
+    })
   }
 
   const handleLoginClick = () => {
-    // Login click handler without tracking
+    trackEvent('LoginClick', {
+      value: 0,
+      currency: 'USD',
+    })
   }
 
   return (
