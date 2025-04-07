@@ -6,7 +6,6 @@ import { IoLogoApple, IoLogoGooglePlaystore } from 'react-icons/io5'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { initMetaPixel, trackMetaPixelEvent } from '@/lib/metaPixel'
 
 export default function LandingPage() {
   const { user } = useAuth()
@@ -16,8 +15,6 @@ export default function LandingPage() {
     if (user) {
       router.push('/')
     }
-    // Initialize Meta Pixel
-    initMetaPixel(process.env.NEXT_PUBLIC_META_PIXEL_ID || '')
   }, [user, router])
 
   // Don't render the landing page if user is authenticated
@@ -26,15 +23,15 @@ export default function LandingPage() {
   }
 
   const handleAppStoreClick = () => {
-    trackMetaPixelEvent('AppStoreDownload', { platform: 'iOS' })
+    // App store click handler without tracking
   }
 
   const handlePlayStoreClick = () => {
-    trackMetaPixelEvent('PlayStoreDownload', { platform: 'Android' })
+    // Play store click handler without tracking
   }
 
   const handleLoginClick = () => {
-    trackMetaPixelEvent('LoginButtonClick')
+    // Login click handler without tracking
   }
 
   return (
