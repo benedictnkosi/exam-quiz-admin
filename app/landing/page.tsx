@@ -106,20 +106,12 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="text-center space-y-4">
+        
+          {/* Download Buttons - Mobile Only */}
+          <div className="lg:hidden space-y-4 text-center">
             <p className="text-lg text-white/90">
               Join thousands of students acing their exams! 🎯
             </p>
-            <Link
-              href="/login"
-              className="block w-full py-4 px-6 rounded-full text-lg font-semibold bg-gradient-to-r from-[#4338ca] to-[#6366f1] text-white hover:from-[#4338ca]/90 hover:to-[#6366f1]/90 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#1e1b4b]"
-            >
-              Login Here
-            </Link>
-          </div>
-
-          {/* Download Buttons - Mobile Only */}
-          <div className="lg:hidden space-y-4">
             <a
               href="https://apps.apple.com/za/app/past-papers-exam-quiz/id6742684696"
               target="_blank"
@@ -139,6 +131,19 @@ export default function LandingPage() {
               <IoLogoGooglePlaystore size={24} />
               <span className="font-semibold">Get it on Google Play</span>
             </a>
+          </div>
+
+          <div className="text-center space-y-4">
+            <p className="text-lg text-white/90">
+              OR
+            </p>
+            
+            <Link
+              href="/login"
+              className="block w-full py-4 px-6 rounded-full text-lg font-semibold bg-gradient-to-r from-[#4338ca] to-[#6366f1] text-white hover:from-[#4338ca]/90 hover:to-[#6366f1]/90 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#1e1b4b]"
+            >
+              Login Here
+            </Link>
           </div>
 
           <div className="text-center">
