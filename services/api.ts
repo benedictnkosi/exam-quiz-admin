@@ -604,6 +604,37 @@ export async function checkAnswer(
   return data
 }
 
+
+export async function checkRecordingAnswer(
+  uid: string,  
+  questionId: number,
+  answer: string,
+  duration: number
+): Promise<CheckAnswerResponse> {
+  const response = await fetch(`${API_BASE_URL}/learner/check-answer`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      uid,
+      question_id: questionId,
+      answer,
+      answers: [],
+      requesting_type: 'real',
+      duration: duration,
+      mode: 'recording'
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to check answer')
+  }
+
+  const data = await response.json()
+  return data
+}
+
 export async function getLearner(uid: string): Promise<{
   id: number
   uid: string
@@ -737,6 +768,34 @@ export async function getRandomQuestion(
   try {
     const response = await fetch(
       `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=${paper}&uid=${uid}&question_id=0&platform=web`
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch random question')
+    }
+
+    const data = await response.json()
+    console.log("data ", data)
+    if (!data) {
+      throw new Error('No questions available')
+    }
+
+    // The API returns the question directly, not wrapped in a question property
+    return data
+  } catch (error) {
+    console.error('Error fetching random question:', error)
+    throw error
+  }
+}
+
+export async function getRecordignRandomQuestion(
+  subjectName: string,
+  paper: string,
+  uid: string
+): Promise<DetailedQuestion> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=${paper}&uid=${uid}&question_id=0&platform=web&mode=recording`
     )
 
     if (!response.ok) {
