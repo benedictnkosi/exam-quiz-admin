@@ -1,6 +1,8 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://examquiz.dedicated.co.za/public/learn'
 export const HOST_URL = process.env.NEXT_PUBLIC_HOST_URL || 'https://examquiz.dedicated.co.za'
 
+// export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/public/learn'
+// export const HOST_URL = process.env.NEXT_PUBLIC_HOST_URL || 'http://127.0.0.1:8000'
 // Types
 export interface Grade {
   id: number

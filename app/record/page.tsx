@@ -9,7 +9,6 @@ import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 import { logAnalyticsEvent } from '@/lib/analytics'
 import { motion, AnimatePresence } from "framer-motion"
-import confetti from "canvas-confetti"
 import { Star } from "lucide-react"
 
 // Interfaces
@@ -217,27 +216,8 @@ interface BadgeModalProps {
 const BadgeModal = ({ isVisible, onClose, badge }: BadgeModalProps) => {
     const [hasClicked, setHasClicked] = useState<boolean>(false)
 
-    useEffect(() => {
-        if (isVisible && badge) {
-            // Trigger confetti when badge appears
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-            })
-
-        }
-    }, [isVisible, badge])
-
     const handleClick = () => {
         setHasClicked(true)
-
-        // More confetti on click!
-        confetti({
-            particleCount: 150,
-            spread: 100,
-            origin: { y: 0.7 },
-        })
 
         // Fade out after celebration
         setTimeout(() => {
@@ -389,31 +369,18 @@ function cleanAnswer(answer: string): string {
 
 function getRandomSuccessMessage(): string {
     const messages = [
-        "🎯 Brilliant! Keep it up!",
-        "⭐ You're on fire!",
-        "🌟 Outstanding work!",
-        "💪 You're crushing it!",
-        "🎨 Masterfully done!",
-        "🚀 Excellent progress!",
-        "🌈 You're a star!",
-        "🎉 Perfect answer!"
+        "Brilliant! Keep it up!",
+        "You're on fire!",
+        "Outstanding work!",
+        "You're crushing it!",
+        "Masterfully done!",
+        "Excellent progress!",
+        "You're a star!",
+        "Perfect answer!"
     ]
     return messages[Math.floor(Math.random() * messages.length)]
 }
 
-function getRandomWrongMessage(): string {
-    const messages = [
-        "🎯 Almost there! Let's learn from this.",
-        "💡 Good try! Keep learning.",
-        "📚 Practice makes perfect!",
-        "🌱 Every mistake helps us grow!",
-        "🤔 Let's understand this better.",
-        "💪 Don't give up! You've got this!",
-        "🌟 Keep going! You're learning!",
-        "🎨 Learning is a journey!"
-    ]
-    return messages[Math.floor(Math.random() * messages.length)]
-}
 
 function getRandomLoadingMessage(): string {
     const messages = [
@@ -433,7 +400,6 @@ let isOpeningDollarSign = false
 let isClosingDollarSignNextLine = false
 
 function renderMixedContent(text: string, isDark: boolean = false) {
-    console.log('text', text)
     if (!text) return null;
 
     if (text.includes('$') && text.trim().length < 3 && !isOpeningDollarSign && !isClosingDollarSignNextLine) {
@@ -691,6 +657,8 @@ export default function QuizPage() {
     // Add audio refs
     const correctAudioRef = typeof Audio !== 'undefined' ? new Audio('/audio/correct_answer.mp3') : null
     const wrongAudioRef = typeof Audio !== 'undefined' ? new Audio('/audio/bad_answer.mp3') : null
+    const timer1AudioRef = typeof Audio !== 'undefined' ? new Audio('/audio/timer1.wav') : null
+    const timer2AudioRef = typeof Audio !== 'undefined' ? new Audio('/audio/timer2.wav') : null
 
     // Add function to play sound
     const playSound = (isCorrect: boolean) => {
@@ -702,6 +670,16 @@ export default function QuizPage() {
             correctAudioRef.play().catch(error => console.error('Error playing sound:', error))
         } else if (!isCorrect && wrongAudioRef) {
             wrongAudioRef.play().catch(error => console.error('Error playing sound:', error))
+        }
+    }
+
+    // Add function to play timer sound
+    const playTimerSound = (duration: number) => {
+        // Check if sound is enabled in localStorage
+
+        const audioRef = duration === 10 ? timer1AudioRef : timer2AudioRef
+        if (audioRef) {
+            audioRef.play().catch(error => console.error('Error playing timer sound:', error))
         }
     }
 
@@ -748,6 +726,13 @@ export default function QuizPage() {
     const [nextQuestionTimer, setNextQuestionTimer] = useState<NodeJS.Timeout | null>(null)
     const [isPlaying, setIsPlaying] = useState(false)
     const audioRef = useRef<HTMLAudioElement | null>(null)
+    const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('soundEnabled') !== 'false'
+        }
+        return true
+    })
+    const [answerAudioBlob, setAnswerAudioBlob] = useState<Blob | null>(null)
 
     const [messageModal, setMessageModal] = useState<{
         isVisible: boolean;
@@ -781,17 +766,6 @@ export default function QuizPage() {
     const [isBadgeModalVisible, setIsBadgeModalVisible] = useState(false);
 
     const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'https://api.examquiz.co.za'
-
-    // Add useEffect for streak modal confetti
-    useEffect(() => {
-        if (showStreakModal) {
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-            });
-        }
-    }, [showStreakModal]);
 
     const startTimer = () => {
         // Implement timer logic here
@@ -873,15 +847,17 @@ export default function QuizPage() {
                 setLoading(false)
 
                 // Speak the question and start timer only after speech is complete
-                const textToSpeak = `${questionData.context}. ${questionData.question}. ${Object.values(questionData.options).join(". ")}`;
+                const textToSpeak = [
+                    questionData.context,
+                    questionData.question,
+                    Object.values(questionData.options).join(". ")
+                ].filter(Boolean).join(". ");
+
                 try {
                     await speakText(textToSpeak);
                     setSpeechFinished(true); // Set speechFinished to true after speech is complete 
-                    //startTimer(); // Start timer only after speech is complete
                 } catch (error) {
                     console.error('Error in text-to-speech:', error);
-                    //setSpeechFinished(true); // Set speechFinished to true even if speech fails
-                    //startTimer(); // Start timer even if speech fails
                 }
             }
 
@@ -908,11 +884,91 @@ export default function QuizPage() {
         }
     }
 
+    // Initialize audio element
+    useEffect(() => {
+        if (typeof Audio !== 'undefined') {
+            audioRef.current = new Audio();
+            audioRef.current.onended = () => setIsPlaying(false);
+            audioRef.current.onerror = (e) => console.error('Audio playback error:', e);
+        }
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, []);
+
+    // Function to play audio blob
+    const playAudioBlob = async (blob: Blob) => {
+        try {
+            if (!audioRef.current) {
+                console.log('Creating new Audio element');
+                audioRef.current = new Audio();
+            }
+
+            const audioUrl = URL.createObjectURL(blob);
+            console.log('Created audio URL:', audioUrl);
+
+            audioRef.current.src = audioUrl;
+            setIsPlaying(true);
+
+            await audioRef.current.play();
+            console.log('Audio started playing');
+
+            // Clean up the URL after playback
+            audioRef.current.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+                setIsPlaying(false);
+                console.log('Audio finished playing');
+            };
+        } catch (error) {
+            console.error('Error playing audio:', error);
+            setIsPlaying(false);
+        }
+    };
+
     // Add useEffect for auto-answering
     useEffect(() => {
         if (currentQuestion && !isAnswered && speechFinished) {
             // Reset countdown
-            setCountdown(10)
+            const timerDuration = isSoundEnabled ? 10 : 20;
+            setCountdown(timerDuration)
+
+            // Play timer sound
+            playTimerSound(timerDuration)
+
+            // Pre-fetch the answer speech
+            if (isSoundEnabled) {
+                console.log('Fetching answer speech...');
+                const successMessage = getRandomSuccessMessage();
+                const textToSpeak = `${successMessage}. The answer is: ${currentQuestion.answer}`;
+                fetch(`/api/text-to-speech`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: textToSpeak,
+                        voice: 'alloy',
+                        speed: 1.0
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to convert text to speech');
+                    }
+                    console.log('Answer speech fetched successfully');
+                    return response.blob();
+                })
+                .then(blob => {
+                    console.log('Answer speech blob received');
+                    setAnswerAudioBlob(blob);
+                })
+                .catch(error => {
+                    console.error('Error pre-fetching answer speech:', error);
+                });
+            }
 
             // Start countdown interval
             const countdownInterval = setInterval(() => {
@@ -929,15 +985,21 @@ export default function QuizPage() {
                 clearTimeout(autoAnswerTimer)
             }
 
-            // Set new timer for 10 seconds
-            const timer = setTimeout(() => {
+            // Set new timer based on sound toggle state
+            const timer = setTimeout(async () => {
                 if (!isAnswered && currentQuestion) {
-                    // Get a random option
-                    const options = Object.values(currentQuestion.options)
-                    const randomAnswer = options[Math.floor(Math.random() * options.length)]
-                    handleAnswer(randomAnswer)
+                    // Get the correct answer from the question
+                    const correctAnswer = currentQuestion.answer;
+                    
+                    // Play the pre-fetched answer audio if available
+                    if (isSoundEnabled && answerAudioBlob) {
+                        console.log('Playing pre-fetched answer audio');
+                        await playAudioBlob(answerAudioBlob);
+                    }
+                    
+                    handleAnswer(correctAnswer)
                 }
-            }, 10000)
+            }, timerDuration * 1000)
 
             setAutoAnswerTimer(timer)
 
@@ -947,9 +1009,25 @@ export default function QuizPage() {
                     clearTimeout(timer)
                 }
                 clearInterval(countdownInterval)
+                // Stop any playing timer sounds
+                if (timer1AudioRef) {
+                    timer1AudioRef.pause()
+                    timer1AudioRef.currentTime = 0
+                }
+                if (timer2AudioRef) {
+                    timer2AudioRef.pause()
+                    timer2AudioRef.currentTime = 0
+                }
+                // Clear the pre-fetched audio blob
+                setAnswerAudioBlob(null)
+                // Stop any playing audio
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.src = '';
+                }
             }
         }
-    }, [currentQuestion, isAnswered, speechFinished])
+    }, [currentQuestion, isAnswered, speechFinished, isSoundEnabled])
 
     // Modify the useEffect for auto-progression to include countdown
     useEffect(() => {
@@ -1000,8 +1078,6 @@ export default function QuizPage() {
             setIsAnswerLoading(true)
             setSelectedAnswer(answer)
 
-            const response = await checkRecordingAnswer(user.uid, currentQuestion.id, answer, duration)
-
             // Log analytics event
             logAnalyticsEvent('submit_answer', {
                 user_id: user.uid,
@@ -1010,16 +1086,13 @@ export default function QuizPage() {
                 subject: currentQuestion.subject?.name,
                 grade: currentQuestion.subject?.grade?.number,
                 duration: duration,
-                streak: response.streak,
+                streak: 1, // Default streak
                 points: 1 // Always award 1 point
             });
 
             // Play sound for correct answer
             playSound(true)
-            setCorrectAnswer(response.correctAnswer)
-
-            // Check for new badges
-            checkForNewBadges(user.uid);
+            setCorrectAnswer(currentQuestion.answer)
 
             // Always award 1 point
             const points = 1
@@ -1033,15 +1106,13 @@ export default function QuizPage() {
             setPoints(points + 1)
 
             // Handle points and streak display
-            if (response.streakUpdated) {
-                setEarnedPoints(points)
-                setShowPoints(true)
-                setTimeout(() => {
-                    setShowPoints(false)
-                    setCurrentStreak(response.streak)
-                    setShowStreakModal(true)    
-                }, 5000)
-            }
+            setEarnedPoints(points)
+            setShowPoints(true)
+            setTimeout(() => {
+                setShowPoints(false)
+                setCurrentStreak(1) // Default streak
+                setShowStreakModal(true)    
+            }, 5000)
 
             // Update local stats immediately
             if (stats) {
@@ -1099,701 +1170,8 @@ export default function QuizPage() {
         }
     }
 
-    const reportIssue = () => {
-        setIsReportModalVisible(true)
-    }
-
-    const handleSubmitReport = async () => {
-        if (!reportComment.trim()) {
-            showMessage('Please enter a comment', 'error')
-            return
-        }
-
-        try {
-            setIsSubmitting(true)
-            await setQuestionStatus({
-                question_id: currentQuestion?.id || 0,
-                status: 'rejected',
-                email: user?.email || '',
-                uid: user?.uid || '',
-                comment: reportComment
-            })
-
-            // Close the report modal and show thank you modal
-            setIsReportModalVisible(false)
-            setIsThankYouModalVisible(true)
-            setReportComment('')
-
-        } catch (error) {
-            console.error('Error reporting issue:', error)
-            showMessage('Failed to report issue', 'error')
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
-
-    const fetchAIExplanation = async (questionId: number) => {
-        setIsLoadingExplanation(true)
-        try {
-            const response = await fetch(
-                `${API_BASE_URL}/question/ai-explanation?question_id=${questionId}`
-            )
-            const data = await response.json()
-            if (data.status === "OK") {
-                let explanation = data.explanation
-                    .replace(/\\n/g, '\\newline')
-                    .replace(/\\\(/g, '$')
-                    .replace(/\\\),/g, '$')
-                    .replace(/\[/g, '$')
-                    .replace(/\]/g, '$')
-                    .replace(/\\\)\./g, '$')
-                    .replace(/\\\)/g, '$')
-                    .replace(/\\\\/g, '\\')
-                    .replace(/\\text\{([^}]+)\}/g, '\\text{$1}')
-                    .replace(/\[/g, '$')
-                    .replace(/\]/g, '$')
-                    .replace(/\\[[\]]/g, '$')
-                    // Remove newlines between $ signs to keep LaTeX on one line
-                    .replace(/\$\s*\n\s*([^$]+)\s*\n\s*\$/g, '$ $1 $')
-
-                setAiExplanation(explanation)
-                setIsExplanationModalVisible(true)
-            }
-        } catch (error) {
-            console.error('Error fetching AI explanation:', error)
-            showMessage('Could not load AI explanation', 'error')
-        } finally {
-            setIsLoadingExplanation(false)
-        }
-    }
-
-    // Add fetchFavoriteQuestions function
-    const fetchFavoriteQuestions = async () => {
-        if (!user?.uid || !subjectName) return;
-
-        try {
-            setIsFavoritesLoading(true)
-            const response = await fetch(
-                `${API_BASE_URL}/question/favorite?uid=${user.uid}&subject_name=${subjectName}`
-            )
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch favorites')
-            }
-
-
-            const data = await response.json()
-            if (data.status === "OK") {
-                setFavoriteQuestions(data.data || [])
-            }
-        } catch (error) {
-            console.error('Error fetching favorites:', error)
-            showMessage('Failed to load favorite questions', 'error')
-        } finally {
-            setIsFavoritesLoading(false)
-        }
-    }
-
-    // Call fetchFavoriteQuestions when component mounts and when user changes
-    useEffect(() => {
-        if (user?.uid && subjectName) {
-            fetchFavoriteQuestions();
-        }
-    }, [user?.uid, subjectName]);
-
-    // Add handleFavoriteQuestion function
-    const handleFavoriteQuestion = async () => {
-        if (!user?.uid || !currentQuestion) return;
-
-        // Optimistically update UI
-        setIsCurrentQuestionFavorited(true)
-        setIsFavoriting(true)
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/question/favorite`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    question_id: currentQuestion.id
-                })
-            })
-
-            const data = await response.json()
-            if (!response.ok) {
-                if (data.message?.includes('You can only favorite up to')) {
-                    showMessage('You can only favorite up to 20 questions per paper', 'error')
-                }
-                setIsCurrentQuestionFavorited(false)
-            }
-
-            if (data.status === "OK") {
-                await fetchFavoriteQuestions()
-            } else {
-                setIsCurrentQuestionFavorited(false)
-            }
-        } catch (error) {
-            setIsCurrentQuestionFavorited(false)
-            console.error('Error favoriting question:', error)
-            showMessage('Failed to favorite question', 'error')
-        } finally {
-            setIsFavoriting(false)
-        }
-    }
-
-    // Add handleUnfavoriteQuestion function
-    const handleUnfavoriteQuestion = async (favoriteId: string) => {
-        if (!user?.uid) return;
-
-        // Optimistically update UI
-        setIsCurrentQuestionFavorited(false)
-        setIsFavoriting(true)
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/question/favorite`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    favorite_id: favoriteId
-                })
-            })
-
-            if (!response.ok) {
-                setIsCurrentQuestionFavorited(true)
-                throw new Error('Failed to unfavorite question')
-            }
-
-            const data = await response.json()
-            if (data.status === "OK") {
-                await fetchFavoriteQuestions()
-            } else {
-                setIsCurrentQuestionFavorited(true)
-            }
-        } catch (error) {
-            setIsCurrentQuestionFavorited(true)
-            console.error('Error unfavoriting question:', error)
-            showMessage('Failed to remove question from favorites', 'error')
-        } finally {
-            setIsFavoriting(false)
-        }
-    }
-
-    // Add effect to check if current question is favorited
-    useEffect(() => {
-        if (currentQuestion) {
-            const isFavorited = favoriteQuestions.some(fav => fav.questionId === currentQuestion.id)
-            setIsCurrentQuestionFavorited(isFavorited)
-        }
-    }, [currentQuestion, favoriteQuestions])
-
-    const showMessage = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-        setMessageModal({ isVisible: true, message, type });
-    };
-
-    const handleRestart = async () => {
-        if (!user?.uid || !subjectName || !selectedPaper) return;
-
-        try {
-            setLoading(true);
-
-            // Call API to remove results
-            const response = await fetch(`${API_BASE_URL}/learner/remove-results`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    subject_name: subjectName + " " + selectedPaper
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to reset progress');
-            }
-
-            // Reset states
-            setCurrentQuestion(null);
-            setSelectedAnswer(null);
-            setShowFeedback(false);
-            setIsCorrect(null);
-            setNoMoreQuestions(false);
-            setIsRestartModalVisible(false);
-
-            // Load new question
-            await loadRandomQuestion(selectedPaper);
-
-            // Show success message
-            showMessage('Progress reset successfully', 'success');
-
-        } catch (error) {
-            console.error('Error restarting quiz:', error);
-            showMessage('Failed to reset progress', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const loadSpecificQuestion = async (questionId: number) => {
-        if (!user?.uid || !subjectName) {
-            return;
-        }
-        try {
-            setIsQuizStarted(true);
-            setSelectedLearningType('quiz');
-            setLoading(true);
-            // Close the sidebar on mobile when a favorite is clicked
-            setIsSidebarVisible(false);
-            // Set that this question is from favorites
-            setIsFromFavorites(true);
-
-            const response = await fetch(
-                `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=P1&uid=${user.uid}&question_id=${questionId}&platform=web`
-            );
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch question');
-            }
-
-            const data = await response.json();
-
-            if (data) {
-                // The response is already in the correct format, just need to ensure options structure
-                const questionData = {
-                    ...data,
-                    options: data.options || {
-                        option1: '',
-                        option2: '',
-                        option3: '',
-                        option4: ''
-                    }
-                };
-
-                setCurrentQuestion(questionData);
-
-                // Set the selectedPaper based on the question's subject name
-                const paperName = data.subject.name.split(" ").pop() || 'P1';
-                setSelectedPaper(paperName);
-
-                // Check if this question is in favorites and set the star accordingly
-                const isFavorited = favoriteQuestions.some(fav => fav.questionId === questionId);
-                setIsCurrentQuestionFavorited(isFavorited);
-
-                setNoMoreQuestions(false);
-
-                // Reset the UI state for a new question
-                setSelectedAnswer(null);
-                setShowFeedback(false);
-                setIsCorrect(null);
-                setShowExplanation(false);
-
-                // Scroll to top of the question
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            } else {
-                throw new Error('Question not found');
-            }
-        } catch (error) {
-            console.error('Error loading favorite question:', error);
-            showMessage('Failed to load saved question', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Add checkForNewBadges function
-    const checkForNewBadges = async (uid: string) => {
-        try {
-            const response = await fetch(`${HOST_URL}/api/badges/check/${uid}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            const data = await response.json();
-            
-            if (data.status === "OK" && data.new_badges && data.new_badges.length > 0) {
-                // Show badges in sequence with a delay between each
-                data.new_badges.forEach((badge: { name: string; rules: string; image: string }, index: number) => {
-                    setTimeout(() => {
-                        setNewBadge({
-                            name: badge.name,
-                            description: badge.rules,
-                            image: badge.image
-                        });
-                        setIsBadgeModalVisible(true);
-                    }, 10000 + (index * 5000)); // Show each badge 5 seconds after the previous one
-                });
-            }
-        } catch (error) {
-            console.error('Error checking badges:', error);
-        }
-    };
-
-    // Add fetchNotes function
-    const fetchNotes = async () => {
-        if (!user?.uid || !subjectName) return;
-
-        try {
-            const response = await fetch(
-                `${API_BASE_URL}/notes?uid=${user.uid}&subject_name=${subjectName}`
-            );
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch notes');
-            }
-
-            const data = await response.json();
-            if (data.status === "OK") {
-                // Flatten the notes array and remove duplicates
-                const uniqueNotes = data.notes.reduce((acc: Note[], note: Note) => {
-                    // Check if we already have this note
-                    if (!acc.find(n => n.id === note.id)) {
-                        acc.push(note);
-                    }
-                    return acc;
-                }, []);
-                
-                // Sort notes by creation date (newest first)
-                uniqueNotes.sort((a: Note, b: Note) => 
-                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-                );
-                
-                setNotes(uniqueNotes);
-            }
-        } catch (error) {
-            console.error('Error fetching notes:', error);
-            showMessage('Failed to load notes', 'error');
-        }
-    };
-
-    // Add createNote function
-    const createNote = async () => {
-        if (!user?.uid || !subjectName || !newNoteText.trim()) return;
-
-        try {
-            setIsCreatingNote(true);
-            const response = await fetch(`${API_BASE_URL}/notes`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    text: newNoteText,
-                    subject_name: subjectName
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create note');
-            }
-
-            const data = await response.json();
-            if (data.status === "OK") {
-                setNotes(prevNotes => [...prevNotes, data.note]);
-                setNewNoteText('');
-            }
-        } catch (error) {
-            console.error('Error creating note:', error);
-            showMessage('Failed to create note', 'error');
-        } finally {
-            setIsCreatingNote(false);
-        }
-    };
-
-    // Add useEffect to fetch notes when component mounts and when subject changes
-    useEffect(() => {
-        if (user?.uid && subjectName) {
-            fetchNotes();
-        }
-    }, [user?.uid, subjectName]);
-
-    // Add createTodo function
-    const createTodo = async () => {
-        if (!user?.uid || !subjectName || !newTodoText.trim() || !todoDueDate) return;
-
-        try {
-            const response = await fetch(`${HOST_URL}/api/todos`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    learnerUid: user.uid,
-                    title: newTodoText,
-                    subjectName: subjectName,
-                    dueDate: todoDueDate
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const newTodo: Todo = {
-                    id: data.todo.id,
-                    title: data.todo.title,
-                    completed: data.todo.status === 'completed',
-                    created_at: data.todo.created_at,
-                    due_date: new Date(data.todo.due_date).toISOString().split('T')[0]
-                };
-                setTodos(prevTodos => [...prevTodos, newTodo]);
-                setNewTodoText('');
-                setTodoDueDate('');
-            }
-        } catch (error) {
-            console.error('Error creating todo:', error);
-            showMessage('Failed to create todo', 'error');
-        }
-    };
-
-    // Add updateTodo function
-    const updateTodo = async (todoId: number, updates: {
-        title?: string;
-        dueDate?: string;
-        status?: 'pending' | 'completed';
-    }) => {
-        if (!user?.uid) return;
-
-        try {
-            const response = await fetch(`${HOST_URL}/api/todos/${todoId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    learnerUid: user.uid,
-                    ...updates
-                })
-            });
-
-            if (response.ok) {
-                setTodos(prevTodos => prevTodos.map(todo => 
-                    todo.id === todoId ? {
-                        ...todo,
-                        title: updates.title || todo.title,
-                        completed: updates.status === 'completed',
-                        due_date: updates.dueDate || todo.due_date
-                    } : todo
-                ));
-            }
-        } catch (error) {
-            console.error('Error updating todo:', error);
-            showMessage('Failed to update todo', 'error');
-        }
-    };
-
-    // Update toggleTodoStatus function to use updateTodo
-    const toggleTodoStatus = async (todoId: number) => {
-        const todo = todos.find(t => t.id === todoId);
-        if (!todo) return;
-
-        await updateTodo(todoId, {
-            status: todo.completed ? 'pending' : 'completed'
-        });
-    };
-
-    // Add deleteTodo function
-    const deleteTodo = async (todoId: number) => {
-        if (!user?.uid) return;
-
-        try {
-            const response = await fetch(`${HOST_URL}/api/todos/${todoId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    learnerUid: user.uid
-                })
-            });
-
-            if (response.ok) {
-                setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
-                setTodoToDelete(null);
-            }
-        } catch (error) {
-            console.error('Error deleting todo:', error);
-            showMessage('Failed to delete task', 'error');
-        }
-    };
-
-    // Add useEffect to fetch todos when component mounts and when subject changes
-    useEffect(() => {
-        if (user?.uid && subjectName) {
-            fetchNotes();
-        }
-    }, [user?.uid, subjectName]);
-
-    // Add deleteNote function
-    const deleteNote = async (noteId: number) => {
-        if (!user?.uid) return;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    learnerUid: user.uid
-                })
-            });
-
-            if (response.ok) {
-                setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
-            }
-        } catch (error) {
-            console.error('Error deleting note:', error);
-            showMessage('Failed to delete note', 'error');
-        }
-    };
-
-    // Add fetchTodos function
-    const fetchTodos = async () => {
-        if (!user?.uid || !subjectName) return;
-
-        try {
-            const response = await fetch(`${HOST_URL}/api/todos?learnerUid=${user.uid}&subjectName=${subjectName}`);
-            if (response.ok) {
-                const data = await response.json();
-                const mappedTodos: Todo[] = data.map((todo: any) => ({
-                    id: todo.id,
-                    title: todo.title,
-                    completed: todo.status === 'completed',
-                    created_at: todo.created_at,
-                    due_date: todo.due_date ? new Date(todo.due_date).toISOString().split('T')[0] : undefined
-                }));
-                
-                // Sort todos by due date
-                mappedTodos.sort((a, b) => {
-                    if (!a.due_date && !b.due_date) return 0;
-                    if (!a.due_date) return 1;
-                    if (!b.due_date) return -1;
-                    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
-                });
-                
-                setTodos(mappedTodos);
-            }
-        } catch (error) {
-            console.error('Error fetching todos:', error);
-            showMessage('Failed to fetch todos', 'error');
-        }
-    };
-
-    // Update useEffect to fetch todos when component mounts and when user changes
-    useEffect(() => {
-        if (user?.uid) {
-            fetchTodos();
-        }
-    }, [user?.uid]);
-
-    // Add updateNote function
-    const updateNote = async (noteId: number, newText: string) => {
-        if (!user?.uid) return;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/notes/${noteId}/update`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    text: newText,
-                    subject_name: subjectName                })
-            });
-
-            if (response.ok) {
-                setNotes(prevNotes => prevNotes.map(note => 
-                    note.id === noteId ? { ...note, text: newText } : note
-                ));
-                setNoteToEdit(null);
-                setEditNoteText('');
-            }
-        } catch (error) {
-            console.error('Error updating note:', error);
-            showMessage('Failed to update note', 'error');
-        }
-    };
-
-    // Add useEffect to fetch notes when component mounts and when subject changes
-    useEffect(() => {
-        if (user?.uid && subjectName) {
-            fetchNotes();
-        }
-    }, [user?.uid, subjectName]);
-
-    
-
-    // Add useEffect to fetch todos when component mounts and when subject changes
-    useEffect(() => {
-        if (user?.uid && subjectName) {
-            fetchNotes();
-        }
-    }, [user?.uid, subjectName]);
-
-    
-
    
 
-    // Update useEffect to fetch todos when component mounts and when user changes
-    useEffect(() => {
-        if (user?.uid) {
-            fetchTodos();
-        }
-    }, [user?.uid]);
-
-    const [editingTodo, setEditingTodo] = useState<{id: number, title: string, due_date: string} | null>(null);
-
-    const handleEditTodo = (todo: Todo) => {
-        setEditingTodo({
-            id: todo.id,
-            title: todo.title,
-            due_date: todo.due_date || ''
-        });
-    };
-
-    const handleCancelEdit = () => {
-        setEditingTodo(null);
-    };
-
-    const handleUpdateTodo = async () => {
-        if (!editingTodo) return;
-
-        try {
-            const response = await fetch(`${HOST_URL}/api/todos/${editingTodo.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    learnerUid: user?.uid,
-                    title: editingTodo.title,
-                    dueDate: editingTodo.due_date
-                })
-            });
-
-            if (response.ok) {
-                setTodos(prevTodos => prevTodos.map(todo => 
-                    todo.id === editingTodo.id 
-                        ? { ...todo, title: editingTodo.title, due_date: editingTodo.due_date }
-                        : todo
-                ));
-                setEditingTodo(null);
-                showMessage('Task updated successfully', 'success');
-            }
-        } catch (error) {
-            console.error('Error updating todo:', error);
-            showMessage('Failed to update task', 'error');
-        }
-    };
 
     // Add the countdown display in the question card
     const renderCountdown = () => {
@@ -1810,6 +1188,11 @@ export default function QuizPage() {
     }
 
     const speakText = async (text: string): Promise<void> => {
+        // Check if sound is enabled
+        if (!isSoundEnabled) {
+            return Promise.resolve();
+        }
+
         return new Promise((resolve, reject) => {
             try {
                 fetch(`/api/text-to-speech`, {
@@ -1874,37 +1257,6 @@ export default function QuizPage() {
                 reject(error);
             }
         });
-    };
-
-    // Add audio element to the component
-    useEffect(() => {
-        audioRef.current = new Audio();
-        audioRef.current.onended = () => setIsPlaying(false);
-
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current = null;
-            }
-        };
-    }, []);
-
-    // Add speak button to the question card
-    const renderSpeakButton = () => {
-        if (!currentQuestion || isPlaying) return null;
-
-        return (
-            <button
-                onClick={() => {
-                    const textToSpeak = `${currentQuestion.question}. ${Object.values(currentQuestion.options).join(". ")}`;
-                    speakText(textToSpeak);
-                }}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Listen to question"
-            >
-                🔊
-            </button>
-        );
     };
 
     // Remove the initial loading check
@@ -2067,14 +1419,33 @@ export default function QuizPage() {
                                             <option value={20}>20 Questions</option>
                                         </select>
                                     </div>
+
+                                    {/* Sound Toggle */}
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium text-white">Sound Effects</span>
+                                            <button
+                                                onClick={() => {
+                                                    const newSoundEnabled = !isSoundEnabled
+                                                    setIsSoundEnabled(newSoundEnabled)
+                                                    localStorage.setItem('soundEnabled', String(newSoundEnabled))
+                                                }}
+                                                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white/40"
+                                                style={{
+                                                    backgroundColor: isSoundEnabled ? 'rgb(59 130 246)' : 'rgb(75 85 99)'
+                                                }}
+                                            >
+                                                <span
+                                                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                                                    style={{
+                                                        transform: isSoundEnabled ? 'translateX(26px)' : 'translateX(1px)'
+                                                    }}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        
-
-                        
-                        
-
-                    
                     </div>
 
                     {/* Right Panel - Quiz Content */}
@@ -2182,7 +1553,24 @@ export default function QuizPage() {
                                         examquiz.co.za
                                         <span className="ml-4">🎓</span>
                                     </h1>
-                                    <div className="flex items-center justify-center gap-4">
+                                    <div className="flex flex-col items-center mt-1">
+                                        <div className="flex flex-wrap justify-center">
+                                            <Image 
+                                                src="/images/download-app.png" 
+                                                alt="Download our app" 
+                                                width={500} 
+                                                height={100} 
+                                                className="w-auto h-auto"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                {currentQuestion && (
+                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-0 lg:p-6 mb-8 mt-12 lg:mt-0 relative">
+                                        {renderCountdown()}
+                                       
+                                        {/* Question Metadata */}
+                                        <div className="flex items-center justify-center gap-4">
                                         <Image
                                             src={getSubjectIcon(subjectName || '')}
                                             alt={subjectName || ''}
@@ -2191,15 +1579,7 @@ export default function QuizPage() {
                                             className="rounded-full"
                                         />
                                         <h2 className="text-2xl font-bold text-white">{subjectName}</h2>
-                                    </div>
-                                </div>
-                                {currentQuestion && (
-                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-0 lg:p-6 mb-8 mt-12 lg:mt-0 relative">
-                                        {renderCountdown()}
-                                        {renderSpeakButton()}
-                                        {/* Question Metadata */}
-                                        <h2 className="text-2xl font-bold text-white mb-4">{subjectName}</h2>
-                                        <div className="flex flex-wrap gap-3 mb-4 text-sm p-6">
+                                    </div>                                        <div className="flex flex-wrap gap-3 mb-4 text-sm p-6">
                                             <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
                                                 <span className="text-xs">📅</span>
                                                 <span>Term {currentQuestion.term}</span>
@@ -2257,26 +1637,7 @@ export default function QuizPage() {
                                                         </div>
                                                     </>
                                                 )}
-                                                {currentQuestion.image_path && currentQuestion.image_path !== 'NULL' && (
-                                                    <div className="mt-4 flex justify-center">
-                                                        <button
-                                                            onClick={() => {
-                                                                setZoomImageUrl(currentQuestion.image_path || null)
-                                                                setIsZoomModalVisible(true)
-                                                            }}
-                                                            className="w-full max-w-2xl"
-                                                        >
-                                                            <Image
-                                                                src={`${IMAGE_BASE_URL}${currentQuestion.image_path}`}
-                                                                alt="Context Image"
-                                                                width={400}
-                                                                height={300}
-                                                                className="rounded-lg mx-auto"
-                                                                onLoad={() => setIsImageLoading(false)}
-                                                            />
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                
                                             </div>
                                         )}
 
@@ -2355,27 +1716,6 @@ export default function QuizPage() {
                                                         </div>
                                                     )}
 
-                                                    {/* Context Image */}
-                                                    {currentQuestion.image_path && currentQuestion.image_path !== 'NULL' && (
-                                                        <div className="mb-6 flex justify-center">
-                                                            <button
-                                                                onClick={() => {
-                                                                    setZoomImageUrl(currentQuestion.image_path || null)
-                                                                    setIsZoomModalVisible(true)
-                                                                }}
-                                                                className="w-full max-w-2xl"
-                                                            >
-                                                                <Image
-                                                                    src={`${IMAGE_BASE_URL}${currentQuestion.image_path}`}
-                                                                    alt="Context Image"
-                                                                    width={400}
-                                                                    height={300}
-                                                                    className="rounded-lg mx-auto"
-                                                                    onLoad={() => setIsImageLoading(false)}
-                                                                />
-                                                            </button>
-                                                        </div>
-                                                    )}
 
                                                     {/* Question */}
                                                     <div className="mb-6">
@@ -2385,61 +1725,9 @@ export default function QuizPage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Question Image */}
-                                                    {currentQuestion.question_image_path && currentQuestion.question_image_path !== 'NULL' && (
-                                                        <div className="mb-6 flex justify-center">
-                                                            <button
-                                                                onClick={() => {
-                                                                    setZoomImageUrl(currentQuestion.question_image_path || null)
-                                                                    setIsZoomModalVisible(true)
-                                                                }}
-                                                                className="w-full max-w-2xl"
-                                                            >
-                                                                <Image
-                                                                    src={`${IMAGE_BASE_URL}${currentQuestion.question_image_path}`}
-                                                                    alt="Question Image"
-                                                                    width={400}
-                                                                    height={300}
-                                                                    className="rounded-lg mx-auto"
-                                                                    onLoad={() => setIsImageLoading(false)}
-                                                                />
-                                                            </button>
-                                                        </div>
-                                                    )}
-
-                                                    {/* AI Explanation */}
-                                                    <div className="mt-8">
-                                                        <div className="text-gray-200 space-y-4">
-                                                            {currentQuestion.ai_explanation?.split('\n').map((line, index) => {
-
-                                                                const trimmedLine = line.trim();
-                                                                if (trimmedLine.startsWith('-')) {
-                                                                    const content = trimmedLine.substring(1).trim();
-                                                                    const indentLevel = line.indexOf('-') / 2;
-
-                                                                    return (
-                                                                        <div
-                                                                            key={index}
-                                                                            className="flex items-start gap-3"
-                                                                            style={{ marginLeft: `${indentLevel * 20}px` }}
-                                                                        >
-                                                                            <span className="text-white mt-1">
-                                                                                {indentLevel > 0 ? '🎯' : '✅'}
-                                                                            </span>
-                                                                            <div className="flex-1">
-                                                                                {renderMixedContent(content, true)}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                                return (
-                                                                    <div key={index}>
-                                                                        {renderMixedContent(line, true)}
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </div>
+                                                    
+                                            
+                                                    
                                                 </div>
                                             </div>
                                         )}
@@ -2447,6 +1735,7 @@ export default function QuizPage() {
                                         {/* Options - Only show for quiz mode */}
                                         {selectedLearningType === 'quiz' && (
                                             <div className="space-y-4">
+                                                <h3 className="text-lg font-semibold text-white mb-4 text-center">Choose the correct answer</h3>
                                                 {Object.entries(currentQuestion.options).map(([key, value]) => (
                                                     <button
                                                         key={key}
@@ -2461,57 +1750,13 @@ export default function QuizPage() {
                                                         {renderMixedContent(value, true)}
                                                     </button>
                                                 ))}
+                                                
+                                                {/* Download App Section */}
+                                                
                                             </div>
                                         )}
 
-                                        {/* Explanation - Only show for quiz mode */}
-                                        {selectedLearningType === 'quiz' && showExplanation && (
-                                            <div className="mt-8">
-                                                <div className={`p-6 rounded-lg ${isCorrect ? 'bg-green-500/20 border border-green-500/30' : 'bg-red-500/20 border border-red-500/30'}`}>
-                                                    <p className="font-bold mb-4 text-white text-lg">
-                                                        {feedbackMessage}
-                                                    </p>
-
-                                                    {/* Next Question Countdown */}
-                                                    {questionCount < targetQuestionCount && (
-                                                        <div className="mb-4 p-3 bg-white/10 rounded-lg text-center">
-                                                            <p className="text-white text-lg">
-                                                                Next question in <span className="font-bold">{nextQuestionCountdown}</span> seconds...
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Admin Button */}
-                                        <div className="flex gap-4 mt-4">
-                                            {learnerRole === 'admin' && (
-                                                <button
-                                                    onClick={async () => {
-                                                        if (!user?.uid || !user?.email || !currentQuestion) return;
-                                                        try {
-                                                            await setQuestionStatus({
-                                                                question_id: currentQuestion.id,
-                                                                status: 'approved',
-                                                                email: user.email,
-                                                                uid: user.uid,
-                                                                comment: 'Question approved by admin'
-                                                            });
-                                                            showMessage('Question approved successfully', 'success');
-                                                        } catch (error) {
-                                                            console.error('Error approving question:', error);
-                                                            showMessage('Failed to approve question', 'error');
-                                                        }
-                                                    }}
-                                                    className="flex-1 p-4 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors text-left"
-                                                >
-                                                    <span className="text-green-300 font-medium">
-                                                        ✅ Approve this {selectedLearningType === 'quiz' ? 'Question' : 'Lesson'}
-                                                    </span>
-                                                </button>
-                                            )}
-                                        </div>
+                                        
                                     </div>
                                 )}
 
@@ -2520,346 +1765,7 @@ export default function QuizPage() {
                         )}
                     </div>
                 </div>
-
-                {/* Overlay for smaller screens when sidebar is visible */}
-                {isSidebarVisible && (
-                    <div
-                        className="lg:hidden fixed inset-0 bg-black/50 z-30"
-                        onClick={() => setIsSidebarVisible(false)}
-                    />
-                )}
-
-                {/* Image Zoom Modal */}
-                {isZoomModalVisible && zoomImageUrl && (
-                    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
-                        <button
-                            onClick={() => {
-                                setIsZoomModalVisible(false)
-                                setImageRotation(0)
-                            }}
-                            className="absolute top-4 right-4 text-white"
-                        >
-                            ✕
-                        </button>
-                        <button
-                            onClick={() => setImageRotation((prev) => (prev + 90) % 360)}
-                            className="absolute top-4 left-4 text-white"
-                        >
-                            ↻
-                        </button>
-                        <div style={{ transform: `rotate(${imageRotation}deg)` }}>
-                            <Image
-                                src={`${IMAGE_BASE_URL}${zoomImageUrl}`}
-                                alt="Zoomed Image"
-                                width={800}
-                                height={600}
-                                className="rounded-lg"
-                            />
-                        </div>
-                    </div>
-                )}
-
                 
-
-                {/* Thank You Modal */}
-                {isThankYouModalVisible && (
-                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center">
-                            {/* Green Checkmark Circle */}
-                            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-
-                            {/* Title with Emojis */}
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-2">
-                                <span>🎉</span>
-                                You&apos;re Awesome!
-                                <span>👋</span>
-                            </h2>
-
-                            {/* Message */}
-                            <p className="text-gray-600 mb-8 text-lg">
-                                Your feedback helps us level up our questions! Thanks for making the quiz even better. 🚀💡
-                            </p>
-
-                            {/* Keep Going Button */}
-                            <button
-                                onClick={() => setIsThankYouModalVisible(false)}
-                                className="w-full py-4 px-8 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-                            >
-                                Keep Going <span>🚀</span>
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Streak Modal */}
-                {showStreakModal && (
-                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ scale: 0.5, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.5, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="bg-gradient-to-br from-[#1B1464] to-[#2B1F84] rounded-xl p-8 max-w-md w-full text-center relative overflow-hidden"
-                        >
-                            {/* Animated stars in background */}
-                            {[...Array(5)].map((_, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="absolute"
-                                    initial={{ scale: 0, rotate: 0 }}
-                                    animate={{
-                                        scale: [0, 1, 0],
-                                        rotate: [0, 180, 360],
-                                        x: [0, Math.random() * 100 - 50],
-                                        y: [0, Math.random() * 100 - 50],
-                                    }}
-                                    transition={{
-                                        duration: 2,
-                                        repeat: Infinity,
-                                        delay: i * 0.2,
-                                    }}
-                                >
-                                    <Star className="w-6 h-6 text-yellow-400" />
-                                </motion.div>
-                            ))}
-
-                            {/* Days of the week */}
-                            <motion.div
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.2 }}
-                                className="mb-6"
-                            >
-                                <div className="grid grid-cols-7 gap-2 mb-4">
-                                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                                        <motion.div
-                                            key={index}
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ delay: 0.3 + index * 0.1 }}
-                                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto"
-                                        >
-                                            <span className="text-white font-medium">{day}</span>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                                <motion.div
-                                    initial={{ scale: 0, rotate: -180 }}
-                                    animate={{ scale: 1, rotate: 0 }}
-                                    transition={{ delay: 0.5, type: "spring" }}
-                                    className="relative w-20 h-20 mx-auto mb-4"
-                                >
-                                    <motion.div
-                                        animate={{
-                                            scale: [1, 1.1, 1],
-                                            rotate: [0, 5, -5, 0],
-                                        }}
-                                        transition={{
-                                            duration: 2,
-                                            repeat: Infinity,
-                                            ease: "easeInOut",
-                                        }}
-                                        className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
-                                    />
-                                    <motion.div
-                                        animate={{
-                                            scale: [1, 1.2, 1],
-                                        }}
-                                        transition={{
-                                            duration: 2,
-                                            repeat: Infinity,
-                                            ease: "easeInOut",
-                                        }}
-                                        className="absolute inset-0 flex items-center justify-center"
-                                    >
-                                        <span className="text-4xl">⭐</span>
-                                    </motion.div>
-                                </motion.div>
-                            </motion.div>
-
-                            <motion.h2
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.6 }}
-                                className="text-3xl font-bold text-white mb-2"
-                            >
-                                🔥 {currentStreak}-Day Streak! 🔥
-                            </motion.h2>
-                            <motion.p
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.7 }}
-                                className="text-gray-300 mb-8"
-                            >
-                                Keep the fire going — get 3 right answers every day to grow your streak!
-                            </motion.p>
-                            <motion.button
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.8 }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    setShowStreakModal(false);
-                                }}
-                                className="w-full py-4 px-8 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                            >
-                                Keep Going! 🚀
-                            </motion.button>
-                        </motion.div>
-                    </div>
-                )}
-
-                {/* AI Explanation Modal */}
-                {isExplanationModalVisible && (
-                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 lg:p-6">
-                        <div className="rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col bg-[#1B1464]">
-                            {/* Header - Fixed */}
-                            <div className="flex justify-between items-center p-6 border-b border-gray-700">
-                                <h2 className="text-xl font-bold text-white">🤖 AI Explanation</h2>
-                                <button
-                                    onClick={() => setIsExplanationModalVisible(false)}
-                                    className="text-gray-400 hover:text-white transition-colors"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                            {/* Content - Scrollable */}
-                            <div className="flex-1 overflow-y-auto p-3 lg:p-6 min-h-0">
-                                <div className="prose prose-sm max-w-none prose-invert space-y-4">
-                                    {aiExplanation?.split('\n').map((line, index) => {
-                                        const trimmedLine = line.trim();
-                                        if (trimmedLine.startsWith('-')) {
-                                            const content = trimmedLine.substring(1).trim();
-                                            const indentLevel = line.indexOf('-') / 2;
-
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    className="flex items-start gap-3"
-                                                    style={{ marginLeft: `${indentLevel * 20}px` }}
-                                                >
-                                                    <span className="text-white mt-1">
-                                                        {indentLevel > 0 ? '🎯' : '✅'}
-                                                    </span>
-                                                    <div className="flex-1">
-                                                        {renderMixedContent(content, true)}
-                                                    </div>
-                                                </div>
-                                            );
-                                        }
-                                        return (
-                                            <div key={index}>
-                                                {renderMixedContent(line, true)}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Add MessageModal */}
-                <MessageModal
-                    isVisible={messageModal.isVisible}
-                    message={messageModal.message}
-                    type={messageModal.type}
-                    onClose={() => setMessageModal(prev => ({ ...prev, isVisible: false }))}
-                />
-
-                {/* Add Restart Modal */}
-                {isRestartModalVisible && (
-                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-xl p-6 max-w-lg w-full">
-                            <h2 className="text-xl font-bold text-gray-900 mb-4">Reset Progress</h2>
-                            <p className="text-gray-600 mb-6">
-                                Are you sure you want to reset your progress for this paper? This action cannot be undone.
-                            </p>
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={() => setIsRestartModalVisible(false)}
-                                    className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleRestart}
-                                    className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700"
-                                >
-                                    Reset
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Add BadgeModal */}
-                <BadgeModal
-                    isVisible={isBadgeModalVisible}
-                    onClose={() => setIsBadgeModalVisible(false)}
-                    badge={newBadge}
-                />
-
-                {/* Delete Note Confirmation Modal */}
-                {noteToDelete !== null && (
-                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-xl p-6 max-w-sm w-full">
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">Delete Note</h3>
-                            <p className="text-gray-600 mb-6">
-                                Are you sure you want to delete this note? This action cannot be undone.
-                            </p>
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={() => setNoteToDelete(null)}
-                                    className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (noteToDelete) {
-                                            deleteNote(noteToDelete);
-                                            setNoteToDelete(null);
-                                        }
-                                    }}
-                                    className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Add confirmation modal for todo deletion */}
-                {todoToDelete !== null && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-                            <h3 className="text-lg font-semibold mb-4">Delete Task</h3>
-                            <p className="text-gray-600 mb-6">Are you sure you want to delete this task? This action cannot be undone.</p>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={() => setTodoToDelete(null)}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => deleteTodo(todoToDelete)}
-                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </>
     )
