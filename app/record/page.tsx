@@ -10,6 +10,7 @@ import { InlineMath } from 'react-katex'
 import { logAnalyticsEvent } from '@/lib/analytics'
 import { motion, AnimatePresence } from "framer-motion"
 import { Star } from "lucide-react"
+import confetti from "canvas-confetti"
 
 // Interfaces
 interface Question {
@@ -1149,15 +1150,18 @@ export default function QuizPage() {
             setShowFeedback(true)
             setIsCorrect(true) // Always set to true
             setFeedbackMessage(getRandomSuccessMessage())
-            setShowExplanation(true)
 
-            // Speak the answer
+            // Speak the answer and wait for it to complete
             const successMessage = getRandomSuccessMessage();
             const textToSpeak = `${successMessage}. The answer is: ${currentQuestion.answer}`;
             try {
                 await speakText(textToSpeak);
+                // Only show explanation and allow next question after audio is complete
+                setShowExplanation(true);
             } catch (error) {
                 console.error('Error in text-to-speech:', error);
+                // If there's an error with the audio, still show the explanation
+                setShowExplanation(true);
             }
 
             // Increment points by 1
@@ -1201,7 +1205,7 @@ export default function QuizPage() {
     }
 
     // Modify handleNext to use targetQuestionCount
-    const handleNext = () => {
+    const handleNext = async () => {
         // Clear any existing next question timer
         if (nextQuestionTimer) {
             clearTimeout(nextQuestionTimer)
@@ -1209,6 +1213,13 @@ export default function QuizPage() {
         }
 
         if (questionCount >= targetQuestionCount) {
+            // Show confetti
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
             // Show completion message
             setMessageModal({
                 isVisible: true,
@@ -1216,6 +1227,15 @@ export default function QuizPage() {
                 type: 'success'
             })
             return
+        }
+
+        // Wait for any playing audio to complete
+        if (audioRef.current && isPlaying) {
+            await new Promise<void>((resolve) => {
+                audioRef.current!.onended = () => {
+                    resolve();
+                };
+            });
         }
 
         setSelectedAnswer('')
@@ -1488,6 +1508,50 @@ export default function QuizPage() {
                                     <div className="mb-6">
                                         <div className="grid grid-cols-1 gap-4">
                                             <button
+                                                onClick={async () => {
+                                                    if (!selectedSubject) {
+                                                        setMessageModal({
+                                                            isVisible: true,
+                                                            message: 'Please select a subject first',
+                                                            type: 'error'
+                                                        });
+                                                        return;
+                                                    }
+                                                    try {
+                                                        const response = await fetch(`${API_BASE_URL}/question/recording/${selectedSubject}/${selectedGrade}`, {
+                                                            method: 'DELETE'
+                                                        });
+                                                        const data = await response.json();
+                                                        if (data.status === 'OK') {
+                                                            setMessageModal({
+                                                                isVisible: true,
+                                                                message: `Successfully cleared ${data.count} recording(s)`,
+                                                                type: 'success'
+                                                            });
+                                                        } else {
+                                                            setMessageModal({
+                                                                isVisible: true,
+                                                                message: 'Failed to clear recordings',
+                                                                type: 'error'
+                                                            });
+                                                        }
+                                                    } catch (error) {
+                                                        setMessageModal({
+                                                            isVisible: true,
+                                                            message: 'Error clearing recordings',
+                                                            type: 'error'
+                                                        });
+                                                    }
+                                                }}
+                                                className="relative text-white rounded-lg p-2 transition-all duration-200 bg-red-600 shadow-lg shadow-red-500/50 hover:bg-red-700 border border-white/50"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg">🗑️</span>
+                                                    <span className="text-sm font-medium">Clear Recordings</span>
+                                                </div>
+                                            </button>
+
+                                            <button
                                                 onClick={() => {
                                                     setSelectedLearningType('quiz');
                                                     setIsQuizStarted(true);
@@ -1529,14 +1593,24 @@ export default function QuizPage() {
                                 <div className="text-center max-w-md mx-auto">
                                     <div className="text-6xl mb-6">🎓</div>
                                     <h2 className="text-2xl font-bold text-white mb-4">Welcome to {subjectName}!</h2>
-                                    <p className="text-gray-300 mb-6">
-                                        Please select your learning mode and paper from the menu to begin your learning journey.
-                                    </p>
-                                    <div className="bg-white/10 rounded-xl p-4">
-                                        <p className="text-white/80 text-sm">
-                                            💡 <span className="font-medium">Tip:</span> Choose Quiz Mode to test your knowledge or Quick Lessons to learn at your own pace.
-                                        </p>
+                                    <div className="text-center mb-8">
+                                    <h1 className="text-3xl font-bold text-white mb-4">
+                                        <span className="mr-4">📚</span>
+                                        examquiz.co.za
+                                        <span className="ml-4">🎓</span>
+                                    </h1>
+                                    <div className="flex flex-col items-center mt-1">
+                                        <div className="flex flex-wrap justify-center">
+                                            <Image 
+                                                src="/images/download-app.png" 
+                                                alt="Download our app" 
+                                                width={500} 
+                                                height={100} 
+                                                className="w-auto h-auto"
+                                            />
+                                        </div>
                                     </div>
+                                </div>
                                 </div>
                             </div>
                         ) : !isQuizStarted && !setSelectedSubject ? (
@@ -1635,7 +1709,7 @@ export default function QuizPage() {
                                         {/* Question Metadata */}
                                         <div className="flex items-center justify-center gap-3 mb-4">
                                             <Image
-                                                src={getSubjectIcon(currentQuestion?.subject?.name || selectedSubject || '')}
+                                                src={getSubjectIcon((currentQuestion?.subject?.name || selectedSubject || '').replace(/ P[12]$/, ''))}
                                                 alt={currentQuestion?.subject?.name || selectedSubject || ''}
                                                 width={32}
                                                 height={32}
