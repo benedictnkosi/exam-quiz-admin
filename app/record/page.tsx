@@ -648,6 +648,13 @@ export default function QuizPage() {
     const [selectedTerm, setSelectedTerm] = useState<number>(2)
     const [isMobileView, setIsMobileView] = useState(false);
 
+    // Add new state for countdown
+    const [showCountdown, setShowCountdown] = useState(false);
+    const [countdownNumber, setCountdownNumber] = useState(5);
+
+    // Add new state for countdown completion
+    const [shouldLoadQuestion, setShouldLoadQuestion] = useState(false);
+
     // Add effect to fetch grades
     useEffect(() => {
         const fetchGrades = async () => {
@@ -767,7 +774,7 @@ export default function QuizPage() {
     const [isFavoriting, setIsFavoriting] = useState(false)
     const [correctAnswer, setCorrectAnswer] = useState<string>('')
     const [autoAnswerTimer, setAutoAnswerTimer] = useState<NodeJS.Timeout | null>(null)
-    const [countdown, setCountdown] = useState<number>(10)
+    const [countdown, setCountdown] = useState<number>(5)
     const [questionCount, setQuestionCount] = useState<number>(0)
     const [targetQuestionCount, setTargetQuestionCount] = useState<number>(5)
     const [nextQuestionTimer, setNextQuestionTimer] = useState<NodeJS.Timeout | null>(null)
@@ -1343,6 +1350,33 @@ export default function QuizPage() {
         setIsMobileView(window.innerWidth < 1024);
     }, []);
 
+    // Modify the countdown effect
+    useEffect(() => {
+        if (showCountdown) {
+            const timer = setInterval(() => {
+                setCountdownNumber(prev => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        setShowCountdown(false);
+                        setShouldLoadQuestion(true);
+                        return 10;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(timer);
+        }
+    }, [showCountdown]);
+
+    // Add effect to handle question loading after countdown
+    useEffect(() => {
+        if (shouldLoadQuestion) {
+            loadRandomQuestion('');
+            setShouldLoadQuestion(false);
+        }
+    }, [shouldLoadQuestion]);
+
     // Remove the initial loading check
     return (
         <>
@@ -1353,9 +1387,9 @@ export default function QuizPage() {
                 {/* Toggle Button - Only visible on smaller screens */}
                 <button
                     onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                    className="lg:hidden fixed top-4 left-4 z-20 bg-white shadow-lg p-3 rounded-xl text-[#00B894] hover:bg-gray-100 transition-colors"
+                    className="lg:hidden fixed top-4 left-4 z-20  shadow-lg p-3 rounded-xl text-[#00B894] hover:bg-gray-100 transition-colors"
                 >
-                    {isSidebarVisible ? '✕ Close' : '☰ Menu'}
+                    {isSidebarVisible ? '✕ Close' : '☰'}
                 </button>
 
                 <div className="flex h-full">
@@ -1373,28 +1407,10 @@ export default function QuizPage() {
                                 </button>
                             )}
 
-                            <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
-                                <button
-                                    onClick={() => router.push('/')}
-                                    className="text-white hover:text-white/80 transition-colors"
-                                    aria-label="Go back to home"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                    </svg>
-                                </button>
-                                <Image
-                                    src={getSubjectIcon(subjectName || '')}
-                                    alt={subjectName || ''}
-                                    width={64}
-                                    height={64}
-                                    className="rounded-full"
-                                />
-                                <h1 className="text-2xl font-bold text-white">{subjectName}</h1>
-                            </div>
+                            
 
                             {/* Selection Screen */}
-                            {!currentQuestion && (
+                            {!currentQuestion && !showCountdown && (
                                 <div className="bg-white/10 rounded-xl p-6">
                                     <h2 className="text-xl font-bold text-white mb-6 text-center">Choose Your Learning Mode</h2>
 
@@ -1556,7 +1572,7 @@ export default function QuizPage() {
                                                     setSelectedLearningType('quiz');
                                                     setIsQuizStarted(true);
                                                     setSelectedPaper('recording');
-                                                    loadRandomQuestion('');
+                                                    setShowCountdown(true);
                                                 }}
                                                 className={`relative text-white rounded-xl p-4 transition-all duration-200 bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50`}
                                             >
@@ -1576,12 +1592,65 @@ export default function QuizPage() {
                     </div>
 
                     {/* Right Panel - Quiz Content */}
-                    <div className={`${isSidebarVisible ? 'lg:w-2/3' : 'w-full'} transition-all duration-300 p-3 mt-6 lg:p-6 min-h-screen`}>
-                        {loading ? (
-                            <div className="h-full flex items-center justify-center">
+                    <div className={`${isSidebarVisible ? 'lg:w-2/3' : 'w-full'} transition-all duration-300 p-3 mt-6 lg:p-6 min-h-screen relative z-0`}>
+                        {showCountdown ? (
+                            <div className="fixed inset-0 flex items-center justify-center bg-[#1B1464] z-[60]">
                                 <div className="text-center">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                                    <div className="text-white text-lg font-medium">
+                                    <motion.div
+                                        initial={{ scale: 0.5, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        exit={{ scale: 0.5, opacity: 0 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="space-y-8"
+                                    >
+                                        <div className="space-y-4">
+                                            <div className="text-6xl font-bold text-white">
+                                                examquiz.co.za
+                                            </div>
+                                            <div className="flex items-center justify-center gap-4">
+                                                <Image
+                                                    src={getSubjectIcon((selectedSubject || '').replace(/ P[12]$/, ''))}
+                                                    alt={selectedSubject || ''}
+                                                    width={48}
+                                                    height={48}
+                                                    className="rounded-full"
+                                                />
+                                                <div className="text-2xl font-semibold text-white">
+                                                    {selectedSubject}
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-center gap-4">
+                                                <div className="bg-white/10 px-4 py-2 rounded-full text-white/80 flex items-center gap-2">
+                                                    <span>📚</span>
+                                                    <span>Grade {selectedGrade}</span>
+                                                </div>
+                                                <div className="bg-white/10 px-4 py-2 rounded-full text-white/80 flex items-center gap-2">
+                                                    <span>📅</span>
+                                                    <span>Term {selectedTerm}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <motion.div
+                                            key={countdownNumber}
+                                            initial={{ scale: 0.5, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            exit={{ scale: 0.5, opacity: 0 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="relative"
+                                        >
+                                            <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full"></div>
+                                            <div className="relative text-9xl font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                                {countdownNumber}
+                                            </div>
+                                        </motion.div>
+                                    </motion.div>
+                                </div>
+                            </div>
+                        ) : loading ? (
+                            <div className="fixed inset-0 flex items-center justify-center bg-[#1B1464] z-50">
+                                <div className="text-center p-6">
+                                    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-white mx-auto mb-6"></div>
+                                    <div className="text-white text-lg font-medium px-4">
                                         {selectedLearningType === 'quick_lessons'
                                             ? getRandomLoadingMessage()
                                             : 'Loading your question...'}
