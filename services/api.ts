@@ -792,12 +792,13 @@ export async function getRandomQuestion(
 
 export async function getRecordignRandomQuestion(
   subjectName: string,
-  paper: string,
-  uid: string
+  uid: string,
+  term: number,
+  grade: string
 ): Promise<DetailedQuestion> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=${paper}&uid=${uid}&question_id=0&platform=web&mode=recording`
+      `${API_BASE_URL}/question/recording?subjectName=${subjectName}&uid=${uid}&grade=${grade}&learnerTerms=${term}`
     )
 
     if (!response.ok) {

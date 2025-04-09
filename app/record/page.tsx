@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Head from 'next/head'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer, getLearner, HOST_URL, checkRecordingAnswer, getRecordignRandomQuestion } from '@/services/api'
+import { API_BASE_URL, getSubjectStats, getRandomQuestion, setQuestionStatus, checkAnswer, getLearner, HOST_URL, checkRecordingAnswer, getRecordignRandomQuestion, getGrades, getActiveSubjects } from '@/services/api'
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 import { logAnalyticsEvent } from '@/lib/analytics'
@@ -638,6 +638,52 @@ export default function QuizPage() {
     const [selectedPaper, setSelectedPaper] = useState<string>('')
     const [learnerRole, setLearnerRole] = useState<string>('learner')
     const [nextQuestionCountdown, setNextQuestionCountdown] = useState<number>(5)
+    const [grades, setGrades] = useState<{ id: number; number: number; active: number }[]>([])
+    const [subjects, setSubjects] = useState<{ id: number; name: string; active: boolean; grade: { id: number; number: number; active: number } }[]>([])
+    const [selectedGrade, setSelectedGrade] = useState<string>('12')
+    const [selectedSubject, setSelectedSubject] = useState<string>('')
+    const [loadingGrades, setLoadingGrades] = useState(true)
+    const [loadingSubjects, setLoadingSubjects] = useState(false)
+    const [selectedTerm, setSelectedTerm] = useState<number>(2)
+    const [isMobileView, setIsMobileView] = useState(false);
+
+    // Add effect to fetch grades
+    useEffect(() => {
+        const fetchGrades = async () => {
+            try {
+                const gradesData = await getGrades()
+                setGrades(gradesData)
+            } catch (err) {
+                console.error('Failed to fetch grades:', err)
+            } finally {
+                setLoadingGrades(false)
+            }
+        }
+        fetchGrades()
+    }, [])
+
+    // Add effect to fetch subjects when grade changes
+    useEffect(() => {
+        if (selectedGrade) {
+            const fetchSubjects = async () => {
+                setLoadingSubjects(true)
+                try {
+                    const response = await fetch(`${API_BASE_URL}/subjects/active?grade=${selectedGrade}`)
+                    const data = await response.json()
+                    if (data.status === 'OK' && data.subjects) {
+                        setSubjects(data.subjects)
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch subjects:', err)
+                } finally {
+                    setLoadingSubjects(false)
+                }
+            }
+            fetchSubjects()
+        } else {
+            setSubjects([])
+        }
+    }, [selectedGrade])
 
     // Add effect to fetch learner role
     useEffect(() => {
@@ -793,13 +839,29 @@ export default function QuizPage() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const startQuizLesson = (paper: string) => {
+        if (!selectedSubject || !selectedGrade) {
+            setMessageModal({
+                isVisible: true,
+                message: 'Please select both grade and subject before starting',
+                type: 'error'
+            })
+            return
+        }
+        setIsQuizStarted(true)
+        setSelectedPaper(paper)
+        if (selectedLearningType === 'quiz') {
+            loadRandomQuestion(paper)
+        }
+    }
+
     const loadRandomQuestion = async (paper: string) => {
-        if (!user?.uid || !subjectName || !subjectId) {
+        if (!user?.uid || !selectedSubject || !selectedGrade) {
             return
         }
         // Set the selected paper
         setSelectedPaper(paper)
-        // Close the sidebar on mobile when a paper is selected
+        // Hide the sidebar when question loads
         setIsSidebarVisible(false)
         // Reset all states before loading new question
         setSelectedAnswer(null)
@@ -814,7 +876,7 @@ export default function QuizPage() {
 
         try {
             setLoading(true)
-            const data = await getRecordignRandomQuestion(subjectName, paper, user.uid)
+            const data = await getRecordignRandomQuestion(selectedSubject, user.uid, selectedTerm, selectedGrade)
 
             if (data.status === "NOK") {
                 console.log("No more questions")
@@ -861,26 +923,13 @@ export default function QuizPage() {
                 }
             }
 
-            const newStats = await getSubjectStats(user.uid, subjectName + " " + paper)
+            const newStats = await getSubjectStats(user.uid, selectedSubject + " " + paper)
             setStats(newStats.data.stats)
         } catch (error) {
             console.error('Error loading question:', error)
             setMessageModal({ isVisible: true, message: 'Failed to load question', type: 'error' })
         } finally {
             setLoading(false)
-        }
-    }
-
-    
-
-    const startQuizLesson = (paper: string) => {
-        setIsQuizStarted(true)
-        setSelectedPaper(paper)
-        if (selectedLearningType === 'quiz') {
-            loadRandomQuestion(paper)
-        // } else {
-        //     loadQuickLesson(paper)
-        // }
         }
     }
 
@@ -1102,6 +1151,15 @@ export default function QuizPage() {
             setFeedbackMessage(getRandomSuccessMessage())
             setShowExplanation(true)
 
+            // Speak the answer
+            const successMessage = getRandomSuccessMessage();
+            const textToSpeak = `${successMessage}. The answer is: ${currentQuestion.answer}`;
+            try {
+                await speakText(textToSpeak);
+            } catch (error) {
+                console.error('Error in text-to-speech:', error);
+            }
+
             // Increment points by 1
             setPoints(points + 1)
 
@@ -1259,6 +1317,12 @@ export default function QuizPage() {
         });
     };
 
+    // Add this near the other useEffect hooks
+    useEffect(() => {
+        // Set initial view based on screen width
+        setIsMobileView(window.innerWidth < 1024);
+    }, []);
+
     // Remove the initial loading check
     return (
         <>
@@ -1276,136 +1340,107 @@ export default function QuizPage() {
 
                 <div className="flex h-full">
                     {/* Left Panel - Subject Info */}
-                    <div className={`${isSidebarVisible ? 'block' : 'hidden'} lg:block fixed lg:static w-full lg:w-1/3 bg-[#1B1464]/90 backdrop-blur-sm p-6 flex flex-col h-screen overflow-y-auto z-40`}>
-                        {/* Close button - Only visible on mobile when paper is selected */}
-                        {selectedPaper && (
-                            <button
-                                onClick={() => setIsSidebarVisible(false)}
-                                className="lg:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
-                                aria-label="Close menu"
-                            >
-                                ✕
-                            </button>
-                        )}
+                    <div className={`${isSidebarVisible ? 'w-full lg:w-1/3' : 'w-0'} transition-all duration-300`}>
+                        <div className={`${isSidebarVisible ? 'block' : 'hidden'} fixed lg:static w-full lg:w-full bg-[#1B1464]/90 backdrop-blur-sm p-6 flex flex-col h-screen overflow-y-auto z-40`}>
+                            {/* Close button - Only visible on mobile when paper is selected */}
+                            {selectedPaper && (
+                                <button
+                                    onClick={() => setIsSidebarVisible(false)}
+                                    className="lg:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
+                                    aria-label="Close menu"
+                                >
+                                    ✕
+                                </button>
+                            )}
 
-                        <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
-                            <button
-                                onClick={() => router.push('/')}
-                                className="text-white hover:text-white/80 transition-colors"
-                                aria-label="Go back to home"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                </svg>
-                            </button>
-                            <Image
-                                src={getSubjectIcon(subjectName || '')}
-                                alt={subjectName || ''}
-                                width={64}
-                                height={64}
-                                className="rounded-full"
-                            />
-                            <h1 className="text-2xl font-bold text-white">{subjectName}</h1>
-                        </div>
+                            <div className="flex items-center gap-4 mb-6 mt-12 lg:mt-0">
+                                <button
+                                    onClick={() => router.push('/')}
+                                    className="text-white hover:text-white/80 transition-colors"
+                                    aria-label="Go back to home"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                </button>
+                                <Image
+                                    src={getSubjectIcon(subjectName || '')}
+                                    alt={subjectName || ''}
+                                    width={64}
+                                    height={64}
+                                    className="rounded-full"
+                                />
+                                <h1 className="text-2xl font-bold text-white">{subjectName}</h1>
+                            </div>
 
-                        {/* Selection Screen */}
-                        
-                            <div className="bg-white/10 rounded-xl p-6">
-                                <h2 className="text-xl font-bold text-white mb-6 text-center">Choose Your Learning Mode</h2>
+                            {/* Selection Screen */}
+                            {!currentQuestion && (
+                                <div className="bg-white/10 rounded-xl p-6">
+                                    <h2 className="text-xl font-bold text-white mb-6 text-center">Choose Your Learning Mode</h2>
 
-                                {/* Learning Type Selection */}
-                                <div className="mb-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <button
-                                            onClick={() => {
-                                                setSelectedLearningType('quiz')
-                                                setSelectedPaper('')
-                                            }}
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quiz'
-                                                ? 'bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-purple-600/50 hover:bg-purple-600/70'
-                                                }`}
-                                        >
-                                            {selectedLearningType === 'quiz' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-purple-600 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">🎯</span>
-                                                <span className="font-semibold">Quiz Mode</span>
-                                                <span className="text-sm text-white/80 mt-1">Test your knowledge</span>
-                                            </div>
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedLearningType('quick_lessons')
-                                                setSelectedPaper('')
-                                            }}  
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quick_lessons'
-                                                ? 'bg-orange-500 shadow-lg shadow-orange-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-orange-500/50 hover:bg-orange-500/70'
-                                                }`}
-                                        >
-                                            {selectedLearningType === 'quick_lessons' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-orange-500 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">📚</span>
-                                                <span className="font-semibold">Quick Lessons</span>
-                                                <span className="text-sm text-white/80 mt-1">AI generated lessons</span>
-                                            </div>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Paper Selection */}
-                                <div className="mb-6">
-                                    <h3 className="text-lg font-semibold text-white mb-4">Choose Paper</h3>
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <button
-                                            onClick={() => startQuizLesson('P1')}
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P1'
-                                                ? 'bg-blue-600 shadow-lg shadow-blue-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-blue-600/50 hover:bg-blue-600/70'
-                                                }`}
-                                        >
-                                            {selectedPaper === 'P1' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-blue-600 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">📝</span>
-                                                <span className="font-semibold">Paper 1</span>
-                                            </div>
-                                        </button>
-                                        <button
-                                            onClick={() => startQuizLesson('P2')}
-                                            disabled={subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')}
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P2'
-                                                ? 'bg-green-600 shadow-lg shadow-green-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-green-600/50 hover:bg-green-600/70'
-                                                } ${(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        >
-                                            {selectedPaper === 'P2' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-green-600 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">📖</span>
-                                                <span className="font-semibold">Paper 2</span>
-                                                {(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) && (
-                                                    <span className="text-xs text-white/60 mt-1">Not Available</span>
+                                    {/* Grade and Subject Selection */}
+                                    <div className="mb-6">
+                                        <div className="grid grid-cols-1 gap-4 mb-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-white mb-2">Grade</label>
+                                                <select
+                                                    value={selectedGrade}
+                                                    onChange={(e) => {
+                                                        setSelectedGrade(e.target.value)
+                                                        setSelectedSubject('')
+                                                    }}
+                                                    className="w-full p-3 rounded-lg bg-white/10 text-white border border-white/20 focus:border-white/40 focus:outline-none transition-colors"
+                                                    disabled={loadingGrades}
+                                                >
+                                                    <option value="">Select Grade</option>
+                                                    {grades.map((grade) => (
+                                                        <option key={grade.id} value={grade.id}>
+                                                            Grade {grade.number}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {loadingGrades && (
+                                                    <p className="text-sm text-white/60 mt-1">Loading grades...</p>
                                                 )}
                                             </div>
-                                        </button>
-                                    </div>
 
-                                    {/* Question Count Selection */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-white mb-2">Subject</label>
+                                                <select
+                                                    value={selectedSubject}
+                                                    onChange={(e) => setSelectedSubject(e.target.value)}
+                                                    className="w-full p-3 rounded-lg bg-white/10 text-white border border-white/20 focus:border-white/40 focus:outline-none transition-colors"
+                                                    disabled={loadingSubjects || !selectedGrade}
+                                                >
+                                                    <option value="">Select Subject</option>
+                                                    {subjects.map((subject) => (
+                                                        <option key={subject.id} value={subject.name}>
+                                                            {subject.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {loadingSubjects && (
+                                                    <p className="text-sm text-white/60 mt-1">Loading subjects...</p>
+                                                )}
+                                                {!selectedGrade && (
+                                                    <p className="text-sm text-white/60 mt-1">Select a grade first</p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-white mb-2">Term</label>
+                                                <select
+                                                    value={selectedTerm}
+                                                    onChange={(e) => setSelectedTerm(Number(e.target.value))}
+                                                    className="w-full p-3 rounded-lg bg-white/10 text-white border border-white/20 focus:border-white/40 focus:outline-none transition-colors"
+                                                >
+                                                    <option value={1}>Term 1</option>
+                                                    <option value={2}>Term 2</option>
+                                                    <option value={3}>Term 3</option>
+                                                    <option value={4}>Term 4</option>
+                                                </select>
+                                            </div>
+                                            {/* Question Count Selection */}
                                     <div className="mt-4">
                                         <h4 className="text-sm font-medium text-white mb-2">Number of Questions</h4>
                                         <select
@@ -1444,12 +1479,40 @@ export default function QuizPage() {
                                             </button>
                                         </div>
                                     </div>
+
+                                   
+                                        </div>
+                                    </div>
+
+                                    {/* Learning Type Selection */}
+                                    <div className="mb-6">
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedLearningType('quiz');
+                                                    setIsQuizStarted(true);
+                                                    setSelectedPaper('recording');
+                                                    loadRandomQuestion('');
+                                                }}
+                                                className={`relative text-white rounded-xl p-4 transition-all duration-200 bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50`}
+                                            >
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-2xl mb-1">🎤</span>
+                                                    <span className="font-semibold">Start Recording</span>
+                                                    <span className="text-sm text-white/80 mt-1">Record your answer</span>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    
                                 </div>
-                            </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Right Panel - Quiz Content */}
-                    <div className={`flex-1 p-3 mt-6 lg:p-6 min-h-screen ${isSidebarVisible ? 'hidden lg:block' : 'block'}`}>
+                    <div className={`${isSidebarVisible ? 'lg:w-2/3' : 'w-full'} transition-all duration-300 p-3 mt-6 lg:p-6 min-h-screen`}>
                         {loading ? (
                             <div className="h-full flex items-center justify-center">
                                 <div className="text-center">
@@ -1476,7 +1539,7 @@ export default function QuizPage() {
                                     </div>
                                 </div>
                             </div>
-                        ) : !selectedPaper ? (
+                        ) : !isQuizStarted && !setSelectedSubject ? (
                             <div className="h-full flex items-center justify-center">
                                 <div className="text-center max-w-md mx-auto">
                                     <div className="text-6xl mb-6">📚</div>
@@ -1545,7 +1608,7 @@ export default function QuizPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="max-w-3xl mx-auto">
+                            <div className="max-w-7xl mx-auto px-4">
                                 {/* Question Card */}
                                 <div className="text-center mb-8">
                                     <h1 className="text-3xl font-bold text-white mb-4">
@@ -1566,197 +1629,166 @@ export default function QuizPage() {
                                     </div>
                                 </div>
                                 {currentQuestion && (
-                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-0 lg:p-6 mb-8 mt-12 lg:mt-0 relative">
+                                    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 lg:p-10 mb-8 mt-6 lg:mt-0 relative">
                                         {renderCountdown()}
                                        
                                         {/* Question Metadata */}
-                                        <div className="flex items-center justify-center gap-4">
-                                        <Image
-                                            src={getSubjectIcon(subjectName || '')}
-                                            alt={subjectName || ''}
-                                            width={40}
-                                            height={40}
-                                            className="rounded-full"
-                                        />
-                                        <h2 className="text-2xl font-bold text-white">{subjectName}</h2>
-                                    </div>                                        <div className="flex flex-wrap gap-3 mb-4 text-sm p-6">
-                                            <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
+                                        <div className="flex items-center justify-center gap-3 mb-4">
+                                            <Image
+                                                src={getSubjectIcon(currentQuestion?.subject?.name || selectedSubject || '')}
+                                                alt={currentQuestion?.subject?.name || selectedSubject || ''}
+                                                width={32}
+                                                height={32}
+                                                className="rounded-full"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/images/subjects/icon.png'
+                                                }}
+                                            />
+                                            <h2 className="text-xl lg:text-2xl font-bold text-white">{currentQuestion?.subject?.name || selectedSubject}</h2>
+                                        </div>
+                                        <div className="flex flex-wrap justify-center gap-2 lg:gap-3 mb-4 lg:mb-6 text-xs lg:text-sm px-2 lg:px-6">
+                                            <div className="bg-white/10 px-2 py-1 lg:px-3 lg:py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
                                                 <span className="text-xs">📅</span>
-                                                <span>Term {currentQuestion.term}</span>
+                                                <span>Grade {currentQuestion?.subject?.grade?.number || selectedGrade}</span>
                                             </div>
-                                            <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
-                                                <span className="text-xs">📅</span>
-                                                <span>{currentQuestion.year}</span>
-                                            </div>
-                                            <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
+                                            <div className="bg-white/10 px-2 py-1 lg:px-3 lg:py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
                                                 <span className="text-xs">📚</span>
-                                                <span>{currentQuestion.curriculum}</span>
+                                                <span>Term {currentQuestion?.term || selectedTerm}</span>
                                             </div>
-                                            <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
-                                                <span className="text-xs">📝</span>
-                                                <span>{selectedPaper === 'P1' ? 'Paper 1' : 'Paper 2'}</span>
+                                            <div className="bg-white/10 px-2 py-1 lg:px-3 lg:py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
+                                                <span className="text-xs">📆</span>
+                                                <span>Year {currentQuestion?.year || new Date().getFullYear()}</span>
+                                            </div>
+                                            <div className="bg-white/10 px-2 py-1 lg:px-3 lg:py-1.5 rounded-full text-white/80 flex items-center gap-1.5">
+                                                <span className="text-xs">📘</span>
+                                                <span>{currentQuestion?.curriculum || 'CAPS'}</span>
                                             </div>
                                         </div>
 
-                                        {/* Question Context - Only show for quiz mode */}
-                                        {selectedLearningType === 'quiz' && (currentQuestion.context || currentQuestion.image_path) && (
-                                            <div className="mb-4">
-
-                                                {currentQuestion.context && (
-                                                    <>
-                                                        <h3 className="text-lg font-semibold mb-2 text-white">Context</h3>
-                                                        <div className="p-4 bg-white/5 rounded-lg">
-                                                            {currentQuestion.context?.split('\n').map((line, index) => {
-
-                                                                const trimmedLine = line.trim();
-                                                                if (trimmedLine.startsWith('-')) {
-                                                                    const content = trimmedLine.substring(1).trim();
-                                                                    const indentLevel = line.indexOf('-') / 2;
-
-                                                                    return (
-                                                                        <div
-                                                                            key={index}
-                                                                            className="flex items-start gap-3"
-                                                                            style={{ marginLeft: `${indentLevel * 20}px` }}
-                                                                        >
-                                                                            <span className="text-white mt-1">
-                                                                                {indentLevel > 0 ? '🎯' : '✅'}
-                                                                            </span>
-                                                                            <div className="flex-1">
-                                                                                {renderMixedContent(content, true)}
+                                        {/* Main Content Grid */}
+                                        <div className={`${isMobileView ? 'flex flex-col gap-4 lg:gap-8' : 'grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8'}`}>
+                                            {/* Left Column - Context and Question */}
+                                            <div className="space-y-4 lg:space-y-6">
+                                                {/* Question Context - Only show for quiz mode */}
+                                                {selectedLearningType === 'quiz' && (currentQuestion.context || currentQuestion.image_path) && (
+                                                    <div>
+                                                        {currentQuestion.context && (
+                                                            <>
+                                                                <h3 className="text-base lg:text-lg font-semibold mb-2 text-white">Context</h3>
+                                                                <div className="p-3 lg:p-4 bg-white/5 rounded-lg">
+                                                                    {currentQuestion.context?.split('\n').map((line, index) => {
+                                                                        const trimmedLine = line.trim();
+                                                                        if (trimmedLine.startsWith('-')) {
+                                                                            const content = trimmedLine.substring(1).trim();
+                                                                            const indentLevel = line.indexOf('-') / 2;
+                                                                            return (
+                                                                                <div
+                                                                                    key={index}
+                                                                                    className="flex items-start gap-3"
+                                                                                    style={{ marginLeft: `${indentLevel * 20}px` }}
+                                                                                >
+                                                                                    <span className="text-white mt-1">
+                                                                                        {indentLevel > 0 ? '🎯' : '✅'}
+                                                                                    </span>
+                                                                                    <div className="flex-1">
+                                                                                        {renderMixedContent(content, true)}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return (
+                                                                            <div key={index}>
+                                                                                {renderMixedContent(line, true)}
                                                                             </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                                return (
-                                                                    <div key={index}>
-                                                                        {renderMixedContent(line, true)}
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </>
-                                                )}
-                                                
-                                            </div>
-                                        )}
-
-                                        {/* Question - Only show for quiz mode */}
-                                        {selectedLearningType === 'quiz' && (
-                                            <div className="mb-6">
-                                                {currentQuestion.question && (
-                                                    <>
-                                                        <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
-                                                        <div className="text-xl mb-2 text-white text-center">
-                                                            {currentQuestion.question?.split('\n').map((line, index) => {
-
-                                                                const trimmedLine = line.trim();
-                                                                if (trimmedLine.startsWith('-')) {
-                                                                    const content = trimmedLine.substring(1).trim();
-                                                                    const indentLevel = line.indexOf('-') / 2;
-
-                                                                    return (
-                                                                        <div
-                                                                            key={index}
-                                                                            className="flex items-start gap-3"
-                                                                            style={{ marginLeft: `${indentLevel * 20}px` }}
-                                                                        >
-                                                                            <span className="text-white mt-1">
-                                                                                {indentLevel > 0 ? '🎯' : '✅'}
-                                                                            </span>
-                                                                            <div className="flex-1">
-                                                                                {renderMixedContent(content, true)}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                                return (
-                                                                    <div key={index}>
-                                                                        {renderMixedContent(line, true)}
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </>
-                                                )}
-                                                {currentQuestion.question_image_path && currentQuestion.question_image_path !== 'NULL' && (
-                                                    <div className="mt-4 flex justify-center">
-                                                        <button
-                                                            onClick={() => {
-                                                                setZoomImageUrl(currentQuestion.question_image_path || null)
-                                                                setIsZoomModalVisible(true)
-                                                            }}
-                                                            className="w-full max-w-2xl"
-                                                        >
-                                                            <Image
-                                                                src={`${IMAGE_BASE_URL}${currentQuestion.question_image_path}`}
-                                                                alt="Question Image"
-                                                                width={400}
-                                                                height={300}
-                                                                className="rounded-lg mx-auto"
-                                                                onLoad={() => setIsImageLoading(false)}
-                                                            />
-                                                        </button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 )}
-                                            </div>
-                                        )}
 
-                                        {/* AI Explanation for Quick Lessons */}
-                                        {selectedLearningType === 'quick_lessons' && currentQuestion.ai_explanation && (
-                                            <div className="mt-8">
-                                                <div className="p-3 lg:p-6 rounded-lg bg-indigo-500/20 border border-indigo-500/30">
-                                                    {/* Context */}
-                                                    {currentQuestion.context && (
-                                                        <div className="mb-6">
-                                                            <h3 className="text-lg font-semibold mb-2 text-white">Context</h3>
-                                                            <div className="p-4 bg-white/5 rounded-lg">
-                                                                {renderMixedContent(currentQuestion.context, true)}
+                                                {/* Question - Only show for quiz mode */}
+                                                {selectedLearningType === 'quiz' && (
+                                                    <div>
+                                                        {currentQuestion.question && (
+                                                            <>
+                                                                <h3 className="text-base lg:text-lg font-semibold mb-2 text-white">Question</h3>
+                                                                <div className="p-3 lg:p-4 bg-white/5 rounded-lg">
+                                                                    {currentQuestion.question?.split('\n').map((line, index) => {
+                                                                        const trimmedLine = line.trim();
+                                                                        if (trimmedLine.startsWith('-')) {
+                                                                            const content = trimmedLine.substring(1).trim();
+                                                                            const indentLevel = line.indexOf('-') / 2;
+                                                                            return (
+                                                                                <div
+                                                                                    key={index}
+                                                                                    className="flex items-start gap-3"
+                                                                                    style={{ marginLeft: `${indentLevel * 20}px` }}
+                                                                                >
+                                                                                    <span className="text-white mt-1">
+                                                                                        {indentLevel > 0 ? '🎯' : '✅'}
+                                                                                    </span>
+                                                                                    <div className="flex-1">
+                                                                                        {renderMixedContent(content, true)}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return (
+                                                                            <div key={index}>
+                                                                                {renderMixedContent(line, true)}
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                        {currentQuestion.question_image_path && currentQuestion.question_image_path !== 'NULL' && (
+                                                            <div className="mt-4">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setZoomImageUrl(currentQuestion.question_image_path || null)
+                                                                        setIsZoomModalVisible(true)
+                                                                    }}
+                                                                    className="w-full"
+                                                                >
+                                                                    <Image
+                                                                        src={`${IMAGE_BASE_URL}${currentQuestion.question_image_path}`}
+                                                                        alt="Question Image"
+                                                                        width={400}
+                                                                        height={300}
+                                                                        className="rounded-lg w-full h-auto"
+                                                                        onLoad={() => setIsImageLoading(false)}
+                                                                    />
+                                                                </button>
                                                             </div>
-                                                        </div>
-                                                    )}
-
-
-                                                    {/* Question */}
-                                                    <div className="mb-6">
-                                                        <h3 className="text-lg font-semibold mb-2 text-white">Question</h3>
-                                                        <div className="p-4 bg-white/5 rounded-lg">
-                                                            {renderMixedContent(currentQuestion.question, true)}
-                                                        </div>
+                                                        )}
                                                     </div>
+                                                )}
+                                            </div>
 
-                                                    
-                                            
-                                                    
+                                            {/* Right Column - Answer Options */}
+                                            {selectedLearningType === 'quiz' && (
+                                                <div className="space-y-4">
+                                                    <h3 className="text-lg font-semibold text-white mb-4">Choose the correct answer</h3>
+                                                    {Object.entries(currentQuestion.options).map(([key, value]) => (
+                                                        <button
+                                                            key={key}
+                                                            onClick={() => handleAnswer(value)}
+                                                            disabled={isAnswered}
+                                                            className={`w-full p-4 rounded-lg text-center transition-all border ${
+                                                                cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
+                                                                    ? 'bg-green-500/20 text-green-100 border-green-500/50 animate-pulse'
+                                                                    : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                                                            } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
+                                                        >
+                                                            {renderMixedContent(value, true)}
+                                                        </button>
+                                                    ))}
                                                 </div>
-                                            </div>
-                                        )}
-
-                                        {/* Options - Only show for quiz mode */}
-                                        {selectedLearningType === 'quiz' && (
-                                            <div className="space-y-4">
-                                                <h3 className="text-lg font-semibold text-white mb-4 text-center">Choose the correct answer</h3>
-                                                {Object.entries(currentQuestion.options).map(([key, value]) => (
-                                                    <button
-                                                        key={key}
-                                                        onClick={() => handleAnswer(value)}
-                                                        disabled={isAnswered}
-                                                        className={`w-full p-4 rounded-lg text-center transition-all border ${
-                                                            cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
-                                                                ? 'bg-green-500/20 text-green-100 border-green-500/50 animate-pulse'
-                                                                : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
-                                                        } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
-                                                    >
-                                                        {renderMixedContent(value, true)}
-                                                    </button>
-                                                ))}
-                                                
-                                                {/* Download App Section */}
-                                                
-                                            </div>
-                                        )}
-
-                                        
+                                            )}
+                                        </div>
                                     </div>
                                 )}
 
