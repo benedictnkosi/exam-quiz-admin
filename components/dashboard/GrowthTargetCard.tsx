@@ -81,11 +81,11 @@ export default function GrowthTargetCard() {
                 )}
             </div>
             <p className="text-gray-500 text-sm mt-2">
-                Daily growth needed for 1M results by Dec 31, 2025
+                Daily growth needed for 1M answers per day by Dec 31
             </p>
             {currentCount && (
                 <p className="text-gray-500 text-sm mt-1">
-                    Yesterday: {currentCount.toLocaleString()} results
+                    Yesterday: {currentCount.toLocaleString()} answers
                 </p>
             )}
         </div>

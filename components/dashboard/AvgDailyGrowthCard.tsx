@@ -78,7 +78,7 @@ export default function AvgDailyGrowthCard() {
                     </span>
                 )}
             </div>
-            <p className="text-gray-500 text-sm mt-2">Since April 9th, 2025</p>
+            <p className="text-gray-500 text-sm mt-2">Last 2 weeks</p>
         </div>
     )
 } 
