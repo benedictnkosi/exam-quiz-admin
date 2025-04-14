@@ -10,6 +10,9 @@ import DailyAnswersChart from '../../components/dashboard/DailyAnswersChart'
 import DailyRegistrationsChart from '../../components/dashboard/DailyRegistrationsChart'
 import LearnerActivityChart from '../../components/dashboard/LearnerActivityChart'
 import SubjectQuestionCountTable from '../../components/dashboard/SubjectQuestionCountTable'
+import ResultGrowthChart from '../../components/dashboard/ResultGrowthChart'
+import AvgDailyGrowthCard from '../../components/dashboard/AvgDailyGrowthCard'
+import GrowthTargetCard from '../../components/dashboard/GrowthTargetCard'
 
 export default function AdminDashboard() {
     return (
@@ -22,19 +25,21 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <TotalQuestionsCard />
                         <TotalLearnersCard />
+                        <AvgDailyGrowthCard />
+                        <GrowthTargetCard />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <LearnerActivityChart />
+                        <ResultGrowthChart />
                         <DailyAnswersChart />
                     </div>
 
-                    <div className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                         <DailyRegistrationsChart />
+                        <LearnerActivityChart />
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 mt-6">
-
                         <QuestionStatsTable />
                         <ReviewerStatsTable />
                         <SubjectQuestionCountTable />
