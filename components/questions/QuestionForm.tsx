@@ -36,9 +36,18 @@ interface FormData {
   explanation: string
   options: string[]
   contextImage: ImageInfo | null
+  otherContextImages: ImageInfo[]
   questionImage: ImageInfo | null
   explanationImage: File | null
   curriculum: string
+  answerSheet: {
+    rows: Array<{
+      column1: string
+      column2: string
+      column3: string
+      column4: string
+    }>
+  }
 }
 
 interface QuestionFormProps {
@@ -126,6 +135,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [debugLogs, setDebugLogs] = useState<string[]>([])
   const [grades, setGrades] = useState<Grade[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [loadingGrades, setLoadingGrades] = useState(true)
@@ -137,6 +147,9 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [showLatexAnswer, setShowLatexAnswer] = useState(false)
   const [showLatexExplanation, setShowLatexExplanation] = useState(false)
   const [isConverting, setIsConverting] = useState(false)
+  const [showAnswerSheet, setShowAnswerSheet] = useState(false)
+  const [jsonOutput, setJsonOutput] = useState<string>('')
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
 
   const initialFormState = {
     questionText: '',
@@ -150,9 +163,13 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     explanation: '',
     options: ['', '', '', ''],
     contextImage: null,
+    otherContextImages: [],
     questionImage: null,
     explanationImage: null,
-    curriculum: 'CAPS'
+    curriculum: 'CAPS',
+    answerSheet: {
+      rows: []
+    }
   }
 
   // Update the initialization code
@@ -187,13 +204,21 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           path: initialData.image_path,
           isNew: false
         } : null,
+        otherContextImages: initialData.other_context_images ? initialData.other_context_images.map(path => ({
+          file: null,
+          path: path,
+          isNew: false
+        })) : [],
         questionImage: initialData.question_image_path ? {
           file: null,
           path: initialData.question_image_path,
           isNew: false
         } : null,
         explanationImage: null,
-        curriculum: initialData.curriculum || 'CAPS'
+        curriculum: initialData.curriculum || 'CAPS',
+        answerSheet: {
+          rows: []
+        }
       }
     }
     return initialFormState
@@ -400,21 +425,57 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }));
   }
 
-  const handleImageUpload = async (file: File, type: 'question_context' | 'question' | 'answer', qId: string) => {
+  const handleImageUpload = async (file: File, type: 'question_context' | 'question' | 'answer' | 'other_context', qId: string) => {
     if (!user?.uid) return null;
 
     try {
-      const response = await uploadQuestionImage(
-        file,
-        qId,
-        type,
-        user.uid
-      )
-      return response.fileName
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('question_id', qId);
+      formData.append('image_type', type);
+      formData.append('uid', user.uid);
+
+      const response = await fetch(`${API_BASE_URL}/learner/upload-image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result.status === 'NOK') {
+        throw new Error(result.message || 'Failed to upload image');
+      }
+
+      return result.fileName;
     } catch (error) {
-      console.error(`Error uploading ${type} image:`, error)
-      return null
+      console.error(`Error uploading ${type} image:`, error);
+      return null;
     }
+  }
+
+  const handleAddContextImage = (file: File | null, imagePath?: string) => {
+    if (file) {
+      const newImage = {
+        file,
+        path: imagePath || '',
+        isNew: !imagePath
+      };
+      setFormData(prev => ({
+        ...prev,
+        otherContextImages: [...prev.otherContextImages, newImage]
+      }));
+    }
+  };
+
+  const handleRemoveContextImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      otherContextImages: prev.otherContextImages.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addDebugLog = (message: string) => {
+    setDebugLogs(prev => [...prev, `${new Date().toISOString()}: ${message}`])
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -424,6 +485,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     setLoading(true)
     setError('')
     setSuccess(false)
+    setDebugLogs([]) // Clear logs at start of submission
 
     try {
       if (!user?.email) {
@@ -467,20 +529,59 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       // Create a copy of the options array
       const options = [...formData.options];
 
-      // Check if options are filled
-      if (options.some(option => !option.trim())) {
-        throw new Error('All options are required for multiple choice questions')
+      // Only validate options and answer if there's no answer sheet table
+      if (!showAnswerSheet || formData.answerSheet.rows.length === 0) {
+        // Check if options are filled
+        if (options.some(option => !option.trim())) {
+          throw new Error('All options are required for multiple choice questions')
+        }
+
+        // Check if there are duplicate options
+        const uniqueOptions = new Set(options.map(opt => opt.trim()));
+        if (uniqueOptions.size !== options.length) {
+          throw new Error('All options must be unique')
+        }
+
+        // Ensure answer is the same as option 4
+        if (options[3] !== formData.answer) {
+          throw new Error('Option 4 must be the same as the answer')
+        }
       }
 
-      // Check if there are duplicate options
-      const uniqueOptions = new Set(options.map(opt => opt.trim()));
-      if (uniqueOptions.size !== options.length) {
-        throw new Error('All options must be unique')
-      }
+      // Prepare answer sheet JSON if table exists
+      let answerSheetJson: Array<{
+        A: string | { value: string }
+        B: string | { 
+          value: string
+          isEditable: boolean
+          correct: string
+          options: string[]
+          explanation?: string
+        }
+      }> | undefined;
 
-      // Ensure answer is the same as option 4
-      if (options[3] !== formData.answer) {
-        throw new Error('Option 4 must be the same as the answer')
+      if (showAnswerSheet && formData.answerSheet.rows.length > 0) {
+        answerSheetJson = formData.answerSheet.rows.map(row => {
+          const item: any = {
+            A: row.column1,
+            B: {
+              value: "",
+              isEditable: true,
+              correct: row.column2,
+              options: row.column3 
+                ? [...row.column3.split(',').map(opt => opt.trim()), row.column2]
+                : [],
+              explanation: row.column4 || undefined
+            }
+          };
+
+          // If no options, make it a simple value
+          if (!row.column3) {
+            item.B = row.column2;
+          }
+
+          return item;
+        });
       }
 
       const payload: QuestionPayload = {
@@ -494,16 +595,17 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           option1: options[0],
           option2: options[1],
           option3: options[2],
-          option4: options[3], // This is now guaranteed to be the same as the answer
+          option4: options[3],
         },
         explanation: formData.explanation || '',
         year: formData.examYear,
         term: formData.term,
         capturer: user.email,
         uid: user.uid,
-        question_id: mode === 'edit' && initialData ? initialData.id : 0,  // Set proper question_id for updates
+        question_id: mode === 'edit' && initialData ? initialData.id : 0,
         grade: formData.grade,
-        curriculum: formData.curriculum
+        curriculum: formData.curriculum,
+        answer_sheet: answerSheetJson
       }
 
       const response: ApiResponse = await createQuestion(payload)
@@ -517,14 +619,13 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         throw new Error('Question ID not received from server')
       }
 
-      // Handle context image - only upload if it's a new file
+      // Handle main context image
       if (formData.contextImage?.file && formData.contextImage.isNew) {
         const fileName = await handleImageUpload(formData.contextImage.file, 'question_context', questionId.toString())
         if (fileName) {
           setLastContextImage(fileName);
         }
       } else if (formData.contextImage?.path) {
-        // Reuse existing context image
         const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
           method: 'POST',
           body: JSON.stringify({
@@ -535,6 +636,43 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           })
         })
         console.log(response)
+      }
+
+      // Handle additional context images
+      const otherContextImagePaths: string[] = [];
+      addDebugLog(`Processing other context images: ${JSON.stringify(formData.otherContextImages)}`);
+      
+      for (const image of formData.otherContextImages) {
+        addDebugLog(`Processing image: ${JSON.stringify(image)}`);
+        if (image.file && image.isNew) {
+          addDebugLog(`Uploading new image: ${image.file.name}`);
+          const fileName = await handleImageUpload(image.file, 'other_context', questionId.toString());
+          addDebugLog(`Uploaded image filename: ${fileName}`);
+          if (fileName) {
+            otherContextImagePaths.push(fileName);
+            addDebugLog(`Added to paths: ${fileName}`);
+          }
+        } else if (image.path) {
+          addDebugLog(`Using existing image path: ${image.path}`);
+          otherContextImagePaths.push(image.path);
+        }
+      }
+
+      addDebugLog(`Final otherContextImagePaths: ${JSON.stringify(otherContextImagePaths)}`);
+
+      // Update the question with additional context images
+      if (otherContextImagePaths.length > 0) {
+        addDebugLog(`Sending other context images to server: ${JSON.stringify(otherContextImagePaths)}`);
+        const response = await fetch(`${API_BASE_URL}/question/set-other-context-images`, {
+          method: 'POST',
+          body: JSON.stringify({
+            question_id: questionId.toString(),
+            other_context_images: otherContextImagePaths,
+            uid: user.uid
+          })
+        });
+        const responseData = await response.json();
+        addDebugLog(`Server response: ${JSON.stringify(responseData)}`);
       }
 
       // Handle question image - only upload if it's a new file
@@ -663,6 +801,180 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         })}
       </div>
     );
+  };
+
+  const handleAddTable = () => {
+    setFormData(prev => ({
+      ...prev,
+      answerSheet: {
+        rows: [
+          { column1: '', column2: '', column3: '', column4: '' },
+          { column1: '', column2: '', column3: '', column4: '' }
+        ]
+      }
+    }));
+    setShowAnswerSheet(true);
+  };
+
+  const handleRemoveTable = () => {
+    setFormData(prev => ({
+      ...prev,
+      answerSheet: {
+        rows: []
+      }
+    }));
+    setShowAnswerSheet(false);
+    setJsonOutput('');
+  };
+
+  const handleAddRow = () => {
+    setFormData(prev => ({
+      ...prev,
+      answerSheet: {
+        rows: [...prev.answerSheet.rows, { column1: '', column2: '', column3: '', column4: '' }]
+      }
+    }));
+  };
+
+  const validateNumber = (value: string): boolean => {
+    // Allow empty string, negative numbers, and positive numbers
+    if (value === '') return true;
+    // Check if it's a valid number (including negative numbers)
+    return /^-?\d*\.?\d*$/.test(value);
+  };
+
+  const generateRandomOptions = (baseValue: string): string[] => {
+    const num = parseFloat(baseValue);
+    if (isNaN(num)) return [];
+
+    // Determine the rounding factor based on the magnitude of the number
+    const absNum = Math.abs(num);
+    let roundingFactor = 50;
+    
+    if (absNum >= 1000) {
+      roundingFactor = 100;
+    } else if (absNum >= 100) {
+      roundingFactor = 50;
+    } else if (absNum >= 10) {
+      roundingFactor = 10;
+    } else {
+      roundingFactor = 5;
+    }
+
+    // Generate 3 random numbers within ±20% of the base value
+    const options = new Set<string>();
+    while (options.size < 3) {
+      const variation = (Math.random() * 0.4 - 0.2) * num; // ±20% variation
+      const newValue = num + variation;
+      
+      // Round to the nearest rounding factor
+      const roundedValue = Math.round(newValue / roundingFactor) * roundingFactor;
+      
+      // Format the number to match the original's decimal places
+      const decimalPlaces = (baseValue.split('.')[1] || '').length;
+      const formattedValue = roundedValue.toFixed(decimalPlaces);
+      
+      // Only add if it's different from the original value
+      if (formattedValue !== baseValue) {
+        options.add(formattedValue);
+      }
+    }
+
+    return Array.from(options);
+  };
+
+  const handleGenerateOptions = () => {
+    const newRows = formData.answerSheet.rows.map(row => {
+      if (row.column2) {
+        const options = generateRandomOptions(row.column2);
+        return {
+          ...row,
+          column3: options.join(', ')
+        };
+      }
+      return row;
+    });
+
+    setFormData(prev => ({
+      ...prev,
+      answerSheet: {
+        rows: newRows
+      }
+    }));
+  };
+
+  const areAllColumnBValuesFilled = () => {
+    return formData.answerSheet.rows.every(row => row.column2.trim() !== '');
+  };
+
+  const handleTableInputChange = (rowIndex: number, column: 'column1' | 'column2' | 'column3' | 'column4', value: string) => {
+    // Special validation for column2 (Amount)
+    if (column === 'column2') {
+      if (!validateNumber(value)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [`row-${rowIndex}-column2`]: 'Please enter a valid number'
+        }));
+        return;
+      } else {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[`row-${rowIndex}-column2`];
+          return newErrors;
+        });
+      }
+    }
+
+    setFormData(prev => {
+      const newRows = [...prev.answerSheet.rows];
+      newRows[rowIndex] = { ...newRows[rowIndex], [column]: value };
+      return {
+        ...prev,
+        answerSheet: {
+          rows: newRows
+        }
+      };
+    });
+  };
+
+  const convertToJson = () => {
+    // Check for validation errors before generating JSON
+    const hasErrors = Object.keys(validationErrors).length > 0;
+    if (hasErrors) {
+      alert('Please fix the validation errors before generating JSON');
+      return;
+    }
+
+    const jsonData = formData.answerSheet.rows.map(row => {
+      const item: any = {
+        A: row.column1 || { value: "" },
+        B: row.column2 || { value: "" }
+      };
+
+      // If column C (options) is populated, modify the B field
+      if (row.column3) {
+        const options = row.column3.split(',').map(opt => opt.trim());
+        item.B = {
+          value: "",
+          isEditable: true,
+          correct: row.column2,
+          options: options,
+          explanation: row.column4 || undefined
+        };
+      }
+
+      return item;
+    });
+
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    setJsonOutput(jsonString);
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(jsonString).then(() => {
+      alert('JSON copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy JSON:', err);
+    });
   };
 
   return (
@@ -931,8 +1243,167 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                 </div>
               )}
             </div>
+
+            {/* Additional Context Images Section */}
+            <div className="mt-4">
+              <label className="block text-sm text-gray-700 mb-2">
+                Additional Context Images (Max 10)
+              </label>
+              {formData.otherContextImages.length < 10 && (
+                <ImageUpload
+                  key={`additional-context-image-${resetKey}`}
+                  onFileSelect={handleAddContextImage}
+                  label="Add Another Context Image"
+                  showResetButton={false}
+                />
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {formData.otherContextImages.map((image, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={image.file ? URL.createObjectURL(image.file) : `${IMAGE_BASE_URL}${image.path}`}
+                      alt={`Additional Context ${index + 1}`}
+                      className="w-full h-48 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveContextImage(index)}
+                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
+          
+
+          <div className="md:col-span-2">
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm text-gray-700">Answer Sheet</label>
+              <label className="block text-sm text-gray-700">Leave options empty if the learner is not required to fill in the field</label>
+              {formData.subject.toLowerCase().includes('accounting') && (
+                !showAnswerSheet ? (
+                  <button
+                    type="button"
+                    onClick={handleAddTable}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Add Table
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleRemoveTable}
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Remove Table
+                  </button>
+                )
+              )}
+            </div>
+            {showAnswerSheet && formData.answerSheet.rows.length > 0 && (
+              <div className="mt-2 overflow-x-auto">
+                <table className="min-w-full border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 px-4 py-2">Description</th>
+                      <th className="border border-gray-300 px-4 py-2">Amount</th>
+                      <th className="border border-gray-300 px-4 py-2">Options (comma-separated)</th>
+                      <th className="border border-gray-300 px-4 py-2">Explanation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formData.answerSheet.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <input
+                            type="text"
+                            value={row.column1}
+                            onChange={(e) => handleTableInputChange(rowIndex, 'column1', e.target.value)}
+                            className="w-full border-0 focus:ring-0"
+                            placeholder="Enter description"
+                          />
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <input
+                            type="text"
+                            value={row.column2}
+                            onChange={(e) => handleTableInputChange(rowIndex, 'column2', e.target.value)}
+                            className={`w-full border-0 focus:ring-0 ${validationErrors[`row-${rowIndex}-column2`] ? 'bg-red-50' : ''}`}
+                            placeholder="Enter amount (numbers only)"
+                          />
+                          {validationErrors[`row-${rowIndex}-column2`] && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors[`row-${rowIndex}-column2`]}</p>
+                          )}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <input
+                            type="text"
+                            value={row.column3}
+                            onChange={(e) => handleTableInputChange(rowIndex, 'column3', e.target.value)}
+                            className="w-full border-0 focus:ring-0"
+                            placeholder="Enter options (comma-separated)"
+                          />
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <textarea
+                            value={row.column4}
+                            onChange={(e) => handleTableInputChange(rowIndex, 'column4', e.target.value)}
+                            className="w-full border-0 focus:ring-0 resize-none"
+                            placeholder="Enter explanation"
+                            rows={3}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="flex space-x-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={handleAddRow}
+                    className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    Add Row
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGenerateOptions}
+                    disabled={!areAllColumnBValuesFilled()}
+                    className={`px-3 py-1 text-sm rounded focus:outline-none focus:ring-2 ${
+                      areAllColumnBValuesFilled()
+                        ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Generate Options
+                  </button>
+                  <button
+                    type="button"
+                    onClick={convertToJson}
+                    className="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    Generate JSON
+                  </button>
+                </div>
+                {jsonOutput && (
+                  <div className="mt-4">
+                    <label className="block text-sm text-gray-700 mb-1">Generated JSON:</label>
+                    <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-sm">
+                      {jsonOutput}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {!showAnswerSheet && (
           <div className="md:col-span-2">
             <div className="flex justify-between items-center mb-1">
               <label className="block text-sm text-gray-700">Answer</label>
@@ -959,59 +1430,62 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               </div>
             )}
           </div>
+          )}
 
-          <div className="md:col-span-2 space-y-4">
-            <div className="flex justify-between items-center">
-              <label className="block text-sm text-gray-700">Answer Options</label>
-              <AIOptionsGenerator
-                questionText={formData.questionText}
-                context={formData.context}
-                correctAnswer={formData.answer}
-                length={formData.answer.length}
-                disabled={!formData.questionText || !formData.answer}
-                onOptionsGenerated={(options) => {
-                  // Ensure option 4 is the answer
-                  const newOptions = [...options];
-                  newOptions[3] = formData.answer;
-                  setFormData(prev => ({
-                    ...prev,
-                    options: newOptions
-                  }));
-                }}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-              {formData.options.map((option, index) => (
-                <div key={index}>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Option {index + 1}
-                    {index === 3 && ' (Correct Answer)'}
-                  </label>
-                  <textarea
-                    value={option}
-                    onChange={(e) => handleOptionChange(index, e.target.value)}
-                    placeholder={`Option ${index + 1}`}
-                    className={`w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${index === 3 ? 'bg-gray-100' : ''}`}
-                    required
-                    rows={2}
-                    disabled={index === 3} // Disable option 4 since it's automatically set to the answer
-                  />
-                  {option && option.includes('$') && (
-                    <div className="mt-1 p-2 bg-gray-50 rounded">
-                      <p className="text-sm text-gray-700">
-                        {renderLatex(option)}
+          {!showAnswerSheet && (
+            <div className="md:col-span-2 space-y-4">
+              <div className="flex justify-between items-center">
+                <label className="block text-sm text-gray-700">Answer Options</label>
+                <AIOptionsGenerator
+                  questionText={formData.questionText}
+                  context={formData.context}
+                  correctAnswer={formData.answer}
+                  length={formData.answer.length}
+                  disabled={!formData.questionText || !formData.answer}
+                  onOptionsGenerated={(options) => {
+                    // Ensure option 4 is the answer
+                    const newOptions = [...options];
+                    newOptions[3] = formData.answer;
+                    setFormData(prev => ({
+                      ...prev,
+                      options: newOptions
+                    }));
+                  }}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {formData.options.map((option, index) => (
+                  <div key={index}>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Option {index + 1}
+                      {index === 3 && ' (Correct Answer)'}
+                    </label>
+                    <textarea
+                      value={option}
+                      onChange={(e) => handleOptionChange(index, e.target.value)}
+                      placeholder={`Option ${index + 1}`}
+                      className={`w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${index === 3 ? 'bg-gray-100' : ''}`}
+                      required
+                      rows={2}
+                      disabled={index === 3} // Disable option 4 since it's automatically set to the answer
+                    />
+                    {option && option.includes('$') && (
+                      <div className="mt-1 p-2 bg-gray-50 rounded">
+                        <p className="text-sm text-gray-700">
+                          {renderLatex(option)}
+                        </p>
+                      </div>
+                    )}
+                    {index === 3 && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        This option is automatically set to match your answer
                       </p>
-                    </div>
-                  )}
-                  {index === 3 && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      This option is automatically set to match your answer
-                    </p>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="md:col-span-2">
             <label className="block text-sm text-gray-700 mb-1">
@@ -1042,6 +1516,18 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               label="Upload Explanation Image (Optional)"
               imageName={formData.explanationImage ? undefined : undefined}
             />
+          </div>
+        </div>
+
+        {/* Debug Logs Section */}
+        <div className="mt-4 p-4 bg-gray-100 rounded">
+          <h3 className="text-lg font-semibold mb-2">Debug Logs</h3>
+          <div className="max-h-60 overflow-y-auto bg-white p-2 rounded">
+            {debugLogs.map((log, index) => (
+              <div key={index} className="text-sm font-mono mb-1">
+                {log}
+              </div>
+            ))}
           </div>
         </div>
 

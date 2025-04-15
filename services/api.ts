@@ -16,7 +16,7 @@ export interface LeaderboardEntry {
   position: number
   isCurrentLearner: boolean
   avatar: string
-}
+} 
 
 export interface LeaderboardResponse {
   status: string
@@ -65,6 +65,16 @@ export interface QuestionPayload {
   question_id?: number
   grade: string
   curriculum: string
+  otherContextImages?: string[]
+  answer_sheet?: Array<{
+    A: string | { value: string }
+    B: string | { 
+      value: string
+      isEditable: boolean
+      correct: string
+      options: string[]
+    }
+  }>
 }
 
 export interface ApiResponse {
@@ -152,6 +162,7 @@ export interface DetailedQuestion {
   posted: boolean
   reviewed_at?: string
   updated?: string
+  other_context_images?: string[]
 }
 
 export interface MySubjectsResponse {
@@ -241,7 +252,7 @@ export async function createQuestion(data: QuestionPayload): Promise<ApiResponse
 export async function uploadQuestionImage(
   file: File,
   questionId: string,
-  type: 'question_context' | 'question' | 'answer',
+  type: 'question_context' | 'question' | 'answer' | 'other_context',
   uid: string
 ): Promise<ApiResponse> {
   const formData = new FormData()
@@ -411,7 +422,9 @@ export async function getQuestionById(id: string): Promise<DetailedQuestion> {
     }
 
     const question = data[0]
-    question.answer = question.answer.replace(/[\[\]"]/g, '')
+    if (question.answer) {
+      question.answer = question.answer.replace(/[\[\]"]/g, '')
+    }
 
     return question
   } catch (error) {

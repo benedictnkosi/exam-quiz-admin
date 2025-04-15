@@ -10,7 +10,9 @@ import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 
 interface ViewQuestionModalProps {
-  question: DetailedQuestion
+  question: DetailedQuestion & {
+    answer_sheet?: string
+  }
   onClose: () => void
   onQuestionUpdate?: (newQuestion: DetailedQuestion) => void
 }
@@ -76,6 +78,17 @@ export default function ViewQuestionModal({
   const [rejectComment, setRejectComment] = useState('')
   const [rejecting, setRejecting] = useState(false)
   const [canApprove, setCanApprove] = useState(false)
+  const [answerSheet, setAnswerSheet] = useState<Array<{
+    A: string
+    B: {
+      value: string
+      isEditable: boolean
+      correct: string
+      options: string[]
+      explanation?: string
+    }
+  }> | null>(null)
+  const [selectedAnswers, setSelectedAnswers] = useState<{[key: number]: string}>({})
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -84,6 +97,23 @@ export default function ViewQuestionModal({
 
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (question.answer_sheet) {
+      try {
+        const parsedSheet = JSON.parse(question.answer_sheet)
+        setAnswerSheet(parsedSheet)
+        // Initialize selected answers as empty
+        const initialAnswers = parsedSheet.reduce((acc: {[key: number]: string}, _: any, index: number) => {
+          acc[index] = ''
+          return acc
+        }, {})
+        setSelectedAnswers(initialAnswers)
+      } catch (error) {
+        console.error('Error parsing answer sheet:', error)
+      }
+    }
+  }, [question.answer_sheet])
 
   const getImageUrl = (imageName: string) => {
     if (!imageName) return '';
@@ -188,7 +218,27 @@ export default function ViewQuestionModal({
     }
   }
 
+  const handleOptionSelect = async (rowIndex: number, option: string) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [rowIndex]: option
+    }))
+
+    try {
+      setLoading(true)
+      const correct = await checkAnswer(option)
+      setIsCorrect(correct)
+      setShowAnswer(true)
+    } catch (error) {
+      console.error('Error checking answer:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const isMultipleChoice = question.type === 'multiple_choice'
+  const isAccounting = question.subject.name.toLowerCase() === 'accounting'
+  const hasAnswerSheet = answerSheet !== null
 
   const renderMixedContent = (text: string) => {
     // Handle LaTeX content first
@@ -260,113 +310,65 @@ export default function ViewQuestionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-[400px] w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 space-y-6">
-          {/* Header with Status and Buttons */}
-          <div className="flex flex-col justify-between items-start">
-            <div className="flex items-center space-x-4 mt-4">
-              {/* Only show approve button if answer has been checked */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-2xl font-bold">Question Details</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-
-              {/* Only show reject button if status is not rejected */}
-              {question.status !== 'rejected' && (
-                <button
-                  onClick={() => setShowRejectModal(true)}
-                  disabled={rejecting}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-                >
-                  {rejecting ? 'Rejecting...' : 'Reject Question'}
-                </button>
-              )}
-
-              {question.status !== 'rejected' && (
-                <button
-                  onClick={handleApprove}
-                  disabled={!canApprove}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                >
-                  {!canApprove ? 'Please review for 30s' : 'Approve Question'}
-                </button>
-              )}
-
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">Close</span>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div>
-              <h2 className="text-xl font-medium text-gray-900">Question - {question.id}</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Grade {question.subject.grade.number} • {question.subject.name} • Term {question.term}
-              </p>
-              {question.status === 'rejected' && question.comment && (
-                <div className="mt-2 p-3 bg-red-50 rounded-md">
-                  <p className="text-sm font-medium text-red-800">Rejection Comment:</p>
-                  <p className="text-sm text-red-700">{question.comment}</p>
-                </div>
-              )}
-            </div>
-
-          </div>
-
-          {/* Context */}
-          {(question.context || question.image_path) && (
-            <div className="space-y-2">
-              <h3 className="font-medium text-gray-900">Context</h3>
-              {question.context && (
-                <p className="text-gray-700">{renderMixedContent(question.context)}</p>
-              )}
-              {(question.image_path && question.image_path !== 'NULL') && (
-                <div className="relative h-64 w-full">
-                  <Image
-                    src={getImageUrl(question.image_path)}
-                    alt="Question context"
-                    fill
-                    unoptimized
-                    className="object-contain"
-                    onError={(e) => {
-                      console.error('Failed to load context image:', question.image_path);
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
+        <div className="space-y-4">
+          {/* Context Image */}
+          {question.image_path && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Context Image</h3>
+              <div className="relative w-full h-64">
+                <Image
+                  src={getImageUrl(question.image_path)}
+                  alt="Context"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
 
-          {/* Question */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Question</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-800">
-                {renderMixedContent(question.question)}
-              </p>
-            </div>
-            {(question.question_image_path && question.question_image_path !== 'NULL') && (
-              <div className="relative h-64 w-full mt-2">
-                <Image
-                  src={getImageUrl(question.question_image_path)}
-                  alt="Question"
-                  fill
-                  unoptimized
-                  className="object-contain"
-                  onError={(e) => {
-                    console.error('Failed to load question image:', question.question_image_path);
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
+          {/* Additional Context Images */}
+          {question.other_context_images && question.other_context_images.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Additional Context Images</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {question.other_context_images.map((imagePath, index) => (
+                  <div key={index} className="relative w-full h-48">
+                    <Image
+                      src={getImageUrl(imagePath)}
+                      alt={`Additional Context ${index + 1}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
+
+          {/* Question Content */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Question</h3>
+            <div className="bg-gray-50 p-4 rounded">
+              {renderMixedContent(question.question)}
+            </div>
           </div>
 
           {/* Answer Section */}
-          {isMultipleChoice ? (
+          {isMultipleChoice && !hasAnswerSheet ? (
             <div className="space-y-4">
               <h3 className="font-medium text-gray-900">Choose an Answer</h3>
               <div className="space-y-2">
@@ -401,6 +403,56 @@ export default function ViewQuestionModal({
                     {renderMixedContent(value)}
                   </button>
                 ))}
+              </div>
+            </div>
+          ) : hasAnswerSheet ? (
+            <div className="space-y-4">
+              <h3 className="font-medium text-gray-900">Answer Sheet</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">A</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">B</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {answerSheet.map((row, index) => (
+                      <tr key={index}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {row.A}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          <div className="space-y-2">
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                              {row.B.options.map((option, optIndex) => (
+                                <button
+                                  key={optIndex}
+                                  onClick={() => handleOptionSelect(index, option)}
+                                  className={`p-2 text-left border rounded ${
+                                    showAnswer
+                                      ? option === row.B.correct
+                                        ? 'bg-green-50 border-green-500 text-green-700'
+                                        : selectedAnswers[index] === option
+                                          ? 'bg-red-50 border-red-500 text-red-700'
+                                          : 'border-gray-200'
+                                      : selectedAnswers[index] === option 
+                                        ? 'bg-blue-50 border-blue-500' 
+                                        : 'border-gray-200 hover:bg-gray-50'
+                                  }`}
+                                  disabled={showAnswer || loading}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           ) : (

@@ -84,9 +84,13 @@ export default function GrowthTargetCard() {
                 Daily growth needed for 1M answers per day by Dec 31
             </p>
             {currentCount && (
-                <p className="text-gray-500 text-sm mt-1">
-                    Yesterday: {currentCount.toLocaleString()} answers
+               <><p className="text-gray-500 text-sm mt-1">
+                    Ad every 20 answers = 50 000
                 </p>
+                <p className="text-gray-500 text-sm mt-1">
+                R0,094 per ad = R4700
+            </p>
+            </>
             )}
         </div>
     )
