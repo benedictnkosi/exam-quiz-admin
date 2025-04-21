@@ -4,24 +4,38 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { IoLogoApple, IoLogoGooglePlaystore } from 'react-icons/io5'
 import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useMetaPixel } from '@/app/hooks/useMetaPixel'
+import { logAnalyticsEvent } from '@/lib/analytics'
 
 export default function LandingPage() {
   const { user } = useAuth()
   const router = useRouter()
-  const { trackEvent, pageView } = useMetaPixel()
+  const searchParams = useSearchParams()
+  const { pageView } = useMetaPixel()
 
   useEffect(() => {
     if (user) {
       router.push('/')
     }
+
+    // Check for redirect=app parameter
+    const redirectParam = searchParams.get('redirect')
+    if (redirectParam === 'app') {
+      logAnalyticsEvent('facebook_referal', {
+        value: 0,
+        currency: 'USD',
+      })
+      window.location.href = 'https://play.google.com/store/apps/details?id=za.co.examquizafrica'
+      return
+    }
+
     // Defer pageView tracking to improve initial load
     setTimeout(() => {
       pageView()
     }, 0)
-  }, [user, router, pageView])
+  }, [user, router, pageView, searchParams])
 
   // Don't render the landing page if user is authenticated
   if (user) {
@@ -29,21 +43,21 @@ export default function LandingPage() {
   }
 
   const handleAppStoreClick = () => {
-    trackEvent('AppStoreClick', {
+    logAnalyticsEvent('AppStoreClick', {
       value: 0,
       currency: 'USD',
     })
   }
 
   const handlePlayStoreClick = () => {
-    trackEvent('PlayStoreClick', {
+    logAnalyticsEvent('PlayStoreClick', {
       value: 0,
       currency: 'USD',
     })
   }
 
   const handleLoginClick = () => {
-    trackEvent('LoginClick', {
+    logAnalyticsEvent('LoginClick', {
       value: 0,
       currency: 'USD',
     })
@@ -158,7 +172,7 @@ export default function LandingPage() {
             <p className="text-lg text-white/90">
               OR
             </p>
-            
+
             <Link
               href="/login"
               className="block w-full py-4 px-6 rounded-full text-lg font-semibold bg-gradient-to-r from-[#4338ca] to-[#6366f1] text-white hover:from-[#4338ca]/90 hover:to-[#6366f1]/90 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#1e1b4b]"

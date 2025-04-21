@@ -769,7 +769,7 @@ export default function QuizPage() {
     const [todoDueDate, setTodoDueDate] = useState('');
 
     // Add new state for badge modal
-    const [newBadge, setNewBadge] = useState<{name: string; description: string; image: string} | null>(null);
+    const [newBadge, setNewBadge] = useState<{ name: string; description: string; image: string } | null>(null);
     const [isBadgeModalVisible, setIsBadgeModalVisible] = useState(false);
 
     const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'https://api.examquiz.co.za'
@@ -948,6 +948,12 @@ export default function QuizPage() {
 
             const newStats = await getSubjectStats(user.uid, subjectName + " " + paper)
             setStats(newStats.data.stats)
+
+            logAnalyticsEvent('lesson_view', {
+                user_id: user.uid,
+                subject_name: subjectName + " " + paper,
+                paper: paper
+            })
         } catch (error) {
             console.error('Error loading quick lesson:', error)
             showMessage('Failed to load quick lesson: ' + error, 'error')
@@ -980,12 +986,7 @@ export default function QuizPage() {
             logAnalyticsEvent('submit_answer', {
                 user_id: user.uid,
                 question_id: currentQuestion.id,
-                is_correct: response.correct,
-                subject: currentQuestion.subject?.name,
-                grade: currentQuestion.subject?.grade?.number,
-                duration: duration,
-                streak: response.streak,
-                points: response.correct ? 1 : 0
+                is_correct: response.correct
             });
 
             // Play sound based on answer correctness
@@ -1392,7 +1393,7 @@ export default function QuizPage() {
                 },
             });
             const data = await response.json();
-            
+
             if (data.status === "OK" && data.new_badges && data.new_badges.length > 0) {
                 // Show badges in sequence with a delay between each
                 data.new_badges.forEach((badge: { name: string; rules: string; image: string }, index: number) => {
@@ -1434,12 +1435,12 @@ export default function QuizPage() {
                     }
                     return acc;
                 }, []);
-                
+
                 // Sort notes by creation date (newest first)
-                uniqueNotes.sort((a: Note, b: Note) => 
+                uniqueNotes.sort((a: Note, b: Note) =>
                     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
                 );
-                
+
                 setNotes(uniqueNotes);
             }
         } catch (error) {
@@ -1548,7 +1549,7 @@ export default function QuizPage() {
             });
 
             if (response.ok) {
-                setTodos(prevTodos => prevTodos.map(todo => 
+                setTodos(prevTodos => prevTodos.map(todo =>
                     todo.id === todoId ? {
                         ...todo,
                         title: updates.title || todo.title,
@@ -1644,7 +1645,7 @@ export default function QuizPage() {
                     created_at: todo.created_at,
                     due_date: todo.due_date ? new Date(todo.due_date).toISOString().split('T')[0] : undefined
                 }));
-                
+
                 // Sort todos by due date
                 mappedTodos.sort((a, b) => {
                     if (!a.due_date && !b.due_date) return 0;
@@ -1652,7 +1653,7 @@ export default function QuizPage() {
                     if (!b.due_date) return -1;
                     return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
                 });
-                
+
                 setTodos(mappedTodos);
             }
         } catch (error) {
@@ -1681,11 +1682,12 @@ export default function QuizPage() {
                 body: JSON.stringify({
                     uid: user.uid,
                     text: newText,
-                    subject_name: subjectName                })
+                    subject_name: subjectName
+                })
             });
 
             if (response.ok) {
-                setNotes(prevNotes => prevNotes.map(note => 
+                setNotes(prevNotes => prevNotes.map(note =>
                     note.id === noteId ? { ...note, text: newText } : note
                 ));
                 setNoteToEdit(null);
@@ -1704,7 +1706,7 @@ export default function QuizPage() {
         }
     }, [user?.uid, subjectName]);
 
-    
+
 
     // Add useEffect to fetch todos when component mounts and when subject changes
     useEffect(() => {
@@ -1713,9 +1715,9 @@ export default function QuizPage() {
         }
     }, [user?.uid, subjectName]);
 
-    
 
-   
+
+
 
     // Update useEffect to fetch todos when component mounts and when user changes
     useEffect(() => {
@@ -1724,7 +1726,7 @@ export default function QuizPage() {
         }
     }, [user?.uid]);
 
-    const [editingTodo, setEditingTodo] = useState<{id: number, title: string, due_date: string} | null>(null);
+    const [editingTodo, setEditingTodo] = useState<{ id: number, title: string, due_date: string } | null>(null);
 
     const handleEditTodo = (todo: Todo) => {
         setEditingTodo({
@@ -1755,8 +1757,8 @@ export default function QuizPage() {
             });
 
             if (response.ok) {
-                setTodos(prevTodos => prevTodos.map(todo => 
-                    todo.id === editingTodo.id 
+                setTodos(prevTodos => prevTodos.map(todo =>
+                    todo.id === editingTodo.id
                         ? { ...todo, title: editingTodo.title, due_date: editingTodo.due_date }
                         : todo
                 ));
@@ -1819,106 +1821,106 @@ export default function QuizPage() {
                         </div>
 
                         {/* Selection Screen */}
-                        
-                            <div className="bg-white/10 rounded-xl p-6">
-                                <h2 className="text-xl font-bold text-white mb-6 text-center">Choose Your Learning Mode</h2>
 
-                                {/* Learning Type Selection */}
-                                <div className="mb-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <button
-                                            onClick={() => {
-                                                setSelectedLearningType('quiz')
-                                                setSelectedPaper('')
-                                            }}
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quiz'
-                                                ? 'bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-purple-600/50 hover:bg-purple-600/70'
-                                                }`}
-                                        >
-                                            {selectedLearningType === 'quiz' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-purple-600 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">🎯</span>
-                                                <span className="font-semibold">Quiz Mode</span>
-                                                <span className="text-sm text-white/80 mt-1">Test your knowledge</span>
-                                            </div>
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedLearningType('quick_lessons')
-                                                setSelectedPaper('')
-                                            }}  
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quick_lessons'
-                                                ? 'bg-orange-500 shadow-lg shadow-orange-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-orange-500/50 hover:bg-orange-500/70'
-                                                }`}
-                                        >
-                                            {selectedLearningType === 'quick_lessons' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-orange-500 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">📚</span>
-                                                <span className="font-semibold">Quick Lessons</span>
-                                                <span className="text-sm text-white/80 mt-1">AI generated lessons</span>
-                                            </div>
-                                        </button>
-                                    </div>
-                                </div>
+                        <div className="bg-white/10 rounded-xl p-6">
+                            <h2 className="text-xl font-bold text-white mb-6 text-center">Choose Your Learning Mode</h2>
 
-                                {/* Paper Selection */}
-                                <div className="mb-6">
-                                    <h3 className="text-lg font-semibold text-white mb-4">Choose Paper</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <button
-                                            onClick={() => startQuizLesson('P1')}
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P1'
-                                                ? 'bg-blue-600 shadow-lg shadow-blue-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-blue-600/50 hover:bg-blue-600/70'
-                                                }`}
-                                        >
-                                            {selectedPaper === 'P1' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-blue-600 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">📝</span>
-                                                <span className="font-semibold">Paper 1</span>
+                            {/* Learning Type Selection */}
+                            <div className="mb-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => {
+                                            setSelectedLearningType('quiz')
+                                            setSelectedPaper('')
+                                        }}
+                                        className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quiz'
+                                            ? 'bg-purple-600 shadow-lg shadow-purple-500/50 scale-105 border-2 border-white/50'
+                                            : 'bg-purple-600/50 hover:bg-purple-600/70'
+                                            }`}
+                                    >
+                                        {selectedLearningType === 'quiz' && (
+                                            <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
+                                                <span className="text-purple-600 text-sm">✓</span>
                                             </div>
-                                        </button>
-                                        <button
-                                            onClick={() => startQuizLesson('P2')}
-                                            disabled={subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')}
-                                            className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P2'
-                                                ? 'bg-green-600 shadow-lg shadow-green-500/50 scale-105 border-2 border-white/50'
-                                                : 'bg-green-600/50 hover:bg-green-600/70'
-                                                } ${(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        >
-                                            {selectedPaper === 'P2' && (
-                                                <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
-                                                    <span className="text-green-600 text-sm">✓</span>
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-2xl mb-1">📖</span>
-                                                <span className="font-semibold">Paper 2</span>
-                                                {(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) && (
-                                                    <span className="text-xs text-white/60 mt-1">Not Available</span>
-                                                )}
+                                        )}
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-2xl mb-1">🎯</span>
+                                            <span className="font-semibold">Quiz Mode</span>
+                                            <span className="text-sm text-white/80 mt-1">Test your knowledge</span>
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedLearningType('quick_lessons')
+                                            setSelectedPaper('')
+                                        }}
+                                        className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedLearningType === 'quick_lessons'
+                                            ? 'bg-orange-500 shadow-lg shadow-orange-500/50 scale-105 border-2 border-white/50'
+                                            : 'bg-orange-500/50 hover:bg-orange-500/70'
+                                            }`}
+                                    >
+                                        {selectedLearningType === 'quick_lessons' && (
+                                            <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
+                                                <span className="text-orange-500 text-sm">✓</span>
                                             </div>
-                                        </button>
-                                    </div>
+                                        )}
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-2xl mb-1">📚</span>
+                                            <span className="font-semibold">Quick Lessons</span>
+                                            <span className="text-sm text-white/80 mt-1">AI generated lessons</span>
+                                        </div>
+                                    </button>
                                 </div>
                             </div>
-                        
 
-                        
+                            {/* Paper Selection */}
+                            <div className="mb-6">
+                                <h3 className="text-lg font-semibold text-white mb-4">Choose Paper</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => startQuizLesson('P1')}
+                                        className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P1'
+                                            ? 'bg-blue-600 shadow-lg shadow-blue-500/50 scale-105 border-2 border-white/50'
+                                            : 'bg-blue-600/50 hover:bg-blue-600/70'
+                                            }`}
+                                    >
+                                        {selectedPaper === 'P1' && (
+                                            <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
+                                                <span className="text-blue-600 text-sm">✓</span>
+                                            </div>
+                                        )}
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-2xl mb-1">📝</span>
+                                            <span className="font-semibold">Paper 1</span>
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => startQuizLesson('P2')}
+                                        disabled={subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')}
+                                        className={`relative text-white rounded-xl p-4 transition-all duration-200 ${selectedPaper === 'P2'
+                                            ? 'bg-green-600 shadow-lg shadow-green-500/50 scale-105 border-2 border-white/50'
+                                            : 'bg-green-600/50 hover:bg-green-600/70'
+                                            } ${(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {selectedPaper === 'P2' && (
+                                            <div className="absolute -top-2 -right-2 bg-white rounded-full p-1">
+                                                <span className="text-green-600 text-sm">✓</span>
+                                            </div>
+                                        )}
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-2xl mb-1">📖</span>
+                                            <span className="font-semibold">Paper 2</span>
+                                            {(subjectName?.toLowerCase().includes('life orientation') || subjectName?.toLowerCase().includes('tourism')) && (
+                                                <span className="text-xs text-white/60 mt-1">Not Available</span>
+                                            )}
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+
+
                         {/* Favorites Section */}
                         <div className="bg-white/10 rounded-xl p-6 flex-1 flex flex-col mt-6">
                             <div className="flex items-center justify-center gap-2 mb-4 relative">
@@ -1933,31 +1935,28 @@ export default function QuizPage() {
                             <div className="flex gap-2 mb-4">
                                 <button
                                     onClick={() => setActiveTab('todo')}
-                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${
-                                        activeTab === 'todo'
-                                            ? 'bg-purple-600 text-white'
-                                            : 'bg-white/10 text-white/60 hover:bg-white/20'
-                                    }`}
+                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${activeTab === 'todo'
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                        }`}
                                 >
                                     To Do
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('favorites')}
-                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${
-                                        activeTab === 'favorites'
-                                            ? 'bg-purple-600 text-white'
-                                            : 'bg-white/10 text-white/60 hover:bg-white/20'
-                                    }`}
+                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${activeTab === 'favorites'
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                        }`}
                                 >
                                     Favorites
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('notes')}
-                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${
-                                        activeTab === 'notes'
-                                            ? 'bg-purple-600 text-white'
-                                            : 'bg-white/10 text-white/60 hover:bg-white/20'
-                                    }`}
+                                    className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${activeTab === 'notes'
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                        }`}
                                 >
                                     Notes
                                 </button>
@@ -2180,7 +2179,7 @@ export default function QuizPage() {
                                                     className="w-full bg-transparent text-white placeholder-white/50 border border-white/10 rounded-lg p-3 mb-3 focus:outline-none focus:border-white/20"
                                                     rows={3}
                                                 />
-                                                
+
                                                 <div className="mb-3">
                                                     <label className="block text-white/70 text-sm mb-1">Due Date *</label>
                                                     <div className="relative">
@@ -2230,124 +2229,121 @@ export default function QuizPage() {
                                                         'bg-orange-200'
                                                     ];
                                                     const color = colors[index % colors.length];
-                                                    
+
                                                     return (
-                                                    <div
-                                                        key={todo.id}
-                                                        className={`rounded-lg p-4 flex items-start gap-3 shadow-lg transform transition-transform hover:scale-105 ${
-                                                            todo.completed ? `${color} opacity-60` : 
-                                                            todo.due_date ? (() => {
-                                                                const dueDate = new Date(todo.due_date);
-                                                                const today = new Date();
-                                                                today.setHours(0, 0, 0, 0);
-                                                                dueDate.setHours(0, 0, 0, 0);
-                                                                const diffTime = dueDate.getTime() - today.getTime();
-                                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                                                
-                                                                if (diffDays <= 3) return `${color} border-2 border-red-400`;
-                                                                if (diffDays <= 7) return `${color} border-2 border-amber-400`;
-                                                                return color;
-                                                            })() : color
-                                                        }`}
-                                                    >
-                                                        <button
-                                                            onClick={() => toggleTodoStatus(todo.id)}
-                                                            className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                                                todo.completed
+                                                        <div
+                                                            key={todo.id}
+                                                            className={`rounded-lg p-4 flex items-start gap-3 shadow-lg transform transition-transform hover:scale-105 ${todo.completed ? `${color} opacity-60` :
+                                                                todo.due_date ? (() => {
+                                                                    const dueDate = new Date(todo.due_date);
+                                                                    const today = new Date();
+                                                                    today.setHours(0, 0, 0, 0);
+                                                                    dueDate.setHours(0, 0, 0, 0);
+                                                                    const diffTime = dueDate.getTime() - today.getTime();
+                                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                                                                    if (diffDays <= 3) return `${color} border-2 border-red-400`;
+                                                                    if (diffDays <= 7) return `${color} border-2 border-amber-400`;
+                                                                    return color;
+                                                                })() : color
+                                                                }`}
+                                                        >
+                                                            <button
+                                                                onClick={() => toggleTodoStatus(todo.id)}
+                                                                className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${todo.completed
                                                                     ? 'border-green-600 bg-green-600/20'
                                                                     : 'border-gray-600'
-                                                            }`}
-                                                        >
-                                                            {todo.completed && (
-                                                                <span className="text-green-600">✓</span>
-                                                            )}
-                                                        </button>
-                                                        <div className="flex-1 min-w-0">
-                                                            {editingTodo?.id === todo.id ? (
-                                                                <div className="space-y-2">
-                                                                    <textarea
-                                                                        value={editingTodo.title}
-                                                                        onChange={(e) => setEditingTodo({...editingTodo, title: e.target.value})}
-                                                                        className="w-full bg-white/50 text-gray-800 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                        rows={3}
-                                                                        placeholder="Update your task here..."
-                                                                    />
-                                                                    <div className="relative">
-                                                                        <input
-                                                                            type="date"
-                                                                            value={editingTodo.due_date}
-                                                                            onChange={(e) => setEditingTodo({...editingTodo, due_date: e.target.value})}
-                                                                            className="w-full bg-white/50 text-gray-800 border border-gray-300 rounded-lg p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                            min={new Date().toISOString().split('T')[0]}
+                                                                    }`}
+                                                            >
+                                                                {todo.completed && (
+                                                                    <span className="text-green-600">✓</span>
+                                                                )}
+                                                            </button>
+                                                            <div className="flex-1 min-w-0">
+                                                                {editingTodo?.id === todo.id ? (
+                                                                    <div className="space-y-2">
+                                                                        <textarea
+                                                                            value={editingTodo.title}
+                                                                            onChange={(e) => setEditingTodo({ ...editingTodo, title: e.target.value })}
+                                                                            className="w-full bg-white/50 text-gray-800 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                            rows={3}
+                                                                            placeholder="Update your task here..."
                                                                         />
-                                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                            </svg>
+                                                                        <div className="relative">
+                                                                            <input
+                                                                                type="date"
+                                                                                value={editingTodo.due_date}
+                                                                                onChange={(e) => setEditingTodo({ ...editingTodo, due_date: e.target.value })}
+                                                                                className="w-full bg-white/50 text-gray-800 border border-gray-300 rounded-lg p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                                min={new Date().toISOString().split('T')[0]}
+                                                                            />
+                                                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                                </svg>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex gap-2">
+                                                                            <button
+                                                                                onClick={handleUpdateTodo}
+                                                                                disabled={!editingTodo.title.trim()}
+                                                                                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                            >
+                                                                                Save
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={handleCancelEdit}
+                                                                                className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm"
+                                                                            >
+                                                                                Cancel
+                                                                            </button>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="flex gap-2">
-                                                                        <button
-                                                                            onClick={handleUpdateTodo}
-                                                                            disabled={!editingTodo.title.trim()}
-                                                                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                        >
-                                                                            Save
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={handleCancelEdit}
-                                                                            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm"
-                                                                        >
-                                                                            Cancel
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <>
-                                                                    <p className={`text-gray-800 text-sm font-medium whitespace-pre-wrap ${todo.completed ? 'line-through opacity-60' : ''}`}>
-                                                                        {todo.title}
-                                                                    </p>
-                                                                    {todo.due_date && (
-                                                                        <p className={`text-sm mt-1 ${
-                                                                            todo.completed ? 'text-gray-500' :
-                                                                            (() => {
-                                                                                const dueDate = new Date(todo.due_date);
-                                                                                const today = new Date();
-                                                                                today.setHours(0, 0, 0, 0);
-                                                                                dueDate.setHours(0, 0, 0, 0);
-                                                                                const diffTime = dueDate.getTime() - today.getTime();
-                                                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                                                                
-                                                                                if (diffDays <= 3) return 'text-red-600 font-medium';
-                                                                                if (diffDays <= 7) return 'text-amber-600 font-medium';
-                                                                                return 'text-gray-600';
-                                                                            })()
-                                                                        }`}>
-                                                                            Due: {todo.due_date}
+                                                                ) : (
+                                                                    <>
+                                                                        <p className={`text-gray-800 text-sm font-medium whitespace-pre-wrap ${todo.completed ? 'line-through opacity-60' : ''}`}>
+                                                                            {todo.title}
                                                                         </p>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex gap-2">
-                                                            {!editingTodo && (
+                                                                        {todo.due_date && (
+                                                                            <p className={`text-sm mt-1 ${todo.completed ? 'text-gray-500' :
+                                                                                (() => {
+                                                                                    const dueDate = new Date(todo.due_date);
+                                                                                    const today = new Date();
+                                                                                    today.setHours(0, 0, 0, 0);
+                                                                                    dueDate.setHours(0, 0, 0, 0);
+                                                                                    const diffTime = dueDate.getTime() - today.getTime();
+                                                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                                                                                    if (diffDays <= 3) return 'text-red-600 font-medium';
+                                                                                    if (diffDays <= 7) return 'text-amber-600 font-medium';
+                                                                                    return 'text-gray-600';
+                                                                                })()
+                                                                                }`}>
+                                                                                Due: {todo.due_date}
+                                                                            </p>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                {!editingTodo && (
+                                                                    <button
+                                                                        onClick={() => handleEditTodo(todo)}
+                                                                        className="text-gray-600 hover:text-gray-800 transition-colors"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                        </svg>
+                                                                    </button>
+                                                                )}
                                                                 <button
-                                                                    onClick={() => handleEditTodo(todo)}
+                                                                    onClick={() => setTodoToDelete(todo.id)}
                                                                     className="text-gray-600 hover:text-gray-800 transition-colors"
                                                                 >
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                    </svg>
+                                                                    ✕
                                                                 </button>
-                                                            )}
-                                                            <button
-                                                                onClick={() => setTodoToDelete(todo.id)}
-                                                                className="text-gray-600 hover:text-gray-800 transition-colors"
-                                                            >
-                                                                ✕
-                                                            </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
                                                     );
                                                 })}
                                             </div>
@@ -2367,7 +2363,7 @@ export default function QuizPage() {
                         </div>
 
 
-                    
+
                     </div>
 
                     {/* Right Panel - Quiz Content */}
@@ -2473,54 +2469,54 @@ export default function QuizPage() {
                                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-0 lg:p-6 mb-8 mt-12 lg:mt-0">
                                         {/* Question Metadata */}
                                         {/* Stats Card */}
-                        {selectedLearningType === 'quiz' && (
-                            <div className="bg-white rounded-xl p-6 mb-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-black text-xl font-bold flex items-center gap-2">
-                                        {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
-                                    </h2>
-                                    <button className="text-2xl"
-                                        onClick={() => setIsRestartModalVisible(true)}
-                                    >🔄</button>
-                                </div>
+                                        {selectedLearningType === 'quiz' && (
+                                            <div className="bg-white rounded-xl p-6 mb-6">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h2 className="text-black text-xl font-bold flex items-center gap-2">
+                                                        {selectedPaper === 'P1' ? 'Paper 1' : selectedPaper === 'P2' ? 'Paper 2' : ''} Scoreboard! <span>🏆</span>
+                                                    </h2>
+                                                    <button className="text-2xl"
+                                                        onClick={() => setIsRestartModalVisible(true)}
+                                                    >🔄</button>
+                                                </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">🎯</span>
-                                            <div>
-                                                <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
-                                                <div className="text-gray-500">Bullseyes</div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="bg-gray-50 rounded-xl p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-2xl">🎯</span>
+                                                            <div>
+                                                                <div className="text-2xl font-bold text-black">{stats?.correct_answers || 0}</div>
+                                                                <div className="text-gray-500">Bullseyes</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-gray-50 rounded-xl p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-2xl">💥</span>
+                                                            <div>
+                                                                <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
+                                                                <div className="text-gray-500">Oopsies</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-gray-600 text-sm">Progress</span>
+                                                        <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                                        <div
+                                                            className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
+                                                            style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
+                                        )}
 
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">💥</span>
-                                            <div>
-                                                <div className="text-2xl font-bold text-black">{stats?.incorrect_answers || 0}</div>
-                                                <div className="text-gray-500">Oopsies</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-4">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="text-gray-600 text-sm">Progress</span>
-                                        <span className="text-gray-600 text-sm">{Math.round(stats?.correct_percentage || 0)}% GOAT 🐐</span>
-                                    </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div
-                                            className="bg-gradient-to-r from-[#00B894] to-[#00D1A3] h-2.5 rounded-full transition-all duration-500"
-                                            style={{ width: `${Math.min(Math.round(stats?.correct_percentage || 0), 100)}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        
 
                                         <div className="flex flex-wrap gap-3 mb-4 text-sm p-6">
                                             <div className="bg-white/10 px-3 py-1.5 rounded-full text-white/80 flex items-center gap-1.5">

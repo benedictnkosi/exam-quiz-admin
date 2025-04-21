@@ -816,7 +816,7 @@ export default function QuizPage() {
     const [todoDueDate, setTodoDueDate] = useState('');
     const [speechFinished, setSpeechFinished] = useState(false);
     // Add new state for badge modal
-    const [newBadge, setNewBadge] = useState<{name: string; description: string; image: string} | null>(null);
+    const [newBadge, setNewBadge] = useState<{ name: string; description: string; image: string } | null>(null);
     const [isBadgeModalVisible, setIsBadgeModalVisible] = useState(false);
 
     const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'https://api.examquiz.co.za'
@@ -1011,20 +1011,20 @@ export default function QuizPage() {
                         speed: 1.0
                     })
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to convert text to speech');
-                    }
-                    console.log('Answer speech fetched successfully');
-                    return response.blob();
-                })
-                .then(blob => {
-                    console.log('Answer speech blob received');
-                    setAnswerAudioBlob(blob);
-                })
-                .catch(error => {
-                    console.error('Error pre-fetching answer speech:', error);
-                });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to convert text to speech');
+                        }
+                        console.log('Answer speech fetched successfully');
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        console.log('Answer speech blob received');
+                        setAnswerAudioBlob(blob);
+                    })
+                    .catch(error => {
+                        console.error('Error pre-fetching answer speech:', error);
+                    });
             }
 
             // Start countdown interval
@@ -1047,13 +1047,13 @@ export default function QuizPage() {
                 if (!isAnswered && currentQuestion) {
                     // Get the correct answer from the question
                     const correctAnswer = currentQuestion.answer;
-                    
+
                     // Play the pre-fetched answer audio if available
                     if (isSoundEnabled && answerAudioBlob) {
                         console.log('Playing pre-fetched answer audio');
                         await playAudioBlob(answerAudioBlob);
                     }
-                    
+
                     handleAnswer(correctAnswer)
                 }
             }, timerDuration * 1000)
@@ -1180,7 +1180,7 @@ export default function QuizPage() {
             setTimeout(() => {
                 setShowPoints(false)
                 setCurrentStreak(1) // Default streak
-                setShowStreakModal(true)    
+                setShowStreakModal(true)
             }, 5000)
 
             // Update local stats immediately
@@ -1255,7 +1255,7 @@ export default function QuizPage() {
         }
     }
 
-   
+
 
 
     // Add the countdown display in the question card
@@ -1291,52 +1291,52 @@ export default function QuizPage() {
                         speed: 1.0
                     })
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to convert text to speech');
-                    }
-                    return response.blob();
-                })
-                .then(audioBlob => {
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    if (audioRef.current) {
-                        audioRef.current.src = audioUrl;
-                        audioRef.current.onended = () => {
-                            setIsPlaying(false);
-                            resolve();
-                        };
-                        audioRef.current.onerror = (error) => {
-                            console.error('Error playing audio:', error);
-                            setMessageModal({
-                                isVisible: true,
-                                message: 'Failed to play audio. Please check your audio settings.',
-                                type: 'error'
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to convert text to speech');
+                        }
+                        return response.blob();
+                    })
+                    .then(audioBlob => {
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        if (audioRef.current) {
+                            audioRef.current.src = audioUrl;
+                            audioRef.current.onended = () => {
+                                setIsPlaying(false);
+                                resolve();
+                            };
+                            audioRef.current.onerror = (error) => {
+                                console.error('Error playing audio:', error);
+                                setMessageModal({
+                                    isVisible: true,
+                                    message: 'Failed to play audio. Please check your audio settings.',
+                                    type: 'error'
+                                });
+                                reject(error);
+                            };
+                            audioRef.current.play().catch(error => {
+                                console.error('Error playing audio:', error);
+                                setMessageModal({
+                                    isVisible: true,
+                                    message: 'Failed to play audio. Please check your audio settings.',
+                                    type: 'error'
+                                });
+                                reject(error);
                             });
-                            reject(error);
-                        };
-                        audioRef.current.play().catch(error => {
-                            console.error('Error playing audio:', error);
-                            setMessageModal({
-                                isVisible: true,
-                                message: 'Failed to play audio. Please check your audio settings.',
-                                type: 'error'
-                            });
-                            reject(error);
+                            setIsPlaying(true);
+                        } else {
+                            reject(new Error('Audio element not found'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error converting text to speech:', error);
+                        setMessageModal({
+                            isVisible: true,
+                            message: 'Failed to convert text to speech',
+                            type: 'error'
                         });
-                        setIsPlaying(true);
-                    } else {
-                        reject(new Error('Audio element not found'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error converting text to speech:', error);
-                    setMessageModal({
-                        isVisible: true,
-                        message: 'Failed to convert text to speech',
-                        type: 'error'
+                        reject(error);
                     });
-                    reject(error);
-                });
             } catch (error) {
                 console.error('Error in speakText:', error);
                 reject(error);
@@ -1407,7 +1407,7 @@ export default function QuizPage() {
                                 </button>
                             )}
 
-                            
+
 
                             {/* Selection Screen */}
                             {!currentQuestion && !showCountdown && (
@@ -1477,46 +1477,46 @@ export default function QuizPage() {
                                                 </select>
                                             </div>
                                             {/* Question Count Selection */}
-                                    <div className="mt-4">
-                                        <h4 className="text-sm font-medium text-white mb-2">Number of Questions</h4>
-                                        <select
-                                            value={targetQuestionCount}
-                                            onChange={(e) => setTargetQuestionCount(Number(e.target.value))}
-                                            className="w-full p-3 rounded-lg bg-white/10 text-white border border-white/20 focus:border-white/40 focus:outline-none transition-colors"
-                                        >
-                                            <option value={5}>5 Questions</option>
-                                            <option value={10}>10 Questions</option>
-                                            <option value={15}>15 Questions</option>
-                                            <option value={20}>20 Questions</option>
-                                        </select>
-                                    </div>
+                                            <div className="mt-4">
+                                                <h4 className="text-sm font-medium text-white mb-2">Number of Questions</h4>
+                                                <select
+                                                    value={targetQuestionCount}
+                                                    onChange={(e) => setTargetQuestionCount(Number(e.target.value))}
+                                                    className="w-full p-3 rounded-lg bg-white/10 text-white border border-white/20 focus:border-white/40 focus:outline-none transition-colors"
+                                                >
+                                                    <option value={5}>5 Questions</option>
+                                                    <option value={10}>10 Questions</option>
+                                                    <option value={15}>15 Questions</option>
+                                                    <option value={20}>20 Questions</option>
+                                                </select>
+                                            </div>
 
-                                    {/* Sound Toggle */}
-                                    <div className="mt-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium text-white">Sound Effects</span>
-                                            <button
-                                                onClick={() => {
-                                                    const newSoundEnabled = !isSoundEnabled
-                                                    setIsSoundEnabled(newSoundEnabled)
-                                                    localStorage.setItem('soundEnabled', String(newSoundEnabled))
-                                                }}
-                                                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white/40"
-                                                style={{
-                                                    backgroundColor: isSoundEnabled ? 'rgb(59 130 246)' : 'rgb(75 85 99)'
-                                                }}
-                                            >
-                                                <span
-                                                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                                                    style={{
-                                                        transform: isSoundEnabled ? 'translateX(26px)' : 'translateX(1px)'
-                                                    }}
-                                                />
-                                            </button>
-                                        </div>
-                                    </div>
+                                            {/* Sound Toggle */}
+                                            <div className="mt-4">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium text-white">Sound Effects</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            const newSoundEnabled = !isSoundEnabled
+                                                            setIsSoundEnabled(newSoundEnabled)
+                                                            localStorage.setItem('soundEnabled', String(newSoundEnabled))
+                                                        }}
+                                                        className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white/40"
+                                                        style={{
+                                                            backgroundColor: isSoundEnabled ? 'rgb(59 130 246)' : 'rgb(75 85 99)'
+                                                        }}
+                                                    >
+                                                        <span
+                                                            className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                                                            style={{
+                                                                transform: isSoundEnabled ? 'translateX(26px)' : 'translateX(1px)'
+                                                            }}
+                                                        />
+                                                    </button>
+                                                </div>
+                                            </div>
 
-                                   
+
                                         </div>
                                     </div>
 
@@ -1585,7 +1585,7 @@ export default function QuizPage() {
                                         </div>
                                     </div>
 
-                                    
+
                                 </div>
                             )}
                         </div>
@@ -1663,23 +1663,23 @@ export default function QuizPage() {
                                     <div className="text-6xl mb-6">🎓</div>
                                     <h2 className="text-2xl font-bold text-white mb-4">Welcome to {subjectName}!</h2>
                                     <div className="text-center mb-8">
-                                    <h1 className="text-3xl font-bold text-white mb-4">
-                                        <span className="mr-4">📚</span>
-                                        examquiz.co.za
-                                        <span className="ml-4">🎓</span>
-                                    </h1>
-                                    <div className="flex flex-col items-center mt-1">
-                                        <div className="flex flex-wrap justify-center">
-                                            <Image 
-                                                src="/images/download-app.png" 
-                                                alt="Download our app" 
-                                                width={500} 
-                                                height={100} 
-                                                className="w-auto h-auto"
-                                            />
+                                        <h1 className="text-3xl font-bold text-white mb-4">
+                                            <span className="mr-4">📚</span>
+                                            examquiz.co.za
+                                            <span className="ml-4">🎓</span>
+                                        </h1>
+                                        <div className="flex flex-col items-center mt-1">
+                                            <div className="flex flex-wrap justify-center">
+                                                <Image
+                                                    src="/images/download-app.png"
+                                                    alt="Download our app"
+                                                    width={500}
+                                                    height={100}
+                                                    className="w-auto h-auto"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                                 </div>
                             </div>
                         ) : !isQuizStarted && !setSelectedSubject ? (
@@ -1761,11 +1761,11 @@ export default function QuizPage() {
                                     </h1>
                                     <div className="flex flex-col items-center mt-1">
                                         <div className="flex flex-wrap justify-center">
-                                            <Image 
-                                                src="/images/download-app.png" 
-                                                alt="Download our app" 
-                                                width={500} 
-                                                height={100} 
+                                            <Image
+                                                src="/images/download-app.png"
+                                                alt="Download our app"
+                                                width={500}
+                                                height={100}
                                                 className="w-auto h-auto"
                                             />
                                         </div>
@@ -1774,7 +1774,7 @@ export default function QuizPage() {
                                 {currentQuestion && (
                                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 lg:p-10 mb-8 mt-6 lg:mt-0 relative">
                                         {renderCountdown()}
-                                       
+
                                         {/* Question Metadata */}
                                         <div className="flex items-center justify-center gap-3 mb-4">
                                             <Image
@@ -1920,11 +1920,10 @@ export default function QuizPage() {
                                                             key={key}
                                                             onClick={() => handleAnswer(value)}
                                                             disabled={isAnswered}
-                                                            className={`w-full p-4 rounded-lg text-center transition-all border ${
-                                                                cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
+                                                            className={`w-full p-4 rounded-lg text-center transition-all border ${cleanAnswer(value) === cleanAnswer(correctAnswer) && showExplanation
                                                                     ? 'bg-green-500/20 text-green-100 border-green-500/50 animate-pulse'
                                                                     : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
-                                                            } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
+                                                                } ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
                                                         >
                                                             {renderMixedContent(value, true)}
                                                         </button>
@@ -1935,12 +1934,12 @@ export default function QuizPage() {
                                     </div>
                                 )}
 
-                                    
+
                             </div>
                         )}
                     </div>
                 </div>
-                
+
             </div>
         </>
     )

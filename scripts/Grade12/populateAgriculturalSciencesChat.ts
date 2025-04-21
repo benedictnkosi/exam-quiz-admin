@@ -54,6 +54,59 @@ async function sendPushNotification(subjectName: string, threadTitle: string, ui
     }
 }
 
+async function getQuestion() {
+    try {
+        const url = new URL(`${API_BASE_URL}/question/random-ai`);
+        url.searchParams.append('uid', 'OY3G9wydrNesx8nvbOyAKaFjlmJ2');
+        url.searchParams.append('subject_name', 'Agricultural Sciences');
+
+        const response = await fetch(url.toString());
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching question:', error);
+        throw error;
+    }
+}
+
+async function createThread(title: string, subjectName: string) {
+    try {
+        const threadData = {
+            createdAt: Timestamp.fromDate(new Date()),
+            createdById: "OY3G9wydrNesx8nvbOyAKaFjlmJ2",
+            createdByName: "Siya Da AI",
+            grade: 12,
+            subjectName: subjectName,
+            title: title
+        };
+
+        const docRef = await addDoc(collection(db, 'threads'), threadData);
+        return docRef.id;
+    } catch (error) {
+        console.error('Error creating thread: ', error);
+        throw error;
+    }
+}
+
+async function addMessage(threadId: string, message: string) {
+    try {
+        const data = {
+            authorUID: "OY3G9wydrNesx8nvbOyAKaFjlmJ2",
+            createdAt: Timestamp.fromDate(new Date()),
+            text: message,
+            threadId: threadId,
+            userName: "System"
+        };
+
+        await addDoc(collection(db, 'messages'), data);
+    } catch (error) {
+        console.error('Error adding message: ', error);
+        throw error;
+    }
+}
+
 // Main function to create thread and populate conversation
 async function populateAgriculturalSciencesConversation() {
     try {
