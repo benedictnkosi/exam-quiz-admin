@@ -88,7 +88,7 @@ export default function ViewQuestionModal({
       explanation?: string
     }
   }> | null>(null)
-  const [selectedAnswers, setSelectedAnswers] = useState<{[key: number]: string}>({})
+  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({})
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -104,7 +104,7 @@ export default function ViewQuestionModal({
         const parsedSheet = JSON.parse(question.answer_sheet)
         setAnswerSheet(parsedSheet)
         // Initialize selected answers as empty
-        const initialAnswers = parsedSheet.reduce((acc: {[key: number]: string}, _: any, index: number) => {
+        const initialAnswers = parsedSheet.reduce((acc: { [key: number]: string }, _: any, index: number) => {
           acc[index] = ''
           return acc
         }, {})
@@ -325,6 +325,14 @@ export default function ViewQuestionModal({
         </div>
 
         <div className="space-y-4">
+          {/* Rejection Comment */}
+          {question.status === 'rejected' && question.comment && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h3 className="text-lg font-semibold text-red-800 mb-2">Rejection Comment</h3>
+              <p className="text-red-700">{question.comment}</p>
+            </div>
+          )}
+
           {/* Context Image */}
           {question.image_path && (
             <div className="mb-4">
@@ -424,23 +432,22 @@ export default function ViewQuestionModal({
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           <div className="space-y-2">
-                            
+
                             <div className="grid grid-cols-2 gap-2">
                               {row.B.options.map((option, optIndex) => (
                                 <button
                                   key={optIndex}
                                   onClick={() => handleOptionSelect(index, option)}
-                                  className={`p-2 text-left border rounded ${
-                                    showAnswer
-                                      ? option === row.B.correct
-                                        ? 'bg-green-50 border-green-500 text-green-700'
-                                        : selectedAnswers[index] === option
-                                          ? 'bg-red-50 border-red-500 text-red-700'
-                                          : 'border-gray-200'
-                                      : selectedAnswers[index] === option 
-                                        ? 'bg-blue-50 border-blue-500' 
-                                        : 'border-gray-200 hover:bg-gray-50'
-                                  }`}
+                                  className={`p-2 text-left border rounded ${showAnswer
+                                    ? option === row.B.correct
+                                      ? 'bg-green-50 border-green-500 text-green-700'
+                                      : selectedAnswers[index] === option
+                                        ? 'bg-red-50 border-red-500 text-red-700'
+                                        : 'border-gray-200'
+                                    : selectedAnswers[index] === option
+                                      ? 'bg-blue-50 border-blue-500'
+                                      : 'border-gray-200 hover:bg-gray-50'
+                                    }`}
                                   disabled={showAnswer || loading}
                                 >
                                   {option}
