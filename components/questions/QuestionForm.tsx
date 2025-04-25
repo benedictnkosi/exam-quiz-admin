@@ -6,6 +6,7 @@ import {
   createQuestion,
   getGrades,
   uploadQuestionImage,
+  setQuestionImagePath,
   type QuestionPayload,
   type DetailedQuestion
 } from '@/services/api'
@@ -149,7 +150,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [isConverting, setIsConverting] = useState(false)
   const [showAnswerSheet, setShowAnswerSheet] = useState(false)
   const [jsonOutput, setJsonOutput] = useState<string>('')
-  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
 
   const initialFormState = {
     questionText: '',
@@ -509,8 +510,8 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
       const questionText = formData.questionText.toLowerCase()
       const contextText = formData.context.toLowerCase()
-      
-      const hasImageRelatedWords = imageRelatedWords.some(word => 
+
+      const hasImageRelatedWords = imageRelatedWords.some(word =>
         questionText.includes(word) || contextText.includes(word)
       )
 
@@ -519,7 +520,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           'The question or context contains words that suggest an image might be needed. ' +
           'Are you sure you want to proceed without uploading an image?'
         )
-        
+
         if (!shouldProceed) {
           setLoading(false)
           return
@@ -551,7 +552,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       // Prepare answer sheet JSON if table exists
       let answerSheetJson: Array<{
         A: string | { value: string }
-        B: string | { 
+        B: string | {
           value: string
           isEditable: boolean
           correct: string
@@ -568,7 +569,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               value: "",
               isEditable: true,
               correct: row.column2,
-              options: row.column3 
+              options: row.column3
                 ? [...row.column3.split(',').map(opt => opt.trim()), row.column2]
                 : [],
               explanation: row.column4 || undefined
@@ -624,24 +625,28 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         const fileName = await handleImageUpload(formData.contextImage.file, 'question_context', questionId.toString())
         if (fileName) {
           setLastContextImage(fileName);
+          setFormData(prev => ({
+            ...prev,
+            contextImage: {
+              ...prev.contextImage!,
+              path: fileName,
+              isNew: false
+            }
+          }));
         }
       } else if (formData.contextImage?.path) {
-        const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
-          method: 'POST',
-          body: JSON.stringify({
-            question_id: questionId.toString(),
-            image_name: formData.contextImage.path,
-            image_type: 'question_context',
-            uid: user.uid
-          })
-        })
-        console.log(response)
+        await setQuestionImagePath({
+          question_id: questionId.toString(),
+          image_name: formData.contextImage.path,
+          image_type: 'question_context',
+          uid: user.uid
+        });
       }
 
       // Handle additional context images
       const otherContextImagePaths: string[] = [];
       addDebugLog(`Processing other context images: ${JSON.stringify(formData.otherContextImages)}`);
-      
+
       for (const image of formData.otherContextImages) {
         addDebugLog(`Processing image: ${JSON.stringify(image)}`);
         if (image.file && image.isNew) {
@@ -690,16 +695,12 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         }
       } else if (formData.questionImage?.path) {
         // Reuse existing question image
-        const response = await fetch(`${API_BASE_URL}/question/set-image-path`, {
-          method: 'POST',
-          body: JSON.stringify({
-            question_id: questionId.toString(),
-            image_name: formData.questionImage.path,
-            image_type: 'question',
-            uid: user.uid
-          })
-        })
-        console.log(response)
+        await setQuestionImagePath({
+          question_id: questionId.toString(),
+          image_name: formData.questionImage.path,
+          image_type: 'question',
+          uid: user.uid
+        });
       }
 
       if (formData.explanationImage) {
@@ -850,7 +851,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     // Determine the rounding factor based on the magnitude of the number
     const absNum = Math.abs(num);
     let roundingFactor = 50;
-    
+
     if (absNum >= 1000) {
       roundingFactor = 100;
     } else if (absNum >= 100) {
@@ -866,14 +867,14 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     while (options.size < 3) {
       const variation = (Math.random() * 0.4 - 0.2) * num; // ±20% variation
       const newValue = num + variation;
-      
+
       // Round to the nearest rounding factor
       const roundedValue = Math.round(newValue / roundingFactor) * roundingFactor;
-      
+
       // Format the number to match the original's decimal places
       const decimalPlaces = (baseValue.split('.')[1] || '').length;
       const formattedValue = roundedValue.toFixed(decimalPlaces);
-      
+
       // Only add if it's different from the original value
       if (formattedValue !== baseValue) {
         options.add(formattedValue);
@@ -968,7 +969,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
     const jsonString = JSON.stringify(jsonData, null, 2);
     setJsonOutput(jsonString);
-    
+
     // Copy to clipboard
     navigator.clipboard.writeText(jsonString).then(() => {
       alert('JSON copied to clipboard!');
@@ -1280,7 +1281,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             </div>
           </div>
 
-          
+
 
           <div className="md:col-span-2">
             <div className="flex justify-between items-center mb-1">
@@ -1375,11 +1376,10 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                     type="button"
                     onClick={handleGenerateOptions}
                     disabled={!areAllColumnBValuesFilled()}
-                    className={`px-3 py-1 text-sm rounded focus:outline-none focus:ring-2 ${
-                      areAllColumnBValuesFilled()
-                        ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
+                    className={`px-3 py-1 text-sm rounded focus:outline-none focus:ring-2 ${areAllColumnBValuesFilled()
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
                   >
                     Generate Options
                   </button>
@@ -1404,32 +1404,32 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           </div>
 
           {!showAnswerSheet && (
-          <div className="md:col-span-2">
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm text-gray-700">Answer</label>
-            </div>
-            <textarea
-              value={formData.answer}
-              onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
-              onBlur={() => {
-                const text = formData.answer
-                const dollarCount = (text.match(/\$/g) || []).length
-                if (dollarCount >= 2) {
-                  setShowLatexAnswer(true)
-                }
-              }}
-              className="w-full border border-gray-300 rounded p-2"
-              required
-              rows={2}
-            />
-            {showLatexAnswer && formData.answer && (
-              <div className="mt-2 p-3 bg-gray-50 rounded-md">
-                <p className="text-sm text-gray-700">
-                  {renderLatex(formData.answer)}
-                </p>
+            <div className="md:col-span-2">
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm text-gray-700">Answer</label>
               </div>
-            )}
-          </div>
+              <textarea
+                value={formData.answer}
+                onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                onBlur={() => {
+                  const text = formData.answer
+                  const dollarCount = (text.match(/\$/g) || []).length
+                  if (dollarCount >= 2) {
+                    setShowLatexAnswer(true)
+                  }
+                }}
+                className="w-full border border-gray-300 rounded p-2"
+                required
+                rows={2}
+              />
+              {showLatexAnswer && formData.answer && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                  <p className="text-sm text-gray-700">
+                    {renderLatex(formData.answer)}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
 
           {!showAnswerSheet && (
