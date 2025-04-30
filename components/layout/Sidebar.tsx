@@ -12,6 +12,7 @@ import Image from 'next/image'
 const menuItems = [
   { path: '/admin', label: 'Dashboard' },
   { path: '/questions', label: 'Questions', showRejected: true },
+  { path: '/podcast-images', label: 'Podcast Images' },
   { path: '/', label: 'APP' },
 ]
 
