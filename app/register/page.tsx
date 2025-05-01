@@ -19,11 +19,13 @@ declare global {
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('')
+    const [phoneNumber, setPhoneNumber] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
+    const [registrationMethod, setRegistrationMethod] = useState<'email' | 'phone'>('email')
     const router = useRouter()
     const searchParams = useSearchParams()
 
@@ -56,7 +58,11 @@ export default function RegisterPage() {
         });
     };
 
-    const handleEmailSignUp = async (e: React.FormEvent) => {
+    const validatePhoneNumber = (phone: string): boolean => {
+        return /^\d{10}$/.test(phone);
+    };
+
+    const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
         setLoading(true)
@@ -67,11 +73,21 @@ export default function RegisterPage() {
             return
         }
 
+        if (registrationMethod === 'phone' && !validatePhoneNumber(phoneNumber)) {
+            setError('Please enter a valid 10-digit phone number')
+            setLoading(false)
+            return
+        }
+
         try {
             // Execute reCAPTCHA v3
             const recaptchaToken = await executeRecaptcha();
 
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+            const userEmail = registrationMethod === 'phone'
+                ? `${phoneNumber}@examquiz.co.za`
+                : email;
+
+            const userCredential = await createUserWithEmailAndPassword(auth, userEmail, password)
             const user = userCredential.user
 
             // Store user data including onboarding information
@@ -82,7 +98,7 @@ export default function RegisterPage() {
                 },
                 body: JSON.stringify({
                     uid: user.uid,
-                    email: user.email,
+                    email: userEmail,
                     terms: "1,2,3,4",
                     recaptchaToken,
                     ...onboardingData
@@ -99,7 +115,7 @@ export default function RegisterPage() {
             // Log registration success
             await logAnalyticsEvent('register_success', {
                 user_id: user.uid,
-                email: email,
+                email: userEmail,
                 grade: onboardingData.grade,
                 school: onboardingData.school_name,
                 curriculum: onboardingData.curriculum
@@ -143,22 +159,63 @@ export default function RegisterPage() {
                     </div>
                 )}
 
-                <form onSubmit={handleEmailSignUp} className="mt-8 space-y-6">
+                <div className="flex space-x-2 mb-6">
+                    <button
+                        type="button"
+                        onClick={() => setRegistrationMethod('email')}
+                        className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${registrationMethod === 'email'
+                            ? 'bg-white text-[#1e1b4b]'
+                            : 'bg-white/10 text-white hover:bg-white/20'
+                            }`}
+                    >
+                        Email
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setRegistrationMethod('phone')}
+                        className={`flex-1 py-2 px-4 rounded-lg text-center transition-colors ${registrationMethod === 'phone'
+                            ? 'bg-white text-[#1e1b4b]'
+                            : 'bg-white/10 text-white hover:bg-white/20'
+                            }`}
+                    >
+                        Phone
+                    </button>
+                </div>
+
+                <form onSubmit={handleSignUp} className="mt-8 space-y-6">
                     <div className="space-y-4">
-                        <div>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="appearance-none relative block w-full px-4 py-4 bg-white/10 text-white placeholder-white/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent text-base"
-                                placeholder="Email address"
-                                disabled={loading}
-                            />
-                        </div>
+                        {registrationMethod === 'email' ? (
+                            <div>
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="appearance-none relative block w-full px-4 py-4 bg-white/10 text-white placeholder-white/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent text-base"
+                                    placeholder="Email address"
+                                    disabled={loading}
+                                />
+                            </div>
+                        ) : (
+                            <div>
+                                <input
+                                    id="phone"
+                                    name="phone"
+                                    type="tel"
+                                    autoComplete="tel"
+                                    required
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                                    className="appearance-none relative block w-full px-4 py-4 bg-white/10 text-white placeholder-white/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent text-base"
+                                    placeholder="Phone number (10 digits)"
+                                    maxLength={10}
+                                    disabled={loading}
+                                />
+                            </div>
+                        )}
                         <div className="relative">
                             <input
                                 id="password"

@@ -26,18 +26,27 @@ export default function LoginPage() {
     }
   }, [user, router])
 
+  const validatePhoneNumber = (phone: string): boolean => {
+    return /^\d{10}$/.test(phone);
+  };
+
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      // Check if input is a valid phone number
+      const userEmail = validatePhoneNumber(email)
+        ? `${email}@examquiz.co.za`
+        : email;
+
+      await signInWithEmailAndPassword(auth, userEmail, password)
       router.push('/')
       router.refresh()
     } catch (error) {
       console.error('Login error:', error)
-      setError('Invalid email or password')
+      setError('Invalid email/phone or password')
     } finally {
       setLoading(false)
     }
@@ -108,13 +117,13 @@ export default function LoginPage() {
               <input
                 id="email"
                 name="email"
-                type="email"
+                type="text"
                 autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-5 py-4 bg-white rounded-2xl text-gray-900 text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-                placeholder="email@example.com"
+                placeholder="Email or phone number"
                 disabled={loading}
               />
               <div className="relative">
@@ -158,9 +167,9 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center py-4 px-6 rounded-full text-lg font-semibold bg-white text-[#1e1b4b] hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-[#1e1b4b] disabled:opacity-50 transition-all duration-300 transform hover:scale-[1.02] gap-2"
+              className="w-full py-4 px-4 rounded-full text-lg font-semibold bg-white text-[#1e1b4b] hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-[#1e1b4b] disabled:opacity-50 transition-all duration-200"
             >
-              Login <span role="img" aria-label="rocket">🚀</span>
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 

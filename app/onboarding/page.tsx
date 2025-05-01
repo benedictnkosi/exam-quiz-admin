@@ -49,12 +49,12 @@ export default function OnboardingPage() {
     const [step, setStep] = useState(0)
     const [learnerName, setLearnerName] = useState('')
     const [grade, setGrade] = useState('')
-    const [school, setSchool] = useState('')
-    const [schoolAddress, setSchoolAddress] = useState('')
+    const [school, setSchool] = useState('Default School')
+    const [schoolAddress, setSchoolAddress] = useState('Default Address')
     const [schoolLatitude, setSchoolLatitude] = useState(0)
     const [schoolLongitude, setSchoolLongitude] = useState(0)
-    const [schoolName, setSchoolName] = useState('')
-    const [curriculum, setCurriculum] = useState('')
+    const [schoolName, setSchoolName] = useState('Default School')
+    const [curriculum, setCurriculum] = useState('CAPS')
     const [difficultSubject, setDifficultSubject] = useState('')
     const [selectedAvatar, setSelectedAvatar] = useState('1')
     const [schoolFunfacts, setSchoolFunfacts] = useState('')
@@ -65,8 +65,6 @@ export default function OnboardingPage() {
     const [errors, setErrors] = useState({
         name: '',
         grade: '',
-        school: '',
-        curriculum: '',
         difficultSubject: '',
         avatar: ''
     })
@@ -89,23 +87,15 @@ export default function OnboardingPage() {
             setErrors(prev => ({ ...prev, grade: 'Please select your grade' }))
             return
         }
-        if (step === 3 && !school) {
-            setErrors(prev => ({ ...prev, school: 'Please select your school' }))
-            return
-        }
-        if (step === 4 && !curriculum) {
-            setErrors(prev => ({ ...prev, curriculum: 'Please select your curriculum' }))
-            return
-        }
-        if (step === 5 && !difficultSubject) {
+        if (step === 3 && !difficultSubject) {
             setErrors(prev => ({ ...prev, difficultSubject: 'Please select your most challenging subject' }))
             return
         }
-        if (step === 6 && !selectedAvatar) {
+        if (step === 4 && !selectedAvatar) {
             setErrors(prev => ({ ...prev, avatar: 'Please select an avatar' }))
             return
         }
-        if (step === 6) {
+        if (step === 4) {
             handleComplete()
             return
         }
@@ -113,8 +103,6 @@ export default function OnboardingPage() {
         setErrors({
             name: '',
             grade: '',
-            school: '',
-            curriculum: '',
             difficultSubject: '',
             avatar: ''
         })
@@ -240,126 +228,6 @@ export default function OnboardingPage() {
                 return (
                     <div className="space-y-8">
                         <div className="text-center space-y-6">
-                            <h2 className="text-3xl font-bold text-white">🎓 Which school do you rep?</h2>
-                            <p className="text-xl text-white/90">Join the learning squad! 🚀📚</p>
-                            <LoadScriptNext
-                                googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
-                                libraries={['places']}
-                            >
-                                <Autocomplete
-                                    options={{
-                                        types: ['school'],
-                                        componentRestrictions: { country: 'za' }
-                                    }}
-                                    onLoad={(autocompleteInstance: google.maps.places.Autocomplete) => {
-                                        setAutocomplete(autocompleteInstance)
-                                        console.log('Autocomplete loaded:', autocompleteInstance)
-                                    }}
-                                    onPlaceChanged={() => {
-                                        if (autocomplete) {
-                                            const place = autocomplete.getPlace()
-                                            if (place) {
-                                                setSchool(place.formatted_address || '')
-                                                setSchoolName(place.name || '')
-                                                setSchoolAddress(place.formatted_address || '')
-                                                if (place.geometry?.location) {
-                                                    setSchoolLatitude(place.geometry.location.lat())
-                                                    setSchoolLongitude(place.geometry.location.lng())
-                                                }
-                                                setErrors(prev => ({ ...prev, school: '' }))
-
-                                                // Fetch fun fact when school is selected
-                                                setIsLoadingFact(true)
-                                                getSchoolFunfacts(place.name || '', place.formatted_address || '').then(({ fact }) => {
-                                                    setSchoolFunfact(fact)
-                                                    setIsLoadingFact(false)
-                                                })
-                                            }
-                                        }
-                                    }}
-                                >
-                                    <input
-                                        type="text"
-                                        placeholder="Search for your school..."
-                                        className="w-full p-4 rounded-xl bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
-                                    />
-                                </Autocomplete>
-                            </LoadScriptNext>
-                            {school && (
-                                <>
-                                    <div className="bg-white/10 rounded-xl p-4 space-y-2">
-                                        <div className="flex items-center gap-2 text-white/80">
-                                            <IoLocation className="w-5 h-5" />
-                                            <span>Selected School</span>
-                                        </div>
-                                        <p className="text-white font-semibold">{schoolName}</p>
-                                        <p className="text-white/80">{schoolAddress}</p>
-                                    </div>
-
-                                    {/* Fun Fact Display */}
-                                    <div className="mt-4 bg-indigo-600/20 rounded-xl p-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <IoInformationCircle className="w-5 h-5 text-indigo-400" />
-                                            <h4 className="font-medium text-indigo-400">Did you know?</h4>
-                                        </div>
-                                        <p className="text-sm text-gray-300">
-                                            {isLoadingFact ? (
-                                                <span className="inline-flex items-center">
-                                                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                    Loading fun fact...
-                                                </span>
-                                            ) : schoolFunfact}
-                                        </p>
-                                    </div>
-                                </>
-                            )}
-                            {errors.school && <p className="text-red-400">{errors.school}</p>}
-                        </div>
-                    </div>
-                )
-
-            case 4:
-                return (
-                    <div className="space-y-8">
-                        <div className="relative w-full h-[200px]">
-                            <Image
-                                src={ILLUSTRATIONS.school}
-                                alt="Curriculum Selection"
-                                layout="fill"
-                                objectFit="contain"
-                            />
-                        </div>
-                        <div className="text-center space-y-6">
-                            <h2 className="text-3xl font-bold text-white">📚 Which curriculum are you following?</h2>
-                            <div className="space-y-4">
-                                {[
-                                    { id: 'CAPS', label: 'CAPS', emoji: '📘' },
-                                    { id: 'IEB', label: 'IEB', emoji: '📗' }
-                                ].map((item) => (
-                                    <button
-                                        key={item.id}
-                                        className={`w-full p-4 rounded-xl text-lg font-semibold transition-all ${curriculum === item.id
-                                            ? 'bg-white text-[#1e1b4b] shadow-lg'
-                                            : 'bg-white/10 text-white hover:bg-white/20'
-                                            }`}
-                                        onClick={() => setCurriculum(item.id)}
-                                    >
-                                        {item.emoji} {item.label}
-                                    </button>
-                                ))}
-                            </div>
-                            {errors.curriculum && <p className="text-red-400">{errors.curriculum}</p>}
-                        </div>
-                    </div>
-                )
-
-            case 5:
-                return (
-                    <div className="space-y-8">
-                        <div className="text-center space-y-6">
                             <h2 className="text-3xl font-bold text-white">🤔 Which subject challenges you the most?</h2>
                             <p className="text-xl text-white/90">We&apos;ll give extra attention to this one! 💪</p>
                             <div className="space-y-4">
@@ -369,7 +237,7 @@ export default function OnboardingPage() {
                                     { id: 'life_sciences', label: 'Life Sciences', emoji: '🧬' },
                                     { id: 'accounting', label: 'Accounting', emoji: '📊' },
                                     { id: 'geography', label: 'Geography', emoji: '🌍' },
-                                    { id: 'english', label: 'English', emoji: '📚' }
+                                    { id: 'other', label: 'Other', emoji: '📚' }
                                 ].map((subject) => (
                                     <button
                                         key={subject.id}
@@ -391,10 +259,9 @@ export default function OnboardingPage() {
                     </div>
                 )
 
-            case 6:
+            case 4:
                 return (
                     <div className="space-y-8">
-
                         <div className="text-center space-y-6">
                             <h2 className="text-3xl font-bold text-white">🎨 Choose Your Avatar</h2>
                             <p className="text-xl text-white/90">Pick a cool avatar to represent you! ✨</p>
@@ -436,7 +303,7 @@ export default function OnboardingPage() {
                         onClick={handleNextStep}
                         className="w-full p-4 rounded-full font-semibold bg-white text-[#1e1b4b] hover:bg-white/90 transition-all"
                     >
-                        {step === 6 ? 'Create Account 🚀' : 'Next 🚀'}
+                        {step === 4 ? 'Create Account 🚀' : 'Next 🚀'}
                     </button>
                     {step > 0 && (
                         <button
