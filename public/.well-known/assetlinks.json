@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "za.co.examquizafrica",
+            "sha256_cert_fingerprints": [
+                "A2:4A:AC:09:8D:9F:88:19:A2:56:DD:6F:2E:A7:CC:A1:0D:D1:C7:A2:E3:6D:EC:E0:95:CD:94:7B:57:C2:9A:6B"
+            ]
+        }
+    }
+]

@@ -30,6 +30,14 @@ const nextConfig = {
         source: '/og-image.png',
         destination: '/public/og-image.png',
       },
+      {
+        source: '/.well-known/apple-app-site-association',
+        destination: '/public/.well-known/apple-app-site-association',
+      },
+      {
+        source: '/.well-known/assetlinks.json',
+        destination: '/public/.well-known/assetlinks.json',
+      },
     ]
   },
   webpack: (config, { isServer }) => {
