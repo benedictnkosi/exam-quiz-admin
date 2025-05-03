@@ -193,7 +193,7 @@ export async function GET(request: Request) {
         }
 
         const threadId = await createThread(title, subjectName, mappedGrade);
-        const keyLesson = `Let's discuss ${topic.subTopic} in ${subjectName}. This is an important topic that will help you understand ${topic.name}.`;
+        const keyLesson = `Let's discuss ${topic.subTopic} in ${subjectName}. This is popular topic for term ${term} exams. ${topic.name}.`;
 
         await addMessage(threadId, keyLesson);
 
