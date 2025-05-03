@@ -34,9 +34,18 @@ const nextConfig = {
         source: '/.well-known/apple-app-site-association',
         destination: '/public/.well-known/apple-app-site-association',
       },
+    ]
+  },
+  async headers() {
+    return [
       {
         source: '/.well-known/assetlinks.json',
-        destination: '/public/.well-known/assetlinks.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
       },
     ]
   },
