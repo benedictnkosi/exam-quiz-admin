@@ -45,6 +45,10 @@ const nextConfig = {
             key: 'Content-Type',
             value: 'application/json',
           },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
         ],
       },
     ]
