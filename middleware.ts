@@ -4,6 +4,11 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
+  // Handle .well-known directory - always accessible
+  if (path.startsWith('/.well-known/')) {
+    return NextResponse.next()
+  }
+
   // Handle privacy, info, and delete-account pages - always accessible
   if (path === '/privacy' || path === '/info' || path === '/info/delete-account') {
     return NextResponse.next()

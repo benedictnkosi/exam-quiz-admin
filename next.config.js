@@ -39,7 +39,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/.well-known/assetlinks.json',
+        source: '/.well-known/:path*',
         headers: [
           {
             key: 'Content-Type',
@@ -48,6 +48,10 @@ const nextConfig = {
           {
             key: 'Access-Control-Allow-Origin',
             value: '*',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, must-revalidate',
           },
         ],
       },
