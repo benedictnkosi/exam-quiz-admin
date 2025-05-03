@@ -20,9 +20,9 @@ const auth = getAuth(app);
 
 async function getQuestion() {
     try {
-        const url = new URL(`${API_BASE_URL}/question/random-ai`);
-        url.searchParams.append('uid', 'OY3G9wydrNesx8nvbOyAKaFjlmJ2');
-        url.searchParams.append('subject_name', 'Agricultural Sciences');
+        const url = new URL(`${API_BASE_URL}/topics/unposted/most-questions`);
+        url.searchParams.append('grade', '12');
+        url.searchParams.append('term', '2');
 
         const response = await fetch(url.toString());
         if (!response.ok) {
@@ -30,7 +30,7 @@ async function getQuestion() {
         }
         return await response.json();
     } catch (error) {
-        console.error('Error fetching question:', error);
+        console.error('Error fetching topic:', error);
         throw error;
     }
 }
@@ -97,7 +97,8 @@ async function sendPushNotification(subjectName: string, threadTitle: string, ui
             body: JSON.stringify({
                 subject_name: subjectName,
                 thread_title: threadTitle,
-                uid: uid
+                uid: uid,
+                grade: 12,
             })
         });
 
@@ -110,41 +111,24 @@ async function sendPushNotification(subjectName: string, threadTitle: string, ui
 }
 
 // Main function to create thread and populate conversation
-async function populateAgriculturalSciencesConversation() {
+async function populateConversation() {
     try {
-        await signInWithEmailAndPassword(auth, 'siya@examquiz.co.za', 'password');
+        await signInWithEmailAndPassword(auth, 'test02@gmail.com', 'password');
 
-        let attempts = 0;
-        const maxAttempts = 10;
-        let questionData;
-        let title;
-        let keyLesson;
-        let subjectName;
+        const topicData = await getQuestion();
+        const topic = topicData.topic;
 
-        while (attempts < maxAttempts) {
-            attempts++;
-            questionData = await getQuestion();
-            subjectName = questionData.question.subject.name;
-
-            const extracted = extractContent(questionData.question.ai_explanation);
-            title = extracted.title;
-            keyLesson = extracted.keyLesson;
-
-            if (title && keyLesson) {
-                break;
-            }
-
-            if (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-
-        if (!title || !keyLesson) {
-            console.error('Failed to extract both title and key lesson after', maxAttempts, 'attempts');
+        if (!topic) {
+            console.error('No unposted topics found');
             process.exit(1);
         }
 
+        const title = `${topic.name} - ${topic.subTopic}`;
+        const subjectName = topic.subject.name;
+
         const threadId = await createThread(title, subjectName);
+        const keyLesson = `Let's discuss ${topic.subTopic} in ${topic.subject.name}. This is an important topic that will help you understand ${topic.name}.`;
+
         await addMessage(threadId, keyLesson);
 
         sendPushNotification(subjectName, title, "wBX5XFbzUCNGJgewnOVemIw9EOv2").catch(error => {
@@ -157,7 +141,7 @@ async function populateAgriculturalSciencesConversation() {
 }
 
 // Run the script
-populateAgriculturalSciencesConversation().then(() => {
+populateConversation().then(() => {
     process.exit(0);
 }).catch((error) => {
     console.error('Error running script:', error);
