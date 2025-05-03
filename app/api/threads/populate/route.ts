@@ -201,9 +201,9 @@ export async function GET(request: Request) {
         const response = await updateTopicPostedDate(topic.id);
         console.log(response);
 
-        // sendPushNotification(subjectName, title, "wBX5XFbzUCNGJgewnOVemIw9EOv2").catch(error => {
-        //     console.error('Error in push notification:', error);
-        // });
+        sendPushNotification(subjectName, title, "wBX5XFbzUCNGJgewnOVemIw9EOv2").catch(error => {
+            console.error('Error in push notification:', error);
+        });
 
         return NextResponse.json({
             success: true,
