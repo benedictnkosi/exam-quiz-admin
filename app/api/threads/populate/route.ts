@@ -151,9 +151,11 @@ function cleanSubjectName(subjectName: string): string {
     return subjectName.replace(/P[12]/g, '').trim();
 }
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
     try {
-        const { grade, term } = await request.json();
+        const url = new URL(request.url);
+        const grade = parseInt(url.searchParams.get('grade') || '');
+        const term = parseInt(url.searchParams.get('term') || '');
 
         if (!grade || !term) {
             return NextResponse.json(
@@ -199,9 +201,9 @@ export async function POST(request: Request) {
         const response = await updateTopicPostedDate(topic.id);
         console.log(response);
 
-        sendPushNotification(subjectName, title, "wBX5XFbzUCNGJgewnOVemIw9EOv2").catch(error => {
-            console.error('Error in push notification:', error);
-        });
+        // sendPushNotification(subjectName, title, "wBX5XFbzUCNGJgewnOVemIw9EOv2").catch(error => {
+        //     console.error('Error in push notification:', error);
+        // });
 
         return NextResponse.json({
             success: true,
