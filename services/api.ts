@@ -16,7 +16,7 @@ export interface LeaderboardEntry {
   position: number
   isCurrentLearner: boolean
   avatar: string
-} 
+}
 
 export interface LeaderboardResponse {
   status: string
@@ -68,7 +68,7 @@ export interface QuestionPayload {
   otherContextImages?: string[]
   answer_sheet?: Array<{
     A: string | { value: string }
-    B: string | { 
+    B: string | {
       value: string
       isEditable: boolean
       correct: string
@@ -581,7 +581,7 @@ export async function updatePostedStatus(questionId: string, posted: boolean): P
 }
 
 export async function fetchMySubjects(uid: string): Promise<MySubjectsResponse> {
-  const response = await fetch(`${API_BASE_URL}/learner/subjects?uid=${uid}`)
+  const response = await fetch(`${API_BASE_URL}/learner/subjects?uid=${uid}&accounting=true`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch enrolled subjects')
@@ -621,7 +621,7 @@ export async function checkAnswer(
 
 
 export async function checkRecordingAnswer(
-  uid: string,  
+  uid: string,
   questionId: number,
   answer: string,
   duration: number
