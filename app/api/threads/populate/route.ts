@@ -73,7 +73,7 @@ async function addMessage(threadId: string, message: string) {
     }
 }
 
-async function sendPushNotification(subjectName: string, threadTitle: string, uid: string) {
+async function sendPushNotification(subjectName: string, threadTitle: string, uid: string, threadId: string) {
     try {
         const response = await fetch(`${API_HOST}/api/push-notifications/new-thread`, {
             method: 'POST',
@@ -85,6 +85,7 @@ async function sendPushNotification(subjectName: string, threadTitle: string, ui
                 thread_title: threadTitle,
                 uid: uid,
                 grade: 12,
+                thread_id: threadId
             })
         });
 
@@ -201,7 +202,7 @@ export async function GET(request: Request) {
         const response = await updateTopicPostedDate(topic.id);
         console.log(response);
 
-        sendPushNotification(subjectName, title, "wBX5XFbzUCNGJgewnOVemIw9EOv2").catch(error => {
+        sendPushNotification(subjectName, title, "wBX5XFbzUCNGJgewnOVemIw9EOv2", threadId).catch(error => {
             console.error('Error in push notification:', error);
         });
 
