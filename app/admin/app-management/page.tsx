@@ -4,6 +4,7 @@ import React from 'react'
 import Sidebar from '../../../components/layout/Sidebar'
 import AdminRoute from '../../../components/auth/AdminRoute'
 import SubjectRequestPieChart from '../../../components/dashboard/SubjectRequestPieChart'
+import ReportedMessagesTable from '../../../components/dashboard/ReportedMessagesTable'
 
 export default function AppManagementPage() {
     return (
@@ -15,6 +16,7 @@ export default function AppManagementPage() {
 
                     <div className="grid grid-cols-1 gap-6">
                         <SubjectRequestPieChart />
+                        <ReportedMessagesTable />
                     </div>
                 </div>
             </div>
