@@ -15,10 +15,14 @@ interface ResultGrowthResponse {
     data: ResultGrowthData[]
 }
 
+type TimePeriod = 7 | 14 | 30
+
 export default function AvgDailyGrowthCard() {
     const [avgGrowth, setAvgGrowth] = useState<number | null>(null)
     const [totalGrowth, setTotalGrowth] = useState<number | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>(14)
+    const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' })
 
     useEffect(() => {
         const fetchData = async () => {
@@ -27,24 +31,30 @@ export default function AvgDailyGrowthCard() {
                 const result: ResultGrowthResponse = await response.json()
 
                 if (result.status === 'success') {
-                    // Get today's date and calculate date 7 days ago
+                    // Get today's date and calculate date X days ago
                     const today = new Date()
-                    const sevenDaysAgo = new Date(today)
-                    sevenDaysAgo.setDate(today.getDate() - 7)
+                    const daysAgo = new Date(today)
+                    daysAgo.setDate(today.getDate() - selectedPeriod)
 
                     // Format dates for comparison
                     const todayStr = today.toISOString().split('T')[0]
-                    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+                    const daysAgoStr = daysAgo.toISOString().split('T')[0]
 
-                    // Filter data for past 7 days, excluding today
+                    // Update date range for display
+                    setDateRange({
+                        start: daysAgo.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        end: today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    })
+
+                    // Filter data for selected period, excluding today
                     const filteredData = result.data
                         .filter(item =>
                             item.date !== todayStr &&
-                            item.date >= sevenDaysAgoStr &&
+                            item.date >= daysAgoStr &&
                             item.growth_percentage !== null &&
                             Math.abs(item.growth_percentage) <= 100
                         )
-                        .sort((a, b) => a.date.localeCompare(b.date)) // Sort by date to ensure correct order
+                        .sort((a, b) => a.date.localeCompare(b.date))
 
                     // Calculate average growth (excluding today)
                     const totalGrowth = filteredData.reduce((sum, item) =>
@@ -55,7 +65,6 @@ export default function AvgDailyGrowthCard() {
 
                     // Calculate total growth (excluding today)
                     if (filteredData.length > 0) {
-                        // Ensure we're using the earliest and latest dates
                         const sortedData = [...filteredData].sort((a, b) => a.date.localeCompare(b.date))
                         const firstDayCount = sortedData[0].count
                         const lastDayCount = sortedData[sortedData.length - 1].count
@@ -75,7 +84,7 @@ export default function AvgDailyGrowthCard() {
         }
 
         fetchData()
-    }, [])
+    }, [selectedPeriod])
 
     if (error) {
         return (
@@ -90,7 +99,18 @@ export default function AvgDailyGrowthCard() {
         <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Avg Daily Growth</h3>
-                <TrendingUp className="text-blue-500" size={24} />
+                <div className="flex items-center gap-2">
+                    <select
+                        value={selectedPeriod}
+                        onChange={(e) => setSelectedPeriod(Number(e.target.value) as TimePeriod)}
+                        className="text-sm border rounded px-2 py-1"
+                    >
+                        <option value={7}>7 days</option>
+                        <option value={14}>14 days</option>
+                        <option value={30}>30 days</option>
+                    </select>
+                    <TrendingUp className="text-blue-500" size={24} />
+                </div>
             </div>
             <div className="text-3xl font-bold">
                 {avgGrowth === null ? (
@@ -112,7 +132,9 @@ export default function AvgDailyGrowthCard() {
                     </div>
                 )}
             </div>
-            <p className="text-gray-500 text-sm mt-2">Last 7 days</p>
+            <p className="text-gray-500 text-sm mt-2">
+                {dateRange.start} - {dateRange.end}
+            </p>
         </div>
     )
 } 
