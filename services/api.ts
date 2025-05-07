@@ -163,6 +163,7 @@ export interface DetailedQuestion {
   reviewed_at?: string
   updated?: string
   other_context_images?: string[]
+  answer_sheet?: string
 }
 
 export interface MySubjectsResponse {

@@ -432,28 +432,33 @@ export default function ViewQuestionModal({
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           <div className="space-y-2">
-
-                            <div className="grid grid-cols-2 gap-2">
-                              {row.B.options.map((option, optIndex) => (
-                                <button
-                                  key={optIndex}
-                                  onClick={() => handleOptionSelect(index, option)}
-                                  className={`p-2 text-left border rounded ${showAnswer
-                                    ? option === row.B.correct
-                                      ? 'bg-green-50 border-green-500 text-green-700'
+                            {typeof row.B === 'string' ? (
+                              <div className="p-2 border rounded">
+                                {row.B}
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-2">
+                                {row.B.options?.map((option, optIndex) => (
+                                  <button
+                                    key={optIndex}
+                                    onClick={() => handleOptionSelect(index, option)}
+                                    className={`p-2 text-left border rounded ${showAnswer
+                                      ? option === row.B.correct
+                                        ? 'bg-green-50 border-green-500 text-green-700'
+                                        : selectedAnswers[index] === option
+                                          ? 'bg-red-50 border-red-500 text-red-700'
+                                          : 'border-gray-200'
                                       : selectedAnswers[index] === option
-                                        ? 'bg-red-50 border-red-500 text-red-700'
-                                        : 'border-gray-200'
-                                    : selectedAnswers[index] === option
-                                      ? 'bg-blue-50 border-blue-500'
-                                      : 'border-gray-200 hover:bg-gray-50'
-                                    }`}
-                                  disabled={showAnswer || loading}
-                                >
-                                  {option}
-                                </button>
-                              ))}
-                            </div>
+                                        ? 'bg-blue-50 border-blue-500'
+                                        : 'border-gray-200 hover:bg-gray-50'
+                                      }`}
+                                    disabled={showAnswer || loading}
+                                  >
+                                    {option}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>

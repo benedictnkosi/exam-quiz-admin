@@ -189,6 +189,29 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
       console.log('Initializing form with data:', initialData);
       console.log('Grade from initialData:', gradeValue);
 
+      // Initialize answer sheet if it exists
+      let answerSheetRows: Array<{
+        column1: string;
+        column2: string;
+        column3: string;
+        column4: string;
+      }> = [];
+
+      if (initialData.answer_sheet) {
+        try {
+          const parsedSheet = JSON.parse(initialData.answer_sheet);
+          answerSheetRows = parsedSheet.map((row: any) => ({
+            column1: row.A,
+            column2: typeof row.B === 'string' ? row.B : row.B.correct,
+            column3: typeof row.B === 'string' ? '' : row.B.options?.join(', ') || '',
+            column4: typeof row.B === 'string' ? '' : row.B.explanation || ''
+          }));
+          setShowAnswerSheet(true);
+        } catch (error) {
+          console.error('Error parsing answer sheet:', error);
+        }
+      }
+
       return {
         questionText: initialData.question || '',
         examYear: initialData.year || new Date().getFullYear(),
@@ -218,7 +241,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         explanationImage: null,
         curriculum: initialData.curriculum || 'CAPS',
         answerSheet: {
-          rows: []
+          rows: answerSheetRows
         }
       }
     }
@@ -838,10 +861,12 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   };
 
   const validateNumber = (value: string): boolean => {
+    // Remove spaces from the input
+    const trimmedValue = value.replace(/\s/g, '');
     // Allow empty string, negative numbers, and positive numbers
-    if (value === '') return true;
+    if (trimmedValue === '') return true;
     // Check if it's a valid number (including negative numbers)
-    return /^-?\d*\.?\d*$/.test(value);
+    return /^-?\d*\.?\d*$/.test(trimmedValue);
   };
 
   const generateRandomOptions = (baseValue: string): string[] => {
@@ -911,7 +936,9 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const handleTableInputChange = (rowIndex: number, column: 'column1' | 'column2' | 'column3' | 'column4', value: string) => {
     // Special validation for column2 (Amount)
     if (column === 'column2') {
-      if (!validateNumber(value)) {
+      // Remove spaces from the value before validation and storage
+      const trimmedValue = value.replace(/\s/g, '');
+      if (!validateNumber(trimmedValue)) {
         setValidationErrors(prev => ({
           ...prev,
           [`row-${rowIndex}-column2`]: 'Please enter a valid number'
@@ -924,8 +951,22 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
           return newErrors;
         });
       }
+
+      // Update form data with the trimmed value
+      setFormData(prev => {
+        const newRows = [...prev.answerSheet.rows];
+        newRows[rowIndex] = { ...newRows[rowIndex], [column]: trimmedValue };
+        return {
+          ...prev,
+          answerSheet: {
+            rows: newRows
+          }
+        };
+      });
+      return;
     }
 
+    // For other columns, update normally
     setFormData(prev => {
       const newRows = [...prev.answerSheet.rows];
       newRows[rowIndex] = { ...newRows[rowIndex], [column]: value };
