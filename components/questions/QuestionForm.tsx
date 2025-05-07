@@ -136,7 +136,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [debugLogs, setDebugLogs] = useState<string[]>([])
   const [grades, setGrades] = useState<Grade[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [loadingGrades, setLoadingGrades] = useState(true)
@@ -498,10 +497,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }));
   };
 
-  const addDebugLog = (message: string) => {
-    setDebugLogs(prev => [...prev, `${new Date().toISOString()}: ${message}`])
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user?.uid) return
@@ -509,7 +504,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     setLoading(true)
     setError('')
     setSuccess(false)
-    setDebugLogs([]) // Clear logs at start of submission
 
     try {
       if (!user?.email) {
@@ -668,29 +662,20 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
       // Handle additional context images
       const otherContextImagePaths: string[] = [];
-      addDebugLog(`Processing other context images: ${JSON.stringify(formData.otherContextImages)}`);
 
       for (const image of formData.otherContextImages) {
-        addDebugLog(`Processing image: ${JSON.stringify(image)}`);
         if (image.file && image.isNew) {
-          addDebugLog(`Uploading new image: ${image.file.name}`);
           const fileName = await handleImageUpload(image.file, 'other_context', questionId.toString());
-          addDebugLog(`Uploaded image filename: ${fileName}`);
           if (fileName) {
             otherContextImagePaths.push(fileName);
-            addDebugLog(`Added to paths: ${fileName}`);
           }
         } else if (image.path) {
-          addDebugLog(`Using existing image path: ${image.path}`);
           otherContextImagePaths.push(image.path);
         }
       }
 
-      addDebugLog(`Final otherContextImagePaths: ${JSON.stringify(otherContextImagePaths)}`);
-
       // Update the question with additional context images
       if (otherContextImagePaths.length > 0) {
-        addDebugLog(`Sending other context images to server: ${JSON.stringify(otherContextImagePaths)}`);
         const response = await fetch(`${API_BASE_URL}/question/set-other-context-images`, {
           method: 'POST',
           body: JSON.stringify({
@@ -699,8 +684,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
             uid: user.uid
           })
         });
-        const responseData = await response.json();
-        addDebugLog(`Server response: ${JSON.stringify(responseData)}`);
       }
 
       // Handle question image - only upload if it's a new file
@@ -911,13 +894,15 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
 
   const handleGenerateOptions = () => {
     const newRows = formData.answerSheet.rows.map(row => {
-      if (row.column2) {
+      // Only generate options if there's a value in column2
+      if (row.column2 && row.column2.trim() !== '') {
         const options = generateRandomOptions(row.column2);
         return {
           ...row,
           column3: options.join(', ')
         };
       }
+      // Return row unchanged if column2 is empty
       return row;
     });
 
@@ -930,7 +915,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   };
 
   const areAllColumnBValuesFilled = () => {
-    return formData.answerSheet.rows.every(row => row.column2.trim() !== '');
+    return true; // Always return true to enable the button
   };
 
   const handleTableInputChange = (rowIndex: number, column: 'column1' | 'column2' | 'column3' | 'column4', value: string) => {
@@ -938,7 +923,8 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     if (column === 'column2') {
       // Remove spaces from the value before validation and storage
       const trimmedValue = value.replace(/\s/g, '');
-      if (!validateNumber(trimmedValue)) {
+      // Allow empty string or validate number
+      if (trimmedValue !== '' && !validateNumber(trimmedValue)) {
         setValidationErrors(prev => ({
           ...prev,
           [`row-${rowIndex}-column2`]: 'Please enter a valid number'
@@ -1557,18 +1543,6 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               label="Upload Explanation Image (Optional)"
               imageName={formData.explanationImage ? undefined : undefined}
             />
-          </div>
-        </div>
-
-        {/* Debug Logs Section */}
-        <div className="mt-4 p-4 bg-gray-100 rounded">
-          <h3 className="text-lg font-semibold mb-2">Debug Logs</h3>
-          <div className="max-h-60 overflow-y-auto bg-white p-2 rounded">
-            {debugLogs.map((log, index) => (
-              <div key={index} className="text-sm font-mono mb-1">
-                {log}
-              </div>
-            ))}
           </div>
         </div>
 
