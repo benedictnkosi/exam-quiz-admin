@@ -333,6 +333,21 @@ export default function ViewQuestionModal({
             </div>
           )}
 
+          {/* question Image */}
+          {question.question_image_path && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Question Image</h3>
+              <div className="relative w-full h-64">
+                <Image
+                  src={getImageUrl(question.question_image_path || '')}
+                  alt="Question"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Context Image */}
           {question.image_path && (
             <div className="mb-4">
