@@ -19,6 +19,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import GradeQuestionCountCards from './GradeQuestionCountCards'
+import QuestionDetailsModal from './QuestionDetailsModal'
 
 interface SubjectQuestionCount {
     subject_name: string
@@ -34,6 +35,12 @@ interface GradeCount {
     total_remaining_questions_needed: number
 }
 
+interface QuestionCount {
+    year: number
+    term: number
+    count: number
+}
+
 export default function SubjectQuestionCountTable() {
     const [data, setData] = useState<SubjectQuestionCount[]>([])
     const [gradeCounts, setGradeCounts] = useState<GradeCount[]>([])
@@ -42,6 +49,8 @@ export default function SubjectQuestionCountTable() {
     const { user } = useAuth()
     const [showConfirmation, setShowConfirmation] = useState(false)
     const [selectedSubject, setSelectedSubject] = useState<SubjectQuestionCount | null>(null)
+    const [showQuestionDetails, setShowQuestionDetails] = useState(false)
+    const [questionCounts, setQuestionCounts] = useState<QuestionCount[]>([])
 
     const handleAssign = async (subjectId: number) => {
         try {
@@ -84,6 +93,20 @@ export default function SubjectQuestionCountTable() {
             setShowConfirmation(true)
         } else {
             handleAssign(subject.subject_id)
+        }
+    }
+
+    const handleQuestionCountClick = async (subjectId: number, subjectName: string) => {
+        try {
+            const response = await fetch(`${HOST_URL}/api/questions/count/${subjectId}`)
+            const result = await response.json()
+            if (result.status === 'OK') {
+                setQuestionCounts(result.data)
+                setSelectedSubject({ ...selectedSubject!, subject_name: subjectName })
+                setShowQuestionDetails(true)
+            }
+        } catch (error) {
+            console.error('Error fetching question counts:', error)
         }
     }
 
@@ -155,7 +178,14 @@ export default function SubjectQuestionCountTable() {
                             <TableRow key={index}>
                                 <TableCell>{item.subject_name}</TableCell>
                                 <TableCell>{item.grade}</TableCell>
-                                <TableCell className="text-right">{item.current_question_count}</TableCell>
+                                <TableCell className="text-right">
+                                    <button
+                                        onClick={() => handleQuestionCountClick(item.subject_id, item.subject_name)}
+                                        className="text-blue-500 hover:text-blue-700 hover:underline"
+                                    >
+                                        {item.current_question_count}
+                                    </button>
+                                </TableCell>
                                 <TableCell>
                                     {item.capturer ? (
                                         item.capturer
@@ -192,6 +222,13 @@ export default function SubjectQuestionCountTable() {
                 }}
                 title="Confirm Assignment"
                 message={`This subject is currently assigned to ${selectedSubject?.capturer}. Are you sure you want to reassign it to yourself?`}
+            />
+
+            <QuestionDetailsModal
+                isOpen={showQuestionDetails}
+                onClose={() => setShowQuestionDetails(false)}
+                subjectName={selectedSubject?.subject_name || ''}
+                questionCounts={questionCounts}
             />
         </div>
     )
