@@ -31,7 +31,7 @@ export default function AIOptionsGenerator({
     const maxLength = correctAnswer.length + 20
 
     console.log(minLength, maxLength)
-    const prompt = `question: ${questionText}. context: ${context}. Correct Answer: "${correctAnswer}". Give me exactly 3 wrong answers for this question. length of each answer must be similar to the length of the correct answer. I am setting up a mock test. separate the answers by an underscore sign, do not number the answers, do not return the string as json, do not add new line to the string`
+    const prompt = `question: ${questionText}. context: ${context}. Correct Answer: "${correctAnswer}". Give me exactly 3 wrong answers for this question. \n if correct answer container forward slashes then the options must contain forward slashes \n length of each answer must be similar to the length of the correct answer. I am setting up a mock test. \n separate the answers by an underscore sign, do not number the answers, do not return the string as json, do not add new line to the string`
 
     setLoading(true)
     setError('')
