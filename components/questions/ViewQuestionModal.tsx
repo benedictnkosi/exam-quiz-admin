@@ -333,20 +333,13 @@ export default function ViewQuestionModal({
             </div>
           )}
 
-          {/* question Image */}
-          {question.question_image_path && (
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Question Image</h3>
-              <div className="relative w-full h-64">
-                <Image
-                  src={getImageUrl(question.question_image_path || '')}
-                  alt="Question"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+          {/* Question Content */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Context</h3>
+            <div className="bg-gray-50 p-4 rounded">
+              {renderMixedContent(question.context)}
             </div>
-          )}
+          </div>
 
           {/* Context Image */}
           {question.image_path && (
@@ -381,6 +374,23 @@ export default function ViewQuestionModal({
               </div>
             </div>
           )}
+
+
+          {/* question Image */}
+          {question.question_image_path && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Question Image</h3>
+              <div className="relative w-full h-64">
+                <Image
+                  src={getImageUrl(question.question_image_path || '')}
+                  alt="Question"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+
 
           {/* Question Content */}
           <div className="mb-4">
