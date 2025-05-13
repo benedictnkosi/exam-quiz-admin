@@ -206,6 +206,19 @@ export default function UploadExamPaperPage() {
         }
     };
 
+    // Handle paste event
+    const handlePaste = (e: React.ClipboardEvent) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                if (file) {
+                    setImageFile(file);
+                }
+            }
+        }
+    };
+
     return (
         <div className="flex min-h-screen bg-gray-50">
             <Sidebar />
@@ -377,19 +390,21 @@ export default function UploadExamPaperPage() {
                                 <form onSubmit={handleImageUpload} className="space-y-6">
                                     <div>
                                         <label className="block mb-2 font-medium text-gray-700">Image File</label>
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={e => setImageFile(e.target.files?.[0] || null)}
-                                                required
-                                                className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                                            />
-                                            {imageFile && (
-                                                <span className="text-green-600 flex items-center gap-1 text-xs font-semibold">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                                    {imageFile.name}
-                                                </span>
+                                        <div
+                                            className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            onPaste={handlePaste}
+                                            tabIndex={0}
+                                        >
+                                            {imageFile ? (
+                                                <div className="flex items-center gap-2 text-green-600">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                    <span className="text-sm font-medium">{imageFile.name}</span>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center text-gray-500">
+                                                    <p className="text-sm font-medium">Click to focus and paste image (Ctrl/Cmd + V)</p>
+                                                    <p className="text-xs mt-1">or drag and drop an image here</p>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
