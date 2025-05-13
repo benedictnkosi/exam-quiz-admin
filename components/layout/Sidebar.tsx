@@ -12,6 +12,7 @@ import Image from 'next/image'
 const menuItems = [
   { path: '/admin', label: 'Dashboard' },
   { path: '/questions', label: 'Questions', showRejected: true },
+  { path: '/admin/ai-questions/upload-exam-paper', label: 'Upload Exam Paper' },
   { path: '/admin/app-management', label: 'App Management' },
   { path: '/', label: 'APP' },
 ]
