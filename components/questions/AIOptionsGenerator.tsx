@@ -66,8 +66,13 @@ export default function AIOptionsGenerator({
         ? generatedText.split('_').filter(Boolean)
         : generatedText.split(',').filter(Boolean)
 
+      // Remove quotation marks from options and trim whitespace
+      const cleanOptions = wrongOptions.map((option: string) =>
+        option.replace(/^["']|["']$/g, '').trim()
+      )
+
       // Always put correct answer as option 4
-      const allOptions = [...wrongOptions.slice(0, 3), correctAnswer]
+      const allOptions = [...cleanOptions.slice(0, 3), correctAnswer]
       onOptionsGenerated(allOptions)
     } catch (err) {
       console.error('Failed to generate options:', err)
