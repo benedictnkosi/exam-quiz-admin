@@ -539,7 +539,7 @@ export default function UploadExamPaperPage() {
                                             setError("");
                                             try {
                                                 const res = await fetch(`${API_HOST}/api/exam-papers/${examPaperId}/status`, {
-                                                    method: "PATCH",
+                                                    method: "PUT",
                                                     headers: {
                                                         "Content-Type": "application/json",
                                                     },
@@ -551,7 +551,7 @@ export default function UploadExamPaperPage() {
                                                     setSuccess(true);
                                                     // Show success message for 2 seconds before redirecting
                                                     setTimeout(() => {
-                                                        router.push("/admin/ai-questions");
+                                                        router.push("/admin/ai-questions/upload-exam-paper");
                                                     }, 2000);
                                                 } else {
                                                     throw new Error("Unexpected response format");
