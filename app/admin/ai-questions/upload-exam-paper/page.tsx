@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL, API_HOST } from '@/config/constants';
 import Sidebar from '@/components/layout/Sidebar';
+import { useAuth } from '@/contexts/AuthContext';
 
 const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
 const terms = ["1", "2", "3", "4"];
 
 export default function UploadExamPaperPage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [step, setStep] = useState<1 | 2 | 3>(1);
     // Shared fields
     const [subjectName, setSubjectName] = useState("");
@@ -83,6 +85,7 @@ export default function UploadExamPaperPage() {
         try {
             if (!questionPaperFile) throw new Error("Please select a PDF file.");
             if (!subjectName || !grade || !year || !term) throw new Error("All fields are required.");
+            if (!user?.uid) throw new Error("User not authenticated");
             const formData = new FormData();
             formData.append("file", questionPaperFile);
             formData.append("type", "paper");
@@ -90,6 +93,7 @@ export default function UploadExamPaperPage() {
             formData.append("grade", grade);
             formData.append("year", year);
             formData.append("term", term);
+            formData.append("userUid", user.uid);
             const res = await fetch(`${API_HOST}/api/exam-papers/upload`, {
                 method: "POST",
                 body: formData,
@@ -127,6 +131,7 @@ export default function UploadExamPaperPage() {
             formData.append("year", year);
             formData.append("term", term);
             formData.append("examPaperId", examPaperId);
+            formData.append("userUid", user?.uid || "");
             const res = await fetch(`${API_HOST}/api/exam-papers/upload`, {
                 method: "POST",
                 body: formData,

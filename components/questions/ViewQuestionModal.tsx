@@ -8,6 +8,7 @@ import { API_BASE_URL, IMAGE_BASE_URL } from '../../config/constants.js'
 import { getNextNewQuestion } from '@/services/api'
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
+import EditQuestionModal from './EditQuestionModal'
 
 interface ViewQuestionModalProps {
   question: DetailedQuestion & {
@@ -15,6 +16,7 @@ interface ViewQuestionModalProps {
   }
   onClose: () => void
   onQuestionUpdate?: (newQuestion: DetailedQuestion) => void
+  onEdit?: () => void
 }
 
 interface CheckAnswerResponse {
@@ -63,13 +65,15 @@ function cleanAnswer(answer: string): string {
 export default function ViewQuestionModal({
   question: initialQuestion,
   onClose,
-  onQuestionUpdate
+  onQuestionUpdate,
+  onEdit
 }: ViewQuestionModalProps) {
   const { user } = useAuth()
   const [question, setQuestion] = useState({
     ...initialQuestion,
     answer: cleanAnswer(initialQuestion.answer)
   })
+  const [editingQuestion, setEditingQuestion] = useState<DetailedQuestion | null>(null)
   const [answer, setAnswer] = useState('test')
   const [showAnswer, setShowAnswer] = useState(false)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
@@ -314,14 +318,25 @@ export default function ViewQuestionModal({
       <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-start mb-4">
           <h2 className="text-2xl font-bold">Question Details</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setEditingQuestion(question)}
+              className="text-blue-500 hover:text-blue-700"
+              title="Edit Question"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -601,6 +616,17 @@ export default function ViewQuestionModal({
           )}
         </div>
       </div>
+
+      {editingQuestion && (
+        <EditQuestionModal
+          question={editingQuestion}
+          onClose={() => setEditingQuestion(null)}
+          onUpdate={() => {
+            // Refresh the questions list
+            window.location.reload()
+          }}
+        />
+      )}
     </div>
   )
 } 

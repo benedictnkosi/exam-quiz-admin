@@ -173,13 +173,18 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
   }
 
   // Update the initialization code
-  const initialOptions = initialData?.options ?
+  const initialOptionsRaw = initialData?.options ?
     (isOptionsObject(initialData.options) ? [
       initialData.options.option1 || '',
       initialData.options.option2 || '',
       initialData.options.option3 || '',
       initialData.options.option4 || '',
     ] : initialData.options) : ['', '', '', ''];
+  // Always ensure 4 options (pad with empty strings if needed)
+  const initialOptions = [
+    ...(initialOptionsRaw || []),
+    '', '', '', ''
+  ].slice(0, 4);
 
   const [formData, setFormData] = useState<FormData>(() => {
     if (initialData) {
