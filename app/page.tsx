@@ -130,7 +130,7 @@ export default function Home() {
             if (!curr?.name) return acc;
 
             // Extract base subject name without P1/P2
-            const baseName = curr.name.split(' P')[0];
+            const baseName = curr.name.replace(/ P[12]$/, '');
 
             if (!acc[baseName]) {
               acc[baseName] = {
