@@ -290,37 +290,53 @@ export default function UploadExamPaperPage() {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {examPapers.map((paper) => (
-                                            <tr key={paper.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{paper.subject_name}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.grade}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.year}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.term}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.number_of_questions}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{Object.keys(paper.images || {}).length}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(paper.status)}`}>
-                                                        {paper.status.replace('_', ' ')}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {paper.created ? new Date(paper.created).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    }) : '-'}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {examPapers.map((paper) => {
+                                            interface QuestionProgress {
+                                                status: string;
+                                                updated_at: string;
+                                            }
+
+                                            const progress = (paper.question_progress || {}) as Record<string, QuestionProgress>;
+                                            const doneCount = Object.values(progress).filter(q => q.status === "Done").length;
+                                            const failedCount = Object.values(progress).filter(q => q.status === "Failed").length;
+                                            const totalCount = Object.keys(progress).length;
+
+                                            return (
+                                                <tr key={paper.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{paper.subject_name}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.grade}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.year}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.term}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-green-600">Done: {doneCount}</span>
+                                                            <span className="text-red-600">Failed: {failedCount}</span>
+                                                            <span className="text-gray-600">Total: {totalCount}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(paper.status)}`}>
+                                                            {paper.status.replace('_', ' ')}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {paper.created ? new Date(paper.created).toLocaleDateString('en-US', {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        }) : '-'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
