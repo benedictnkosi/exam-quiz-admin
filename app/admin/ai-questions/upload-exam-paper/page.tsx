@@ -66,7 +66,14 @@ export default function UploadExamPaperPage() {
             .then(res => res.json())
             .then(data => {
                 if (data.status === "OK" && data.subjects) {
-                    setSubjects(data.subjects);
+                    // Filter out subjects containing specified terms
+                    const filteredSubjects = data.subjects.filter((subject: { name: string }) => {
+                        const subjectName = subject.name.toLowerCase();
+                        return !subjectName.includes("physical sciences") &&
+                            !subjectName.includes("mathematics") &&
+                            !subjectName.includes("accounting");
+                    });
+                    setSubjects(filteredSubjects);
                 } else {
                     setSubjects([]);
                 }

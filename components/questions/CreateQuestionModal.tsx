@@ -24,14 +24,14 @@ export default function CreateQuestionModal({ onClose }: CreateQuestionModalProp
               </svg>
             </button>
           </div>
-          
-          <QuestionForm 
+
+          <QuestionForm
             mode="create"
-            // Remove or comment out onSuccess to prevent modal from closing
-            // onSuccess={() => {
-            //   onSuccess()
-            //   onClose()
-            // }}
+          // Remove or comment out onSuccess to prevent modal from closing
+          // onSuccess={() => {
+          //   onSuccess()
+          //   onClose()
+          // }}
           />
         </div>
       </div>
