@@ -300,6 +300,7 @@ export default function UploadExamPaperPage() {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
@@ -316,7 +317,35 @@ export default function UploadExamPaperPage() {
 
                                             return (
                                                 <tr key={paper.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{paper.subject_name}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        <div className="flex flex-col gap-1">
+                                                            <span>{paper.subject_name}</span>
+                                                            <div className="flex gap-2 text-xs">
+                                                                <a
+                                                                    href={`${API_HOST}/api/exam-papers/download/${paper.paper_name}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                    </svg>
+                                                                    Question Paper
+                                                                </a>
+                                                                <a
+                                                                    href={`${API_HOST}/api/exam-papers/download/${paper.memo_name}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                    </svg>
+                                                                    Memo
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.grade}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.year}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.term}</td>
@@ -340,6 +369,9 @@ export default function UploadExamPaperPage() {
                                                             hour: '2-digit',
                                                             minute: '2-digit'
                                                         }) : '-'}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        {/* Add any additional actions here */}
                                                     </td>
                                                 </tr>
                                             );
