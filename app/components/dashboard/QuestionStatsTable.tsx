@@ -13,6 +13,7 @@ interface CapturerStats {
     };
     email: string | null;
     name: string;
+    ai_questions_count: number;
     percentages: {
         new: number;
         approved: number;
@@ -189,8 +190,7 @@ export default function QuestionStatsTable() {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rejected</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approval Rate</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AI Questions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -216,16 +216,13 @@ export default function QuestionStatsTable() {
                                                 {capturer.status_counts.rejected} ({capturer.percentages.rejected.toFixed(1)}%)
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {capturer.status_counts.pending} ({capturer.percentages.pending.toFixed(1)}%)
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {capturer.percentages.approved.toFixed(1)}%
+                                                {capturer.ai_questions_count}
                                             </td>
                                         </tr>
                                     ))
                             ) : (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                                         No capturer statistics available
                                     </td>
                                 </tr>

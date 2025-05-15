@@ -823,6 +823,7 @@ export default function QuizPage() {
         setSelectedAnswer(null)
         setShowExplanation(false)
         setIsCorrect(null)
+        setIsAnswered(false)
         stopTimer()
         setIsImageLoading(false)
         setZoomImageUrl(null)
@@ -979,6 +980,7 @@ export default function QuizPage() {
             stopTimer()
             setIsAnswerLoading(true)
             setSelectedAnswer(answer)
+            setIsAnswered(true)  // Set isAnswered to true when user answers
 
             const response = await checkAnswer(user.uid, currentQuestion.id, answer, duration)
 
@@ -1094,10 +1096,25 @@ export default function QuizPage() {
                 comment: reportComment
             })
 
-            // Close the report modal and show thank you modal
+            // Close the report modal
             setIsReportModalVisible(false)
-            setIsThankYouModalVisible(true)
             setReportComment('')
+
+            // Check if we should show the thank you modal
+            const lastShownDate = localStorage.getItem('lastThankYouModalDate')
+            const today = new Date().toDateString()
+
+            if (lastShownDate !== today) {
+                setIsThankYouModalVisible(true)
+                localStorage.setItem('lastThankYouModalDate', today)
+            }
+
+            // Load next question after successful report
+            if (selectedLearningType === 'quiz') {
+                loadRandomQuestion(selectedPaper);
+            } else {
+                loadQuickLesson(selectedPaper);
+            }
 
         } catch (error) {
             console.error('Error reporting issue:', error)
@@ -2621,7 +2638,7 @@ export default function QuizPage() {
                                                 {currentQuestion.question && (
                                                     <>
                                                         <h3 className="text-lg font-semibold mb-2 text-white text-center">Question</h3>
-                                                        <div className="text-xl mb-2 text-white text-center">
+                                                        <div className="text-xl mb-2 text-white text-left">
                                                             {currentQuestion.question?.split('\n').map((line, index) => {
 
                                                                 const trimmedLine = line.trim();
@@ -2812,7 +2829,7 @@ export default function QuizPage() {
                                                     🛑 Report an Issue with this {selectedLearningType === 'quiz' ? 'Question' : 'Lesson'}
                                                 </span>
                                             </button>
-                                            {learnerRole === 'admin' && (
+                                            {learnerRole === 'admin' && isAnswered && (
                                                 <button
                                                     onClick={async () => {
                                                         if (!user?.uid || !user?.email || !currentQuestion) return;
@@ -2824,7 +2841,12 @@ export default function QuizPage() {
                                                                 uid: user.uid,
                                                                 comment: 'Question approved by admin'
                                                             });
-                                                            showMessage('Question approved successfully', 'success');
+                                                            // Load next question after successful approval
+                                                            if (selectedLearningType === 'quiz') {
+                                                                loadRandomQuestion(selectedPaper);
+                                                            } else {
+                                                                loadQuickLesson(selectedPaper);
+                                                            }
                                                         } catch (error) {
                                                             console.error('Error approving question:', error);
                                                             showMessage('Failed to approve question', 'error');
