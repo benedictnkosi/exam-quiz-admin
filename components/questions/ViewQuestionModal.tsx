@@ -409,7 +409,14 @@ export default function ViewQuestionModal({
 
           {/* Question Content */}
           <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-2">Question</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Question
+              {question.question_number && (
+                <span className="ml-2 text-sm font-normal text-gray-500">
+                  (Question {question.question_number})
+                </span>
+              )}
+            </h3>
             <div className="bg-gray-50 p-4 rounded">
               {renderMixedContent(question.question)}
             </div>

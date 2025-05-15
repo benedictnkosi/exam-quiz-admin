@@ -41,6 +41,7 @@ interface FormData {
   questionImage: ImageInfo | null
   explanationImage: File | null
   curriculum: string
+  question_number?: string | null
   answerSheet: {
     rows: Array<{
       column1: string
@@ -167,6 +168,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     questionImage: null,
     explanationImage: null,
     curriculum: 'CAPS',
+    question_number: null,
     answerSheet: {
       rows: []
     }
@@ -244,6 +246,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         } : null,
         explanationImage: null,
         curriculum: initialData.curriculum || 'CAPS',
+        question_number: initialData.question_number || null,
         answerSheet: {
           rows: answerSheetRows
         }
@@ -1069,6 +1072,19 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
                 />
               </div>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">
+              Question Number (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.question_number || ''}
+              onChange={(e) => setFormData({ ...formData, question_number: e.target.value || null })}
+              className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter question number (e.g. 1.5.1)"
+            />
           </div>
 
           <div>

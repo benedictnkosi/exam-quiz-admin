@@ -131,6 +131,7 @@ export interface DetailedQuestion {
   explanation: string
   active: boolean
   year: number
+  question_number?: string | null
   capturer: {
     id: number
     uid: string
