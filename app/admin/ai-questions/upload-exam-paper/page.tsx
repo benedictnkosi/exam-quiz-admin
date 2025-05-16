@@ -40,6 +40,7 @@ export default function UploadExamPaperPage() {
     const [removeSuccess, setRemoveSuccess] = useState("");
     const [examPapers, setExamPapers] = useState<any[]>([]);
     const [loadingPapers, setLoadingPapers] = useState(false);
+    const [statusUpdateSuccess, setStatusUpdateSuccess] = useState(false);
 
     // Load grades on mount
     useEffect(() => {
@@ -615,6 +616,7 @@ export default function UploadExamPaperPage() {
                                             if (!examPaperId) return;
                                             setLoading(true);
                                             setError("");
+                                            setStatusUpdateSuccess(false);
                                             try {
                                                 const res = await fetch(`${API_HOST}/api/exam-papers/${examPaperId}/status`, {
                                                     method: "PUT",
@@ -626,7 +628,21 @@ export default function UploadExamPaperPage() {
                                                 if (!res.ok) throw new Error("Failed to update status");
                                                 const data = await res.json();
                                                 if (data.message === "Status updated successfully") {
-                                                    setSuccess(true);
+                                                    setStatusUpdateSuccess(true);
+                                                    // Refresh the exam papers table
+                                                    try {
+                                                        const res = await fetch(`${API_HOST}/api/exam-papers`);
+                                                        if (!res.ok) throw new Error("Failed to fetch exam papers");
+                                                        const data = await res.json();
+                                                        setExamPapers(data.examPapers || []);
+                                                        // Scroll to the table
+                                                        const tableElement = document.querySelector('.overflow-x-auto');
+                                                        if (tableElement) {
+                                                            tableElement.scrollIntoView({ behavior: 'smooth' });
+                                                        }
+                                                    } catch (err) {
+                                                        console.error("Error refreshing exam papers:", err);
+                                                    }
                                                     // Show success message for 2 seconds before redirecting
                                                     setTimeout(() => {
                                                         router.push("/admin/ai-questions/upload-exam-paper");
@@ -647,7 +663,7 @@ export default function UploadExamPaperPage() {
                                         {loading ? "Updating..." : "Done"}
                                     </button>
                                 </div>
-                                {success && (
+                                {statusUpdateSuccess && (
                                     <div className="mt-4 flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2 text-sm">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
