@@ -101,6 +101,9 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               Capturer
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reviewer
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Comment
             </th>
           </tr>
@@ -179,7 +182,10 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {String(question.capturer.name)}
+                {question.capturer?.name || 'N/A'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {question.reviewer?.name || 'N/A'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {question.comment && question.comment !== 'approved' && question.comment !== 'new' ? (

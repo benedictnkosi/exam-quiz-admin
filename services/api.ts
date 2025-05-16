@@ -106,6 +106,9 @@ export interface Question {
   capturer: {
     name: string
   }
+  reviewer?: {
+    name: string
+  }
   grade: string
   subject: string | { id: number; name: string; active: boolean; grade: any }
   createdAt: string
