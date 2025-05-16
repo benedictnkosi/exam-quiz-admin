@@ -245,6 +245,11 @@ export default function ViewQuestionModal({
   const hasAnswerSheet = answerSheet !== null
 
   const renderMixedContent = (text: string) => {
+    // Handle null or undefined text
+    if (!text) {
+      return <span></span>;
+    }
+
     // Handle LaTeX content first
     if (text.startsWith('$') && text.endsWith('$')) {
       return text.split(/(\$.*?\$)/).map((chunk, index) => {
