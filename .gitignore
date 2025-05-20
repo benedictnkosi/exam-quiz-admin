@@ -42,3 +42,4 @@ next-env.d.ts
 
 # sensitive files
 firebase-service-account.json
+firebase-service-account.json.backup
