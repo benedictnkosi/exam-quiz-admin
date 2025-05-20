@@ -225,7 +225,7 @@ export default function Home() {
             <span>Share on Facebook</span>
           </button>
           <button
-            onClick={() => window.open(`https://x.com/intent/tweet?url=${encodeURIComponent('https://examquiz.co.za')}&text=${encodeURIComponent('Check out Exam Quiz - Learn, Play, and Grow! 🎓')}`, '_blank', 'width=600,height=400')}
+            onClick={() => window.open(`https://x.com/intent/tweet?url=${encodeURIComponent('https://examquiz.co.za')}&text=${encodeURIComponent('Check out Dimpo Learning App - Learn, Play, and Grow! 🎓')}`, '_blank', 'width=600,height=400')}
             className="flex-1 bg-[#1DA1F2] hover:bg-[#1A8CD8] text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">

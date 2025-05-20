@@ -43,11 +43,11 @@ export default function PrivacyPage() {
                                     securities entitled to vote for election of directors or other managing authority.</p>
                             </li>
                             <li>
-                                <p><strong>Application</strong> refers to Exam Quiz, the software program provided by the Company.</p>
+                                <p><strong>Application</strong> refers to Dimpo Learning App, the software program provided by the Company.</p>
                             </li>
                             <li>
                                 <p><strong>Company</strong> (referred to as either &quot;the Company&quot;, &quot;We&quot;, &quot;Us&quot; or
-                                    &quot;Our&quot; in this Agreement) refers to Exam Quiz.</p>
+                                    &quot;Our&quot; in this Agreement) refers to Dimpo Learning App.</p>
                             </li>
                             <li>
                                 <p><strong>Country</strong> refers to: South Africa</p>

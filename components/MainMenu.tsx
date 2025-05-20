@@ -44,7 +44,7 @@ export default function MainMenu({ learnerInfo }: MainMenuProps) {
           <div className="w-10 h-10 flex items-center justify-center">
             <Image
               src={logoError ? '/images/icon.png' : '/images/icon.png'}
-              alt="Exam Quiz"
+              alt="Dimpo Learning App"
               width={40}
               height={40}
               priority
@@ -52,7 +52,7 @@ export default function MainMenu({ learnerInfo }: MainMenuProps) {
             />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Exam Quiz ✨</h1>
+            <h1 className="text-2xl font-bold text-white">Dimpo Learning App ✨</h1>
             <p className="text-gray-300">Explore the Joy of Learning! 🎓</p>
           </div>
         </Link>
@@ -133,7 +133,7 @@ export default function MainMenu({ learnerInfo }: MainMenuProps) {
               <div className="w-10 h-10 flex items-center justify-center">
                 <Image
                   src={logoError ? '/images/icon.png' : '/images/icon.png'}
-                  alt="Exam Quiz"
+                  alt="Dimpo Learning App"
                   width={40}
                   height={40}
                   priority
@@ -141,7 +141,7 @@ export default function MainMenu({ learnerInfo }: MainMenuProps) {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Exam Quiz ✨</h1>
+                <h1 className="text-2xl font-bold text-white">Dimpo Learning App ✨</h1>
                 <p className="text-gray-300">Explore the Joy of Learning! 🎓</p>
               </div>
             </div>

@@ -74,7 +74,7 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#312e81] via-transparent to-transparent z-10" />
               <Image
                 src="/images/mock.png"
-                alt="Exam Quiz App Interface"
+                alt="Dimpo Learning App App Interface"
                 width={400}
                 height={800}
                 className="w-full h-auto relative z-0 drop-shadow-2xl"
@@ -118,7 +118,7 @@ export default function LandingPage() {
         <div className="w-full max-w-md space-y-6 sm:space-y-10">
           <div className="text-center space-y-3 sm:space-y-4">
             <h1 className="text-4xl sm:text-5xl font-bold text-white flex items-center justify-center gap-3">
-              Exam Quiz <span className="text-2xl sm:text-3xl"></span>
+              Dimpo Learning App <span className="text-2xl sm:text-3xl"></span>
             </h1>
             <p className="text-lg sm:text-xl text-white/90">
               Ready to ace those exams? Let&apos;s get started! 🚀

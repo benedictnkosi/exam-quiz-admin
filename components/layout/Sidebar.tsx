@@ -46,7 +46,7 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-gray-800 text-white p-6">
       <div className="mb-8">
-        <h1 className="text-xl font-bold">Exam Quiz Admin</h1>
+        <h1 className="text-xl font-bold">Dimpo Learning App Admin</h1>
       </div>
       <nav className="space-y-6">
         <ul className="space-y-2">

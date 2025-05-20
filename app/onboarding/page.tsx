@@ -151,7 +151,7 @@ export default function OnboardingPage() {
                         </div>
                         <div className="text-center space-y-6">
                             <h1 className="text-4xl font-bold text-white">
-                                🎉 Welcome to Exam Quiz! 🚀
+                                🎉 Welcome to Dimpo Learning App! 🚀
                             </h1>
                             <p className="text-xl text-white/90">
                                 📝 Get ready to boost your brainpower and ace your exams! 🏆

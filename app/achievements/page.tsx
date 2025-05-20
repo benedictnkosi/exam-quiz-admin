@@ -69,7 +69,7 @@ export default function AchievementsPage() {
           getLearner(user.uid),
           getLeaderboard(user.uid)
         ])
-        
+
         setLearnerInfo(learnerData)
         setLeaderboard(leaderboardData)
         const earnedBadgeIds = new Set(learnerBadges.map(badge => badge.id))
@@ -116,13 +116,13 @@ export default function AchievementsPage() {
   const handleShareBadge = async (badge: Badge) => {
     try {
       const badgeImageUrl = `${window.location.origin}/images/badges/${badge.image}`
-      const message = `I just earned the ${badge.name} badge on Exam Quiz! 🎉\n\n${badge.rules}\n\nJoin me on Exam Quiz and start earning badges too! https://examquiz.co.za`
-      
+      const message = `I just earned the ${badge.name} badge on Dimpo Learning App! 🎉\n\n${badge.rules}\n\nJoin me on Dimpo Learning App and start earning badges too! https://examquiz.co.za`
+
       if (navigator.share) {
         const response = await fetch(badgeImageUrl)
         const blob = await response.blob()
         const file = new File([blob], badge.image, { type: blob.type })
-        
+
         await navigator.share({
           title: 'Share Badge Achievement',
           text: message,
@@ -168,21 +168,19 @@ export default function AchievementsPage() {
           <div className="bg-white/10 backdrop-blur-lg rounded-full p-1">
             <button
               onClick={() => setActiveTab('scoreboard')}
-              className={`px-6 py-2 rounded-full transition-all ${
-                activeTab === 'scoreboard'
+              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'scoreboard'
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-300 hover:text-white'
-              }`}
+                }`}
             >
               Scoreboard
             </button>
             <button
               onClick={() => setActiveTab('badges')}
-              className={`px-6 py-2 rounded-full transition-all ${
-                activeTab === 'badges'
+              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'badges'
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-300 hover:text-white'
-              }`}
+                }`}
             >
               Badges
             </button>
@@ -291,11 +289,10 @@ export default function AchievementsPage() {
               {leaderboard?.rankings.slice(3).map((entry) => (
                 <div
                   key={`${entry.name}-${entry.position}`}
-                  className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
-                    entry.isCurrentLearner
+                  className={`flex items-center gap-4 p-4 rounded-lg transition-all ${entry.isCurrentLearner
                       ? 'bg-blue-600'
                       : 'bg-white/5 hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-4 flex-1">
                     <div className="w-8 text-xl font-bold">

@@ -67,7 +67,7 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#312e81] via-transparent to-transparent z-10" />
             <Image
               src="/images/mock.png"
-              alt="Exam Quiz App Interface"
+              alt="Dimpo Learning App App Interface"
               width={400}
               height={800}
               className="w-full h-auto relative z-0 drop-shadow-2xl"
@@ -105,7 +105,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-10">
           <div className="text-center space-y-4">
             <h1 className="text-5xl font-bold text-white flex items-center justify-center gap-3">
-              Exam Quiz <span className="text-3xl">👋</span>
+              Dimpo Learning App <span className="text-3xl">👋</span>
             </h1>
             <p className="text-xl text-white/90">
               Ready to ace those exams? Let&apos;s get started! 🚀
@@ -155,7 +155,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-between">
               <Link
                 href="/reset-password"
                 className="text-white/90 hover:text-white text-base transition-colors duration-300"
@@ -175,13 +175,19 @@ export default function LoginPage() {
 
           <div className="text-center space-y-4">
             <p className="text-lg text-white/90">
-              New to Exam Quiz? Join thousands of students acing their exams! 🎯
+              New to Dimpo Learning App? Join thousands of students acing their exams! 🎯
             </p>
             <Link
               href="/onboarding"
               className="block w-full py-4 px-6 rounded-full text-lg font-semibold bg-gradient-to-r from-[#4338ca] to-[#6366f1] text-white hover:from-[#4338ca]/90 hover:to-[#6366f1]/90 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-[#1e1b4b]"
             >
               Create an account
+            </Link>
+            <Link
+              href="/info/delete-account"
+              className="block w-full py-4 px-6 rounded-full text-lg font-semibold bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-600/90 hover:to-red-500/90 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 focus:ring-offset-[#1e1b4b]"
+            >
+              Delete Account
             </Link>
           </div>
 
