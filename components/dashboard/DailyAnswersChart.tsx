@@ -45,7 +45,9 @@ export default function DailyAnswersChart() {
                 const response = await fetch(`${API_HOST}/api/stats/daily-answers`)
                 const result: DailyAnswersResponse = await response.json()
                 if (result.status === 'OK') {
-                    setData(result.data)
+                    const excludedDate = '2025-05-19'
+                    const filteredData = result.data.filter(item => item.date !== excludedDate)
+                    setData(filteredData)
                 } else {
                     setError('Failed to fetch daily answers')
                 }

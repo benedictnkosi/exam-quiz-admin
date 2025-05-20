@@ -51,6 +51,7 @@ export default function AvgDailyGrowthCard() {
                         .filter(item =>
                             item.date !== todayStr &&
                             item.date >= daysAgoStr &&
+                            item.date !== '2025-05-19' &&
                             item.growth_percentage !== null &&
                             Math.abs(item.growth_percentage) <= 100
                         )

@@ -58,7 +58,13 @@ export default function LearnerActivityChart() {
                 const response = await fetch(`${API_HOST}/api/stats/average-learners-per-day`)
                 const result: LearnerActivityResponse = await response.json()
                 if (result.status === 'OK') {
-                    setData(result.data)
+                    const excludedDate = '2025-05-19'
+                    const filteredData = result.data.daily_breakdown.filter(item => item.date !== excludedDate)
+                    const updatedData = {
+                        ...result.data,
+                        daily_breakdown: filteredData
+                    }
+                    setData(updatedData)
                 } else {
                     setError('Failed to fetch learner activity data')
                 }

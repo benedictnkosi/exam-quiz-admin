@@ -45,19 +45,21 @@ export default function ResultGrowthChart() {
             try {
                 const response = await fetch(`${API_HOST}/api/result-growth/daily/with-percentage`)
                 const result: ResultGrowthResponse = await response.json()
-                
+
                 if (result.status === 'success') {
                     // Filter data from April 9th, 2025 onwards and remove today's data
                     const today = new Date().toISOString().split('T')[0]
                     const startDate = '2025-04-09'
+                    const excludedDate = '2025-05-19'
                     const filteredData = result.data
-                        .filter(item => 
-                            item.date !== today && 
+                        .filter(item =>
+                            item.date !== today &&
                             item.date >= startDate &&
+                            item.date !== excludedDate &&
                             (item.growth_percentage === null || Math.abs(item.growth_percentage) <= 100)
                         )
                         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                    
+
                     setData(filteredData)
                 } else {
                     setError('Failed to fetch result growth data')
