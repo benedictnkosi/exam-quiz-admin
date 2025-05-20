@@ -170,7 +170,7 @@ export default function DeleteAccountPage() {
                             <ol className="list-decimal list-inside space-y-2 text-gray-600">
                                 <li>Log in to your account</li>
                                 <li>Go to your profile page</li>
-                                <li>Click on the "Delete Account" button</li>
+                                <li>Click on the &quot;Delete Account&quot; button</li>
                                 <li>Confirm your decision to delete your account</li>
                             </ol>
                             <p className="text-gray-600 mt-4">
