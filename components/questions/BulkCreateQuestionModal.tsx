@@ -44,6 +44,12 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
 
     const terms = ['1', '2', '3', '4']
 
+    const [stats, setStats] = useState({
+        completed: 0,
+        failed: 0,
+        total: 0
+    })
+
     useEffect(() => {
         const fetchGrades = async () => {
             try {
@@ -105,6 +111,7 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
         setLoading(true)
         setError('')
         setSuccess(false)
+        setStats({ completed: 0, failed: 0, total: 0 })
 
         try {
             // Parse the JSON input
@@ -113,7 +120,11 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
                 throw new Error('Input must be an array of questions')
             }
 
+            setStats(prev => ({ ...prev, total: questions.length }))
             let successCount = 0
+            let failureCount = 0
+            let errors: string[] = []
+
             // Process each question
             for (const question of questions) {
                 const payload = {
@@ -133,29 +144,52 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
                     subject_id: formData.subjectId
                 }
 
-                const response = await fetch(`${API_BASE_URL}/question/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                })
+                try {
+                    const response = await fetch(`${API_BASE_URL}/question/create`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload),
+                    })
 
-                const result = await response.json()
-                if (result.status === 'NOK') {
-                    throw new Error(result.message || 'Failed to create question')
+                    const result = await response.json()
+                    if (result.status === 'NOK') {
+                        if (result.message?.includes('A question with the same subject and text already exists')) {
+                            // Skip duplicate questions
+                            console.log('Skipping duplicate question:', question.question)
+                            continue
+                        }
+                        throw new Error(result.message || 'Failed to create question')
+                    }
+                    successCount++
+                } catch (err) {
+                    failureCount++
+                    const errorMessage = err instanceof Error ? err.message : 'Failed to create question'
+                    errors.push(`Question "${question.question?.substring(0, 50)}...": ${errorMessage}`)
                 }
-                successCount++
             }
 
-            setSuccess(true)
-            // Reset only the JSON input field, keeping other selections
-            setFormData(prev => ({
-                ...prev,
-                jsonInput: ''
-            }))
-            // Call onSuccess to refresh the questions list without closing modal
-            onSuccess()
+            setStats({
+                completed: successCount,
+                failed: failureCount,
+                total: questions.length
+            })
+
+            if (successCount > 0) {
+                setSuccess(true)
+                // Reset only the JSON input field, keeping other selections
+                setFormData(prev => ({
+                    ...prev,
+                    jsonInput: ''
+                }))
+                // Call onSuccess to refresh the questions list without closing modal
+                onSuccess()
+            }
+
+            if (errors.length > 0) {
+                setError(errors.join('\n'))
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create questions')
             console.error('Error creating questions:', err)
@@ -275,14 +309,17 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
                     </div>
 
                     {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded whitespace-pre-line">
                             {error}
                         </div>
                     )}
 
                     {success && (
                         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                            Questions created successfully!
+                            <p>Questions created successfully!</p>
+                            <p className="text-sm mt-2">
+                                Completed: {stats.completed} | Failed: {stats.failed} | Total: {stats.total}
+                            </p>
                         </div>
                     )}
 

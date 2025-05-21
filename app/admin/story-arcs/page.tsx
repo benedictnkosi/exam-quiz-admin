@@ -280,16 +280,16 @@ export default function StoryArcsManagement() {
                                                     imageName={arc.image_path}
                                                     showResetButton={true}
                                                 />
-                                                {arc.image_path && (
-                                                    <div className="mt-4 relative h-48 w-full">
-                                                        <Image
-                                                            src={`${API_HOST}/images/${arc.image_path}`}
-                                                            alt="Chapter Image"
-                                                            fill
-                                                            className="object-contain"
-                                                        />
-                                                    </div>
-                                                )}
+
+                                                <div className="mt-4 relative h-48 w-full">
+                                                    <Image
+                                                        src={`${API_HOST}/public/learn/learner/get-image?image=chapter-${arc.chapter_number}.png`}
+                                                        alt="Chapter Image"
+                                                        fill
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+
                                             </div>
                                         </div>
                                     </div>
