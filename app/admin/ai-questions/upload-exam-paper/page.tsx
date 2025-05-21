@@ -126,8 +126,13 @@ export default function UploadExamPaperPage() {
                 method: "POST",
                 body: formData,
             });
-            if (!res.ok) throw new Error("Upload failed");
             const data = await res.json();
+            if (!res.ok) {
+                if (res.status === 500 && data.error) {
+                    throw new Error(data.error);
+                }
+                throw new Error("Upload failed");
+            }
             if (data.examPaper && data.examPaper.id) {
                 setExamPaperId(data.examPaper.id.toString());
                 localStorage.setItem('uploadedExamPaperId', data.examPaper.id.toString());
@@ -164,8 +169,13 @@ export default function UploadExamPaperPage() {
                 method: "POST",
                 body: formData,
             });
-            if (!res.ok) throw new Error("Upload failed");
             const data = await res.json();
+            if (!res.ok) {
+                if (res.status === 500 && data.error) {
+                    throw new Error(data.error);
+                }
+                throw new Error("Upload failed");
+            }
             if (data.examPaper && data.examPaper.id) {
                 localStorage.setItem('uploadedExamPaperId', data.examPaper.id.toString());
             }
@@ -202,7 +212,13 @@ export default function UploadExamPaperPage() {
                 method: "POST",
                 body: formData,
             });
-            if (!res.ok) throw new Error("Image upload failed");
+            const data = await res.json();
+            if (!res.ok) {
+                if (res.status === 500 && data.error) {
+                    throw new Error(data.error);
+                }
+                throw new Error("Image upload failed");
+            }
             // Create a local preview URL for the image
             const localUrl = URL.createObjectURL(imageFile);
             setUploadedImages(prev => [
@@ -277,134 +293,7 @@ export default function UploadExamPaperPage() {
                     </h1>
                     <p className="text-gray-500 mb-6">Easily upload question papers, memos, and images for each question. Follow the steps below to complete your upload.</p>
 
-                    {/* Exam Papers List */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold">Uploaded Exam Papers</h2>
-                            <button
-                                onClick={async () => {
-                                    setLoadingPapers(true);
-                                    try {
-                                        const res = await fetch(`${API_HOST}/api/exam-papers`);
-                                        if (!res.ok) throw new Error("Failed to fetch exam papers");
-                                        const data = await res.json();
-                                        setExamPapers(data.examPapers || []);
-                                    } catch (err) {
-                                        console.error("Error fetching exam papers:", err);
-                                    } finally {
-                                        setLoadingPapers(false);
-                                    }
-                                }}
-                                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="Refresh list"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </button>
-                        </div>
-                        {loadingPapers ? (
-                            <div className="flex items-center justify-center py-8">
-                                <svg className="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                            </div>
-                        ) : examPapers.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">No exam papers uploaded yet</div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {examPapers.map((paper) => {
-                                            interface QuestionProgress {
-                                                status: string;
-                                                updated_at: string;
-                                            }
 
-                                            const progress = (paper.question_progress || {}) as Record<string, QuestionProgress>;
-                                            const doneCount = Object.values(progress).filter(q => q.status === "Done").length;
-                                            const failedCount = Object.values(progress).filter(q => q.status === "Failed").length;
-                                            const totalCount = Object.keys(progress).length;
-
-                                            return (
-                                                <tr key={paper.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        <div className="flex flex-col gap-1">
-                                                            <span>{paper.subject_name}</span>
-                                                            <div className="flex gap-2 text-xs">
-                                                                <a
-                                                                    href={`${API_HOST}/api/exam-papers/download/${paper.paper_name}`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                                                >
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                                    </svg>
-                                                                    Question Paper
-                                                                </a>
-                                                                <a
-                                                                    href={`${API_HOST}/api/exam-papers/download/${paper.memo_name}`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                                                >
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                                    </svg>
-                                                                    Memo
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.grade}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.year}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.term}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-green-600">Done: {doneCount}</span>
-                                                            <span className="text-red-600">Failed: {failedCount}</span>
-                                                            <span className="text-gray-600">Total: {totalCount}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(paper.status)}`}>
-                                                            {paper.status.replace('_', ' ')}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {paper.created ? new Date(paper.created).toLocaleDateString('en-US', {
-                                                            year: 'numeric',
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        }) : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                        {/* Add any additional actions here */}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
 
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <div className="flex items-center justify-between mb-8">
@@ -704,6 +593,135 @@ export default function UploadExamPaperPage() {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Exam Papers List */}
+                    <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold">Uploaded Exam Papers</h2>
+                            <button
+                                onClick={async () => {
+                                    setLoadingPapers(true);
+                                    try {
+                                        const res = await fetch(`${API_HOST}/api/exam-papers`);
+                                        if (!res.ok) throw new Error("Failed to fetch exam papers");
+                                        const data = await res.json();
+                                        setExamPapers(data.examPapers || []);
+                                    } catch (err) {
+                                        console.error("Error fetching exam papers:", err);
+                                    } finally {
+                                        setLoadingPapers(false);
+                                    }
+                                }}
+                                className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Refresh list"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                        </div>
+                        {loadingPapers ? (
+                            <div className="flex items-center justify-center py-8">
+                                <svg className="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                </svg>
+                            </div>
+                        ) : examPapers.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">No exam papers uploaded yet</div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {examPapers.map((paper) => {
+                                            interface QuestionProgress {
+                                                status: string;
+                                                updated_at: string;
+                                            }
+
+                                            const progress = (paper.question_progress || {}) as Record<string, QuestionProgress>;
+                                            const doneCount = Object.values(progress).filter(q => q.status === "Done").length;
+                                            const failedCount = Object.values(progress).filter(q => q.status === "Failed").length;
+                                            const totalCount = Object.keys(progress).length;
+
+                                            return (
+                                                <tr key={paper.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        <div className="flex flex-col gap-1">
+                                                            <span>{paper.subject_name}</span>
+                                                            <div className="flex gap-2 text-xs">
+                                                                <a
+                                                                    href={`${API_HOST}/api/exam-papers/download/${paper.paper_name}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                    </svg>
+                                                                    Question Paper
+                                                                </a>
+                                                                <a
+                                                                    href={`${API_HOST}/api/exam-papers/download/${paper.memo_name}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                    </svg>
+                                                                    Memo
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.grade}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.year}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paper.term}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-green-600">Done: {doneCount}</span>
+                                                            <span className="text-red-600">Failed: {failedCount}</span>
+                                                            <span className="text-gray-600">Total: {totalCount}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(paper.status)}`}>
+                                                            {paper.status.replace('_', ' ')}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {paper.created ? new Date(paper.created).toLocaleDateString('en-US', {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        }) : '-'}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        {/* Add any additional actions here */}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </div>
