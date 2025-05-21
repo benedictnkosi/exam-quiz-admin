@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import QuestionsTable from '@/components/questions/QuestionsTable'
 import QuestionsFilter from '@/components/questions/QuestionsFilter'
 import CreateQuestionModal from '@/components/questions/CreateQuestionModal'
+import BulkCreateQuestionModal from '@/components/questions/BulkCreateQuestionModal'
 import { getQuestions, type Question, getRejectedQuestions } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { API_BASE_URL } from '@/config/constants'
@@ -18,6 +19,7 @@ export default function QuestionsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showBulkCreateModal, setShowBulkCreateModal] = useState(false)
   const { user } = useAuth()
 
   // Get filters from URL parameters
@@ -108,12 +110,20 @@ export default function QuestionsPage() {
         <div className="flex-1 container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Questions</h1>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Create Question
-            </button>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowBulkCreateModal(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Bulk Create
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Create Question
+              </button>
+            </div>
           </div>
 
           <QuestionsFilter
@@ -135,6 +145,15 @@ export default function QuestionsPage() {
               onClose={() => setShowCreateModal(false)}
               onSuccess={() => {
                 setShowCreateModal(false)
+                handleSearch()
+              }}
+            />
+          )}
+
+          {showBulkCreateModal && (
+            <BulkCreateQuestionModal
+              onClose={() => setShowBulkCreateModal(false)}
+              onSuccess={() => {
                 handleSearch()
               }}
             />
