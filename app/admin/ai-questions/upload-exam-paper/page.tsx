@@ -29,6 +29,7 @@ export default function UploadExamPaperPage() {
     // Step 3 fields
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [questionNumber, setQuestionNumber] = useState("");
+    const [contextBoundary, setContextBoundary] = useState("");
     const [uploadedImages, setUploadedImages] = useState<{ name: string; questionNumber: string; url?: string }[]>([]);
     const [imageUploadSuccess, setImageUploadSuccess] = useState(false);
     const [questionNumberError, setQuestionNumberError] = useState("");
@@ -208,6 +209,9 @@ export default function UploadExamPaperPage() {
             const formData = new FormData();
             formData.append("image", imageFile);
             formData.append("questionNumber", questionNumber);
+            if (contextBoundary) {
+                formData.append("boundary", contextBoundary);
+            }
             const res = await fetch(`${API_HOST}/api/exam-papers/${examPaperId}/upload-images`, {
                 method: "POST",
                 body: formData,
@@ -487,6 +491,16 @@ export default function UploadExamPaperPage() {
                                             placeholder="e.g. 2.1, 2.1.1, 2.1 (a), 2.1.1 (b)"
                                         />
                                         {questionNumberError && <div className="text-red-600 text-sm mt-1">{questionNumberError}</div>}
+                                    </div>
+                                    <div>
+                                        <label className="block mb-2 font-medium text-gray-700">Context Boundary (Optional), where the context ends and image starts</label>
+                                        <input
+                                            type="text"
+                                            value={contextBoundary}
+                                            onChange={e => setContextBoundary(e.target.value)}
+                                            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                            placeholder="e.g. 2.1-2.3"
+                                        />
                                     </div>
                                     {error && <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 text-sm"><svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>{error}</div>}
                                     {imageUploadSuccess && <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2 text-sm"><svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>Image uploaded successfully!</div>}
