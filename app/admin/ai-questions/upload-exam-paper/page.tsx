@@ -47,6 +47,8 @@ export default function UploadExamPaperPage() {
     useEffect(() => {
         async function fetchGrades() {
             setGrades([
+                { id: 8, number: 8 },
+                { id: 9, number: 9 },
                 { id: 10, number: 10 },
                 { id: 11, number: 11 },
                 { id: 12, number: 12 },
@@ -517,6 +519,11 @@ export default function UploadExamPaperPage() {
                                     <button
                                         onClick={async () => {
                                             if (!examPaperId) return;
+
+                                            // Add confirmation dialog
+                                            const confirmed = window.confirm("Are you sure you want to mark this exam paper as done? This will submit it for processing.");
+                                            if (!confirmed) return;
+
                                             setLoading(true);
                                             setError("");
                                             setStatusUpdateSuccess(false);

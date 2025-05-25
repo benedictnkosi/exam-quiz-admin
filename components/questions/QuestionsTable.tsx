@@ -18,6 +18,36 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
   const [editingQuestion, setEditingQuestion] = useState<DetailedQuestion | null>(null)
   const [posting, setPosting] = useState<number | null>(null)
   const [loadingView, setLoadingView] = useState<number | null>(null)
+  const [showContext, setShowContext] = useState(false)
+  const [detailedQuestions, setDetailedQuestions] = useState<Record<number, DetailedQuestion>>({})
+  const [loadingContext, setLoadingContext] = useState(false)
+
+  const fetchAllContexts = async () => {
+    if (showContext) return // Don't fetch if we're already showing context
+    setLoadingContext(true)
+    try {
+      const contexts = await Promise.all(
+        questions.map(q => getQuestionById(q.id.toString()))
+      )
+      const contextMap = contexts.reduce((acc, q) => {
+        if (q) acc[q.id] = q
+        return acc
+      }, {} as Record<number, DetailedQuestion>)
+      setDetailedQuestions(contextMap)
+    } catch (error) {
+      console.error('Failed to fetch contexts:', error)
+      alert('Failed to load contexts')
+    } finally {
+      setLoadingContext(false)
+    }
+  }
+
+  const handleToggleContext = () => {
+    if (!showContext) {
+      fetchAllContexts()
+    }
+    setShowContext(!showContext)
+  }
 
   const handleDelete = async (questionId: number) => {
     if (!confirm('Are you sure you want to delete this question?')) return
@@ -89,7 +119,16 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               ID
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Question
+              <div className="flex items-center space-x-2">
+                <span>{showContext ? 'Context' : 'Question'}</span>
+                <button
+                  onClick={handleToggleContext}
+                  disabled={loadingContext}
+                  className="text-xs text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+                >
+                  {loadingContext ? 'Loading...' : `Switch to ${showContext ? 'Question' : 'Context'}`}
+                </button>
+              </div>
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Social
@@ -148,8 +187,10 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                 {question.id.toString()}
               </td>
               <td className="px-6 py-4">
-                <div className="text-sm text-gray-900 max-w-md truncate">
-                  {String(question.question)}
+                <div className="text-sm text-gray-900 whitespace-pre-wrap">
+                  {showContext
+                    ? (detailedQuestions[question.id]?.context || 'Loading context...')
+                    : String(question.question)}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
