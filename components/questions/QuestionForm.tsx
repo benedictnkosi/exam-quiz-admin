@@ -317,16 +317,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
         const data = await response.json();
 
         if (data.status === 'OK' && data.subjects) {
-          // Filter out subjects in create mode
-          const filteredSubjects = mode === 'create'
-            ? data.subjects.filter((subject: Subject) =>
-              !subject.name.includes('Consumer') &&
-              !subject.name.includes('Management') &&
-              !subject.name.includes('Religion')
-            )
-            : data.subjects;
-
-          setSubjects(filteredSubjects);
+          setSubjects(data.subjects);
 
           // In edit mode, if we don't have a subject set yet, but have initialData, set it now
           if (mode === 'edit' && !formData.subject && initialData?.subject?.name) {
@@ -1156,14 +1147,7 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
               {subjects.length > 0 ? (
                 Object.entries(
                   subjects.reduce((acc: { [key: string]: Subject[] }, subject) => {
-                    // Filter out subjects containing 'Consumer', 'Management', or 'Religion' in create mode
-                    if (mode === 'create' && (
-                      subject.name.includes('Consumer') ||
-                      subject.name.includes('Management') ||
-                      subject.name.includes('Religion')
-                    )) {
-                      return acc;
-                    }
+                    // Remove the filter that excludes subjects
                     const baseName = subject.name.split(' P')[0];
                     if (!acc[baseName]) {
                       acc[baseName] = [];
