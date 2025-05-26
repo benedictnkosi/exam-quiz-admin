@@ -19,6 +19,7 @@ interface CapturerStats {
         rejected: number;
         pending: number;
     };
+    ai_questions?: number;
 }
 
 interface StatsResponse {
@@ -218,6 +219,8 @@ export default function StatusCountsTable() {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capturer</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">AI Questions (R1)</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Normal Questions (R3)</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">New</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approved</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rejected</th>
@@ -231,6 +234,8 @@ export default function StatusCountsTable() {
                                             <tr key={capturerId}>
                                                 <td className="px-6 py-4 text-sm text-gray-900">{stats.name}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-500">{stats.total}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">{stats.ai_questions || 0}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">{stats.total - (stats.ai_questions || 0)}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-500">
                                                     {stats.status_counts.new} ({stats.percentages.new.toFixed(1)}%)
                                                 </td>
@@ -249,6 +254,12 @@ export default function StatusCountsTable() {
                                         <td className="px-6 py-4 text-sm font-medium text-gray-900">Total</td>
                                         <td className="px-6 py-4 text-sm text-gray-700">
                                             {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.total, 0)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + (capturer.ai_questions || 0), 0)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + (capturer.total - (capturer.ai_questions || 0)), 0)}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-700">
                                             {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.status_counts.new, 0)}
