@@ -119,6 +119,9 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               ID
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              #
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               <div className="flex items-center space-x-2">
                 <span>{showContext ? 'Context' : 'Question'}</span>
                 <button
@@ -131,16 +134,10 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               </div>
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Social
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Status
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Capturer
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Reviewer
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Comment
@@ -172,19 +169,14 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                   >
                     {deleting === question.id ? 'Deleting...' : 'Delete'}
                   </button>
-                  {!question.posted && (
-                    <button
-                      onClick={() => handleUpdatePosted(question.id)}
-                      disabled={posting === question.id}
-                      className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                    >
-                      {posting === question.id ? 'Posting...' : 'Post'}
-                    </button>
-                  )}
+
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {question.id.toString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {question.question_number}
               </td>
               <td className="px-6 py-4">
                 <div className="text-sm text-gray-900 whitespace-pre-wrap">
@@ -192,23 +184,6 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
                     ? (detailedQuestions[question.id]?.context || 'Loading context...')
                     : String(question.question)}
                 </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                  ${question.posted === true
-                    ? 'bg-green-100 text-green-800'
-                    : question.image_path || question.question_image_path
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-purple-100 text-purple-800'
-                  }`}
-                >
-                  {question.posted === true
-                    ? 'Posted'
-                    : question.image_path || question.question_image_path
-                      ? 'Image'
-                      : question.answer.length > 50 ? 'Too Long' : 'Social'
-                  }
-                </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -224,9 +199,6 @@ export default function QuestionsTable({ questions, onDelete }: QuestionsTablePr
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {question.capturer?.name || 'N/A'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {question.reviewer?.name || 'N/A'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {question.comment && question.comment !== 'approved' && question.comment !== 'new' ? (

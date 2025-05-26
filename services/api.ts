@@ -116,6 +116,7 @@ export interface Question {
   posted: boolean
   image_path: string
   question_image_path: string
+  question_number?: string | null
 }
 
 export interface DetailedQuestion {

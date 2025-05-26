@@ -234,6 +234,7 @@ export default function UploadExamPaperPage() {
             setImageUploadSuccess(true);
             setImageFile(null);
             setQuestionNumber("");
+            setContextBoundary("");
         } catch (err: any) {
             setError(err.message || "Unknown error");
         } finally {
@@ -539,6 +540,19 @@ export default function UploadExamPaperPage() {
                                                 const data = await res.json();
                                                 if (data.message === "Status updated successfully") {
                                                     setStatusUpdateSuccess(true);
+                                                    // Reset all form fields
+                                                    setSubjectName("");
+                                                    setGrade("");
+                                                    setYear(years[0].toString());
+                                                    setTerm(terms[0]);
+                                                    setQuestionPaperFile(null);
+                                                    setMemoFile(null);
+                                                    setImageFile(null);
+                                                    setQuestionNumber("");
+                                                    setContextBoundary("");
+                                                    setUploadedImages([]);
+                                                    setExamPaperId("");
+                                                    setStep(1);
                                                     // Refresh the exam papers table
                                                     try {
                                                         const res = await fetch(`${API_HOST}/api/exam-papers`);

@@ -34,8 +34,9 @@ interface QuestionsFilterProps {
     grade: string
     subject: string
     status: string
+    rejected: boolean
   }
-  setFilters: (filters: { grade: string; subject: string; status: string }) => void
+  setFilters: (filters: { grade: string; subject: string; status: string; rejected: boolean }) => void
   onSearch: () => void
   onFetchRejected: () => void
 }
@@ -52,6 +53,9 @@ export default function QuestionsFilter({ filters, setFilters, onSearch, onFetch
     const newFilters = { ...filters, [name]: value }
     if (name === 'grade') {
       newFilters.subject = '' // Reset subject when grade changes
+    }
+    if (name === 'rejected') {
+      newFilters.rejected = value === 'true'
     }
     setFilters(newFilters)
   }

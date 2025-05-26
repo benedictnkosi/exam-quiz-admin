@@ -27,6 +27,7 @@ export default function QuestionsPage() {
     grade: searchParams.get('grade') || '',
     subject: searchParams.get('subject') || '',
     status: searchParams.get('status') || '',
+    rejected: searchParams.get('rejected') === 'true'
   }
 
   const updateFilters = (newFilters: typeof filters) => {
@@ -34,6 +35,7 @@ export default function QuestionsPage() {
     if (newFilters.grade) params.set('grade', newFilters.grade)
     if (newFilters.subject) params.set('subject', newFilters.subject)
     if (newFilters.status) params.set('status', newFilters.status)
+    if (newFilters.rejected) params.set('rejected', 'true')
     router.push(`/questions?${params.toString()}`)
   }
 
@@ -88,6 +90,10 @@ export default function QuestionsPage() {
     try {
       const rejectedQuestions = await getRejectedQuestions(user.uid)
       setQuestions(rejectedQuestions)
+      // Update URL to include rejected state
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('rejected', 'true')
+      router.push(`/questions?${params.toString()}`)
     } catch (err) {
       console.error('Failed to fetch rejected questions:', err)
       setError('Failed to load rejected questions')
@@ -98,10 +104,12 @@ export default function QuestionsPage() {
 
   // Fetch questions when URL parameters change
   useEffect(() => {
-    if (filters.grade && filters.subject) {
+    if (filters.rejected && user?.uid) {
+      handleFetchRejected()
+    } else if (filters.grade && filters.subject) {
       handleSearch()
     }
-  }, [searchParams, filters.grade, filters.subject, handleSearch])
+  }, [searchParams, filters.grade, filters.subject, filters.rejected, handleSearch, user?.uid])
 
   return (
     <AdminRoute>
