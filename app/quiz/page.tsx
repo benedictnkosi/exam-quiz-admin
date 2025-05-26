@@ -1345,7 +1345,7 @@ export default function QuizPage() {
             setIsFromFavorites(true);
 
             const response = await fetch(
-                `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=P1&uid=${user.uid}&question_id=${questionId}&platform=web`
+                `${API_BASE_URL}/question/byname?subject_name=${subjectName}&paper_name=P1&uid=${user.uid}&question_id=${questionId}&platform=web&subscriptionCheck=true`
             );
 
             if (!response.ok) {
