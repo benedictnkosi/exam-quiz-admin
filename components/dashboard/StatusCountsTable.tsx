@@ -214,6 +214,38 @@ export default function StatusCountsTable() {
                         {/* Capturer Statistics */}
                         <div>
                             <h3 className="text-lg font-medium mb-4">Capturer Statistics</h3>
+
+                            {/* Summary Section */}
+                            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <h4 className="text-md font-medium mb-3">Total Questions Summary</h4>
+                                <div className="grid grid-cols-4 gap-4">
+                                    <div className="bg-white p-3 rounded shadow">
+                                        <div className="text-sm text-gray-500">Total Questions</div>
+                                        <div className="text-xl font-semibold">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.total, 0)}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-3 rounded shadow">
+                                        <div className="text-sm text-gray-500">Total AI Questions (R1)</div>
+                                        <div className="text-xl font-semibold">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + (capturer.ai_questions || 0), 0)}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-3 rounded shadow">
+                                        <div className="text-sm text-gray-500">Total Normal Questions (R3)</div>
+                                        <div className="text-xl font-semibold">
+                                            {Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + (capturer.total - (capturer.ai_questions || 0)), 0)}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-3 rounded shadow">
+                                        <div className="text-sm text-gray-500">Total Capturers</div>
+                                        <div className="text-xl font-semibold">
+                                            {Object.keys(stats.capturer_stats).length}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>

@@ -181,48 +181,106 @@ export default function QuestionStatsTable() {
             {/* Capturer Statistics */}
             <div>
                 <h3 className="text-lg font-medium text-gray-800 mb-4">Capturer Statistics</h3>
+
+                {/* Summary Section */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 className="text-md font-medium mb-3">Total Questions Summary</h4>
+                    <div className="grid grid-cols-4 gap-4">
+                        <div className="bg-white p-3 rounded shadow">
+                            <div className="text-sm text-gray-500">Total Questions</div>
+                            <div className="text-xl font-semibold">
+                                {stats && Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + capturer.total, 0)}
+                            </div>
+                        </div>
+                        <div className="bg-white p-3 rounded shadow">
+                            <div className="text-sm text-gray-500">Total AI Questions (R1)</div>
+                            <div className="text-xl font-semibold">
+                                {stats && Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + (capturer.ai_questions_count || 0), 0)}
+                            </div>
+                        </div>
+                        <div className="bg-white p-3 rounded shadow">
+                            <div className="text-sm text-gray-500">Total Normal Questions (R3)</div>
+                            <div className="text-xl font-semibold">
+                                {stats && Object.values(stats.capturer_stats).reduce((sum, capturer) => sum + (capturer.total - (capturer.ai_questions_count || 0)), 0)}
+                            </div>
+                        </div>
+                        <div className="bg-white p-3 rounded shadow">
+                            <div className="text-sm text-gray-500">Total Due (Rands)</div>
+                            <div className="text-xl font-semibold">
+                                {stats && `R ${Object.values(stats.capturer_stats)
+                                    .filter(capturer => capturer.email !== 'nkosi@gmail.com')
+                                    .reduce((sum, capturer) => {
+                                        const aiQuestions = capturer.ai_questions_count || 0;
+                                        const normalQuestions = capturer.total - aiQuestions;
+                                        return sum + (aiQuestions * 1) + (normalQuestions * 3);
+                                    }, 0).toLocaleString()}`}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rejected</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AI Questions</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AI Questions (R1)</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Normal Questions (R3)</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Due</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {stats && Object.entries(stats.capturer_stats).length > 0 ? (
                                 Object.entries(stats.capturer_stats)
                                     .sort((a, b) => b[1].total - a[1].total)
-                                    .map(([capturerId, capturer]) => (
-                                        <tr key={capturerId}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {capturer.name}
-                                                <div className="text-xs text-gray-500">{capturer.email}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {capturer.total}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {capturer.status_counts.new} ({capturer.percentages.new.toFixed(1)}%)
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {capturer.status_counts.approved} ({capturer.percentages.approved.toFixed(1)}%)
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {capturer.status_counts.rejected} ({capturer.percentages.rejected.toFixed(1)}%)
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {capturer.ai_questions_count}
-                                            </td>
-                                        </tr>
-                                    ))
+                                    .map(([capturerId, capturer]) => {
+                                        const aiQuestions = capturer.ai_questions_count || 0;
+                                        const normalQuestions = capturer.total - aiQuestions;
+                                        const totalDue = capturer.email === 'nkosi@gmail.com' ? 0 : (aiQuestions * 1) + (normalQuestions * 3);
+
+                                        return (
+                                            <tr key={capturerId}>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {capturer.name}
+                                                    <div className="text-xs text-gray-500">{capturer.email}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {capturer.total}
+                                                </td>
+
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {capturer.status_counts.new} ({capturer.percentages.new.toFixed(1)}%)
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {capturer.status_counts.approved} ({capturer.percentages.approved.toFixed(1)}%)
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {capturer.status_counts.rejected} ({capturer.percentages.rejected.toFixed(1)}%)
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {capturer.status_counts.pending} ({capturer.percentages.pending.toFixed(1)}%)
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {aiQuestions}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {normalQuestions}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    R {totalDue.toLocaleString()}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500">
                                         No capturer statistics available
                                     </td>
                                 </tr>
