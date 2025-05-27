@@ -15,6 +15,8 @@ import LearnerActivityChart from '../../../components/dashboard/LearnerActivityC
 import ResultGrowthChart from '../../../components/dashboard/ResultGrowthChart'
 import AvgDailyGrowthCard from '../../../components/dashboard/AvgDailyGrowthCard'
 import GrowthTargetCard from '../../../components/dashboard/GrowthTargetCard'
+import FreeUsersHighActivityChart from '../../../components/dashboard/FreeUsersHighActivityChart'
+import CompletedChaptersChart from '../../../components/dashboard/CompletedChaptersChart'
 
 export default function AppManagementPage() {
     return (
@@ -41,7 +43,12 @@ export default function AppManagementPage() {
                         <LearnerActivityChart />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <FreeUsersHighActivityChart />
+                        <CompletedChaptersChart />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 mt-6">
                         <SubjectRequestPieChart />
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <GradeSubjectDifficultyChart grade={1} />
