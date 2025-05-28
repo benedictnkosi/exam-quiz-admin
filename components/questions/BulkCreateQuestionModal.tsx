@@ -115,9 +115,21 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
 
         try {
             // Parse the JSON input
-            const questions = JSON.parse(formData.jsonInput)
-            if (!Array.isArray(questions)) {
-                throw new Error('Input must be an array of questions')
+            const inputData = JSON.parse(formData.jsonInput)
+
+            // Handle both array of questions and object with shared context
+            let questions: any[]
+            let sharedContext: string[] = []
+
+            if (Array.isArray(inputData)) {
+                questions = inputData
+            } else if (inputData.questions && Array.isArray(inputData.questions)) {
+                questions = inputData.questions
+                if (inputData.context && Array.isArray(inputData.context)) {
+                    sharedContext = inputData.context
+                }
+            } else {
+                throw new Error('Input must be either an array of questions or an object with questions array and optional context')
             }
 
             setStats(prev => ({ ...prev, total: questions.length }))
@@ -131,7 +143,7 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
                     ...question,
                     // Set default values
                     type: "multiple_choice",
-                    context: question.context || "",
+                    context: sharedContext.length > 0 ? sharedContext.join('\n') : (question.context || ""),
                     capturer: user.email,
                     uid: user.uid,
                     question_id: 0,
