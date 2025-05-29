@@ -174,19 +174,29 @@ export default function QuestionForm({ initialData, mode = 'create', onSuccess }
     }
   }
 
-  // Update the initialization code
-  const initialOptionsRaw = initialData?.options ?
-    (isOptionsObject(initialData.options) ? [
-      initialData.options.option1 || '',
-      initialData.options.option2 || '',
-      initialData.options.option3 || '',
-      initialData.options.option4 || '',
-    ] : initialData.options) : ['', '', '', ''];
-  // Always ensure 4 options (pad with empty strings if needed)
-  const initialOptions = [
-    ...(initialOptionsRaw || []),
-    '', '', '', ''
-  ].slice(0, 4);
+  // Prepare options for edit mode: remove answer from all options, set option4 to answer
+  let initialOptions: string[] = ['', '', '', ''];
+  if (initialData?.options) {
+    let opts = isOptionsObject(initialData.options)
+      ? [
+        initialData.options.option1 || '',
+        initialData.options.option2 || '',
+        initialData.options.option3 || '',
+        initialData.options.option4 || '',
+      ]
+      : initialData.options;
+
+    // Remove the answer from all options
+    const answer = initialData.answer;
+    let filtered = opts.filter(opt => opt.trim() !== answer.trim());
+
+    // Take the first 3, pad if needed
+    filtered = filtered.slice(0, 3);
+    while (filtered.length < 3) filtered.push('');
+
+    // Set option4 to the answer
+    initialOptions = [...filtered, answer || ''];
+  }
 
   const [formData, setFormData] = useState<FormData>(() => {
     if (initialData) {
