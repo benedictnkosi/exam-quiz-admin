@@ -82,7 +82,6 @@ export default function BulkCreateQuestionModal({ onClose, onSuccess }: BulkCrea
                 if (data.status === 'OK' && data.subjects) {
                     const filteredSubjects = data.subjects.filter((subject: Subject) =>
                         !subject.name.includes('Consumer') &&
-                        !subject.name.includes('Management') &&
                         !subject.name.includes('Religion')
                     )
                     setSubjects(filteredSubjects)
