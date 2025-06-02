@@ -15,6 +15,7 @@ const menuItems = [
   { path: '/admin/ai-questions/upload-exam-paper', label: 'Upload Exam Paper' },
   { path: '/admin/app-management', label: 'App Management' },
   { path: '/admin/story-arcs', label: 'Story Arcs' },
+  { path: '/admin/subscriptions', label: 'Subscriptions' },
   { path: '/', label: 'APP' },
 ]
 
