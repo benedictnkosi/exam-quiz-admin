@@ -58,6 +58,13 @@ export default function WordsPage() {
     });
     const [isEditingGroup, setIsEditingGroup] = useState(false);
     const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>("");
+    const [editingWord, setEditingWord] = useState<{
+        id: string;
+        translations: Record<string, string>;
+        audio: Record<string, string>;
+        image: string;
+        groupId: string;
+    } | null>(null);
 
     useEffect(() => {
         fetchWords();
@@ -191,12 +198,19 @@ export default function WordsPage() {
             {/* Word Creation Modal */}
             <WordFormModal
                 open={isWordModalOpen}
-                onOpenChange={setIsWordModalOpen}
+                onOpenChange={(open) => {
+                    setIsWordModalOpen(open);
+                    if (!open) {
+                        setEditingWord(null);
+                    }
+                }}
                 onSuccess={() => {
                     fetchWords();
-                    toast.success('Word added successfully');
+                    toast.success(editingWord ? 'Word updated successfully' : 'Word added successfully');
+                    setEditingWord(null);
                 }}
                 wordGroups={wordGroups}
+                initialData={editingWord || undefined}
             />
 
             {/* Word Groups Modal */}
@@ -267,30 +281,45 @@ export default function WordsPage() {
             <div className="space-y-4">
                 {words.map((word) => (
                     <div key={word.id} className="p-4 bg-white rounded-lg shadow-sm border flex justify-between items-center">
-                        <div>
-                            <div className="font-semibold">{word.translations?.en || word.id}</div>
-                            <div className="text-sm text-gray-500">
-                                {Object.entries(word.translations || {})
-                                    .filter(([lang]) => lang !== 'en')
-                                    .map(([lang, val]) => (
-                                        <div key={lang}>
-                                            <span className="font-medium">{lang.toUpperCase()}:</span> {val}
-                                        </div>
-                                    ))}
-                            </div>
-                            {word.groupId && (
-                                <div>
-                                    <span className="font-medium">Group:</span>
-                                    <span className="ml-2">
-                                        {wordGroups.find(g => g.id.toString() === word.groupId)?.name || word.groupId}
-                                    </span>
-                                </div>
+                        <div className="flex items-center gap-4">
+                            {word.image && (
+                                <img
+                                    src={`${API_HOST}/api/word/image/get/${word.image}`}
+                                    alt="Word"
+                                    className="w-16 h-16 object-cover rounded"
+                                />
                             )}
+                            <div>
+                                <div className="font-semibold">{word.translations?.en || word.id}</div>
+                                <div className="text-sm text-gray-500">
+                                    {Object.entries(word.translations || {})
+                                        .filter(([lang]) => lang !== 'en')
+                                        .map(([lang, val]) => (
+                                            <div key={lang}>
+                                                <span className="font-medium">{lang.toUpperCase()}:</span> {val}
+                                            </div>
+                                        ))}
+                                </div>
+                                {word.groupId && (
+                                    <div>
+                                        <span className="font-medium">Group:</span>
+                                        <span className="ml-2">
+                                            {wordGroups.find(g => g.id.toString() === word.groupId)?.name || word.groupId}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="flex gap-2">
                             <Button variant="outline" onClick={() => {
+                                setEditingWord({
+                                    id: word.id.toString(),
+                                    translations: word.translations || {},
+                                    audio: Array.isArray(word.audio) ? {} : (word.audio || {}),
+                                    image: word.image || '',
+                                    groupId: word.groupId || '',
+                                });
                                 setIsWordModalOpen(true);
-                                // TODO: Pass initialData to WordFormModal for editing
                             }}>Edit</Button>
                             <Button variant="destructive" onClick={() => handleDelete(word.id)}>Delete</Button>
                         </div>

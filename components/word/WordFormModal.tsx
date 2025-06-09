@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "react-hot-toast";
 import { API_HOST } from "@/config/constants";
 import { createWord, updateWord, updateWordTranslation, updateWordAudio, getWordById } from "@/lib/api-helpers";
+import React from "react";
 
 const LANGUAGE_OPTIONS = [
     "af", // Afrikaans
@@ -62,7 +63,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
         image: initialData?.image || "",
         groupId: initialData?.groupId || "",
     });
-    const [isEditing] = useState(!!initialData);
+    const isEditing = !!initialData;
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedAudioFile, setSelectedAudioFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -93,6 +94,27 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
             localStorage.setItem(LAST_SELECTED_LANGUAGE_KEY, lang);
         }
     };
+
+    // Sync form state with initialData when it changes
+    useEffect(() => {
+        if (initialData) {
+            setForm({
+                id: initialData.id || "",
+                translations: initialData.translations || {},
+                audio: initialData.audio || {},
+                image: initialData.image || "",
+                groupId: initialData.groupId || "",
+            });
+        } else {
+            setForm({
+                id: "",
+                translations: {},
+                audio: {},
+                image: "",
+                groupId: "",
+            });
+        }
+    }, [initialData]);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -139,11 +161,15 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
 
             if (!response.ok) throw new Error('Failed to upload image');
             const data = await response.json();
-
-            setForm(prev => ({
-                ...prev,
-                image: data.filename
-            }));
+            console.log('Image upload response:', data);
+            setForm(prev => {
+                const updated = {
+                    ...prev,
+                    image: data.imagePath
+                };
+                console.log('Updated form.image:', updated.image);
+                return updated;
+            });
 
             toast.success("Image uploaded successfully");
         } catch (error) {
@@ -311,19 +337,33 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                             <div className="mb-2">
                                 <div className="font-medium mb-1">Added Translations:</div>
                                 <div className="space-y-2">
-                                    {Object.entries(form.translations).map(([lang, translation]) => (
-                                        <div key={lang} className="flex items-center gap-2">
-                                            <span className="font-medium">{LANGUAGE_LABELS[lang] || lang.toUpperCase()}:</span>
-                                            <span>{translation}</span>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleRemoveTranslation(lang)}
-                                            >
-                                                Remove
-                                            </Button>
-                                        </div>
+                                    {Object.entries(form.translations).map(([lang, translation], idx, arr) => (
+                                        <React.Fragment key={lang}>
+                                            <div className="mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">{LANGUAGE_LABELS[lang] || lang.toUpperCase()}:</span>
+                                                    <span>{translation}</span>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleRemoveTranslation(lang)}
+                                                    >
+                                                        Remove
+                                                    </Button>
+                                                </div>
+                                                {form.audio && form.audio[lang] && (
+                                                    <div className="mt-1">
+                                                        <audio controls src={form.audio[lang]} style={{ height: 28 }}>
+                                                            Your browser does not support the audio element.
+                                                        </audio>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {idx < arr.length - 1 && (
+                                                <hr className="my-6 border-t-2 border-gray-200" />
+                                            )}
+                                        </React.Fragment>
                                     ))}
                                 </div>
                             </div>
@@ -353,6 +393,10 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                                     alt="Word image"
                                     className="w-48 h-48 object-cover rounded-md"
                                 />
+                                <div className="text-green-600 font-medium mt-1 flex items-center gap-1">
+                                    <svg className="w-4 h-4 inline-block" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                    Image uploaded!
+                                </div>
                             </div>
                         )}
                     </div>
