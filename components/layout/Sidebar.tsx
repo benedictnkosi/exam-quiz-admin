@@ -16,6 +16,10 @@ const menuItems = [
   { path: '/admin/app-management', label: 'App Management' },
   { path: '/admin/story-arcs', label: 'Story Arcs' },
   { path: '/admin/subscriptions', label: 'Subscriptions' },
+  { path: '/admin/languages', label: 'Languages' },
+  { path: '/admin/lessons', label: 'Lessons' },
+  { path: '/admin/units', label: 'Units' },
+  { path: '/admin/words', label: 'Words' },
   { path: '/', label: 'APP' },
 ]
 

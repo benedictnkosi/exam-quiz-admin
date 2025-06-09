@@ -14,8 +14,12 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "@radix-ui/react-select": "^2.1.6",
-    "@radix-ui/react-slot": "^1.1.2",
+    "@hookform/resolvers": "^5.1.1",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-form": "^0.1.7",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-select": "^2.2.5",
+    "@radix-ui/react-slot": "^1.2.3",
     "@react-google-maps/api": "^2.20.6",
     "@types/js-cookie": "^3.0.6",
     "@types/katex": "^0.16.7",
@@ -41,10 +45,13 @@
     "react-dom": "^18.2.0",
     "react-facebook-pixel": "^1.0.4",
     "react-google-recaptcha": "^3.1.0",
+    "react-hook-form": "^7.57.0",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^4.12.0",
     "react-katex": "^3.0.1",
-    "tailwind-merge": "^3.0.2"
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.25.56"
   },
   "devDependencies": {
     "@babel/core": "^7.26.8",
