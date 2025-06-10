@@ -9,6 +9,8 @@ import Link from "next/link";
 import React from "react";
 import { API_HOST } from "@/config/constants";
 import { WordFormModal } from '@/components/word/WordFormModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Volume2 } from "lucide-react";
 
 const LANGUAGE_OPTIONS = [
     "af", // Afrikaans
@@ -47,6 +49,7 @@ export default function WordsPage() {
         groupId: string | null;
     }>>([]);
     const [wordGroups, setWordGroups] = useState<any[]>([]);
+    const [units, setUnits] = useState<Array<{ id: string; title: string }>>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isWordModalOpen, setIsWordModalOpen] = useState(false);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -58,6 +61,7 @@ export default function WordsPage() {
     });
     const [isEditingGroup, setIsEditingGroup] = useState(false);
     const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>("");
+    const [selectedUnitFilter, setSelectedUnitFilter] = useState<string>("all");
     const [editingWord, setEditingWord] = useState<{
         id: string;
         translations: Record<string, string>;
@@ -69,13 +73,29 @@ export default function WordsPage() {
     useEffect(() => {
         fetchWords();
         fetchWordGroups();
-    }, [selectedGroupFilter]);
+        fetchUnits();
+    }, [selectedGroupFilter, selectedUnitFilter]);
+
+    async function fetchUnits() {
+        try {
+            const response = await fetch(`${API_HOST}/api/units`);
+            if (!response.ok) throw new Error('Failed to fetch units');
+            const data = await response.json();
+            setUnits(data);
+        } catch (error) {
+            toast.error("Failed to fetch units");
+        }
+    }
 
     async function fetchWords() {
         setIsLoading(true);
         try {
             let data;
-            if (selectedGroupFilter) {
+            if (selectedUnitFilter && selectedUnitFilter !== "all") {
+                const response = await fetch(`${API_HOST}/api/words/unit/${selectedUnitFilter}`);
+                if (!response.ok) throw new Error('Failed to fetch words');
+                data = await response.json();
+            } else if (selectedGroupFilter) {
                 data = await fetch(`${API_HOST}/api/words/group/${selectedGroupFilter}`).then(res => res.json());
             } else {
                 data = await getWords();
@@ -176,6 +196,22 @@ export default function WordsPage() {
             <h1 className="text-3xl font-bold mb-8">Manage Words</h1>
             <div className="flex flex-col gap-4 mb-6">
                 <div className="flex flex-wrap gap-2">
+                    <Select
+                        value={selectedUnitFilter}
+                        onValueChange={setSelectedUnitFilter}
+                    >
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Filter by Unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Units</SelectItem>
+                            {units.map((unit) => (
+                                <SelectItem key={unit.id} value={unit.id}>
+                                    {unit.title}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <Button
                         variant={selectedGroupFilter === "" ? "default" : "outline"}
                         onClick={() => setSelectedGroupFilter("")}
@@ -295,8 +331,11 @@ export default function WordsPage() {
                                     {Object.entries(word.translations || {})
                                         .filter(([lang]) => lang !== 'en')
                                         .map(([lang, val]) => (
-                                            <div key={lang}>
+                                            <div key={lang} className="flex items-center gap-1">
                                                 <span className="font-medium">{lang.toUpperCase()}:</span> {val}
+                                                {!Array.isArray(word.audio) && word.audio && word.audio[lang] && (
+                                                    <Volume2 className="w-4 h-4 text-blue-500" />
+                                                )}
                                             </div>
                                         ))}
                                 </div>

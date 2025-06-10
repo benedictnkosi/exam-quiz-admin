@@ -10,6 +10,8 @@ import { getLessonById as getLessonByIdApi, getQuestionsForLesson, getWords, upd
 import { useRouter } from 'next/navigation';
 import { WordFormModal } from '@/components/word/WordFormModal';
 import { LessonForm } from '@/app/admin/lessons/lesson-form';
+import { QuestionForm } from '@/app/admin/lessons/[lessonId]/questions/question-form';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 
 interface Question {
@@ -92,6 +94,7 @@ export default function LessonDetailPage({
     const [isLoading, setIsLoading] = useState(true);
     const [isWordModalOpen, setIsWordModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -382,9 +385,7 @@ export default function LessonDetailPage({
 
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">Questions</h2>
-                <Link href={`/admin/lessons/${lessonId}/questions/new`} prefetch={false}>
-                    <Button>Add New Question</Button>
-                </Link>
+                <Button onClick={() => setIsQuestionModalOpen(true)}>Add New Question</Button>
             </div>
 
             <div className="grid gap-4">
@@ -442,6 +443,23 @@ export default function LessonDetailPage({
                 }}
                 wordGroups={wordGroups}
             />
+
+            {/* Question Creation Modal */}
+            <Dialog open={isQuestionModalOpen} onOpenChange={setIsQuestionModalOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Add New Question</DialogTitle>
+                    </DialogHeader>
+                    <QuestionForm
+                        lessonId={lessonId}
+                        onSuccess={() => {
+                            setIsQuestionModalOpen(false);
+                            fetchData();
+                            toast.success('Question added successfully');
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 } 

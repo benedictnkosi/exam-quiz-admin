@@ -35,6 +35,7 @@ interface Word {
 interface QuestionFormProps {
     initialData?: QuestionFormData & { id?: string };
     lessonId: string;
+    onSuccess?: () => void;
 }
 
 type FormErrors = {
@@ -46,7 +47,7 @@ type FormErrors = {
     };
 };
 
-export function QuestionForm({ initialData, lessonId }: QuestionFormProps) {
+export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormProps) {
     const router = useRouter();
     const [words, setWords] = useState<Word[]>([]);
     const [selectedImages, setSelectedImages] = useState<string[]>(() => {
@@ -59,12 +60,13 @@ export function QuestionForm({ initialData, lessonId }: QuestionFormProps) {
         return ['', '', '', ''];
     });
     const [sentenceError, setSentenceError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
         register,
         handleSubmit,
         watch,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting: formIsSubmitting },
         reset,
         setValue,
         control,
@@ -216,7 +218,7 @@ export function QuestionForm({ initialData, lessonId }: QuestionFormProps) {
     }, [questionType]);
 
     console.log('Form errors:', errors);
-    console.log('Is submitting:', isSubmitting);
+    console.log('Is submitting:', formIsSubmitting);
 
     const formErrors = errors as unknown as FormErrors;
     const options = watch('content.options') || ['', '', '', ''];
@@ -255,19 +257,20 @@ export function QuestionForm({ initialData, lessonId }: QuestionFormProps) {
     };
 
     const onSubmit = async (data: QuestionFormData) => {
-        console.log('Form submission data:', data);
-        console.log('Form validation errors:', errors);
-
-        // Log specific validation errors for each field
-        if (Object.keys(errors).length > 0) {
-            console.group('Validation Errors');
-            Object.entries(errors).forEach(([field, error]) => {
-                console.error(`${field}:`, error);
-            });
-            console.groupEnd();
-        }
-
         try {
+            setIsSubmitting(true);
+            console.log('Form submission data:', data);
+            console.log('Form validation errors:', errors);
+
+            // Log specific validation errors for each field
+            if (Object.keys(errors).length > 0) {
+                console.group('Validation Errors');
+                Object.entries(errors).forEach(([field, error]) => {
+                    console.error(`${field}:`, error);
+                });
+                console.groupEnd();
+            }
+
             let payload = {
                 ...data,
                 content: {
@@ -348,10 +351,15 @@ export function QuestionForm({ initialData, lessonId }: QuestionFormProps) {
                 });
                 toast.success('Question added successfully!');
             }
-            router.push(`/admin/lessons/${lessonId}`);
+            onSuccess?.();
+            if (!onSuccess) {
+                router.push(`/admin/lessons/${lessonId}`);
+            }
         } catch (error) {
-            console.error('Error submitting form:', error);
-            toast.error('An error occurred while submitting the form.');
+            console.error('Error submitting question:', error);
+            toast.error('Failed to save question');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -930,8 +938,8 @@ export function QuestionForm({ initialData, lessonId }: QuestionFormProps) {
                 >
                     Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting || !isFormValid}>
-                    {isSubmitting
+                <Button type="submit" disabled={formIsSubmitting || !isFormValid}>
+                    {formIsSubmitting
                         ? initialData
                             ? 'Updating...'
                             : 'Adding...'
