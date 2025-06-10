@@ -67,7 +67,7 @@ export default function WordsPage() {
         translations: Record<string, string>;
         audio: Record<string, string>;
         image: string;
-        groupId: string;
+        groupId: number;
     } | null>(null);
 
     useEffect(() => {
@@ -356,7 +356,7 @@ export default function WordsPage() {
                                     translations: word.translations || {},
                                     audio: Array.isArray(word.audio) ? {} : (word.audio || {}),
                                     image: word.image || '',
-                                    groupId: word.groupId || '',
+                                    groupId: word.groupId ? Number(word.groupId) : 0,
                                 });
                                 setIsWordModalOpen(true);
                             }}>Edit</Button>

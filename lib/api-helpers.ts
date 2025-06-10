@@ -1,4 +1,3 @@
-import { toast } from "react-hot-toast";
 import { API_HOST } from '@/config/constants';
 
 export interface LanguageQuestion {
@@ -47,7 +46,19 @@ export async function getWords() {
     }
 }
 
-export async function createWord(wordData: any) {
+interface WordData {
+    translations?: Record<string, string>;
+    audio?: Record<string, string>;
+    image?: string;
+    groupId?: number;
+}
+
+interface GroupData {
+    name: string;
+    description?: string;
+}
+
+export async function createWord(wordData: WordData) {
     try {
         const response = await fetch(`${API_HOST}/api/words/word`, {
             method: 'POST',
@@ -62,7 +73,7 @@ export async function createWord(wordData: any) {
     }
 }
 
-export async function updateWord(id: string, wordData: any) {
+export async function updateWord(id: string, wordData: WordData) {
     try {
         const response = await fetch(`${API_HOST}/api/words/word/${id}`, {
             method: 'PUT',
@@ -101,7 +112,7 @@ export async function getWordGroups() {
     }
 }
 
-export async function createWordGroup(groupData: any) {
+export async function createWordGroup(groupData: GroupData) {
     try {
         const response = await fetch(`${API_HOST}/api/words/group`, {
             method: 'POST',
@@ -116,7 +127,7 @@ export async function createWordGroup(groupData: any) {
     }
 }
 
-export async function updateWordGroup(id: string, groupData: any) {
+export async function updateWordGroup(id: string, groupData: GroupData) {
     try {
         const response = await fetch(`${API_HOST}/api/words/group/${id}`, {
             method: 'PUT',

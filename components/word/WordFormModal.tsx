@@ -47,7 +47,7 @@ interface WordFormModalProps {
         translations: Record<string, string>;
         audio: Record<string, string>;
         image: string;
-        groupId: string;
+        groupId: number;
     };
     wordGroups?: Array<{
         id: number;
@@ -61,7 +61,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
         translations: initialData?.translations || {} as Record<string, string>,
         audio: initialData?.audio || {} as Record<string, string>,
         image: initialData?.image || "",
-        groupId: initialData?.groupId || "",
+        groupId: initialData?.groupId || 0,
     });
     const isEditing = !!initialData;
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -103,7 +103,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                 translations: initialData.translations || {},
                 audio: initialData.audio || {},
                 image: initialData.image || "",
-                groupId: initialData.groupId || "",
+                groupId: initialData.groupId || 0,
             });
         } else {
             setForm({
@@ -111,7 +111,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                 translations: {},
                 audio: {},
                 image: "",
-                groupId: "",
+                groupId: 0,
             });
         }
     }, [initialData]);
@@ -124,13 +124,23 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                     toast.error("Word ID is missing.");
                     return;
                 }
-                await updateWord(form.id, form);
+                // Convert form data to match WordData interface
+                const wordData = {
+                    ...form,
+                    groupId: form.groupId || undefined
+                };
+                await updateWord(form.id, wordData);
                 toast.success("Word updated");
             } else {
-                await createWord(form);
+                // Convert form data to match WordData interface
+                const wordData = {
+                    ...form,
+                    groupId: form.groupId || undefined
+                };
+                await createWord(wordData);
                 toast.success("Word created");
             }
-            setForm({ id: "", translations: {}, audio: {}, image: "", groupId: "" });
+            setForm({ id: "", translations: {}, audio: {}, image: "", groupId: 0 });
             onOpenChange(false);
             onSuccess?.();
         } catch (error) {
@@ -283,7 +293,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                             <select
                                 className="w-full p-2 border rounded-md"
                                 value={form.groupId}
-                                onChange={(e) => setForm(prev => ({ ...prev, groupId: e.target.value }))}
+                                onChange={(e) => setForm(prev => ({ ...prev, groupId: Number(e.target.value) }))}
                             >
                                 <option value="">Select a group</option>
                                 {wordGroups.map((group) => (

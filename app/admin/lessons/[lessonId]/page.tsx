@@ -18,7 +18,7 @@ interface Question {
     id: string;
     type: string;
     order: number;
-    options: string[];
+    options?: string[];
     correctOption: string | null;
     questionOrder: number;
     blankIndex: number | null;
@@ -48,6 +48,19 @@ interface Question {
             wordId: string;
         }>;
     };
+}
+
+// Interface for the form component's Question type
+interface FormQuestion extends Omit<Question, 'correctOption'> {
+    type: 'select_image' | 'translate' | 'tap_what_you_hear' | 'type_what_you_hear' | 'fill_in_blank' | 'match_pairs' | 'complete_translation';
+    options: string[];
+    correctOption: number | null;
+    words: Array<{
+        id: string;
+        image?: string;
+        audio?: Record<string, string>;
+        translations?: Record<string, string>;
+    }>;
 }
 
 interface Word {
@@ -95,7 +108,7 @@ export default function LessonDetailPage({
     const [isWordModalOpen, setIsWordModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
-    const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+    const [editingQuestion, setEditingQuestion] = useState<FormQuestion | null>(null);
 
     const fetchData = async () => {
         try {
@@ -429,7 +442,7 @@ export default function LessonDetailPage({
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                    setEditingQuestion(question);
+                                    setEditingQuestion(question as FormQuestion);
                                     setIsQuestionModalOpen(true);
                                 }}
                             >
@@ -466,7 +479,7 @@ export default function LessonDetailPage({
                     </DialogHeader>
                     <QuestionForm
                         lessonId={lessonId}
-                        question={editingQuestion}
+                        question={editingQuestion as FormQuestion | null | undefined}
                         onSuccess={() => {
                             setIsQuestionModalOpen(false);
                             setEditingQuestion(null);
