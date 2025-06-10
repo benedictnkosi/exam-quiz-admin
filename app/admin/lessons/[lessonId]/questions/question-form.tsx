@@ -84,7 +84,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
 
     const questionType = watch('type');
 
-    // useFieldArray for options
+    // useFieldArray for options (all types except translate sentence)
     const {
         fields: optionFields,
         append: appendOption,
@@ -92,6 +92,15 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
     } = useFieldArray<any>({
         control,
         name: 'content.options',
+    });
+    // useFieldArray for translate sentence
+    const {
+        fields: sentenceFields,
+        append: appendSentence,
+        remove: removeSentence,
+    } = useFieldArray<any>({
+        control,
+        name: 'content.sentence',
     });
 
     useEffect(() => {
@@ -140,6 +149,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                 type: 'translate',
                 content: {
                     type: 'translate',
+                    sentence: [''],
                     options: ['', '', '', '', '', ''],
                     direction: 'from_english',
                 },
@@ -158,8 +168,8 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                 type: 'tap_what_you_hear',
                 content: {
                     type: 'tap_what_you_hear',
-                    options: ['', '', '', ''],
-                    correct: 0,
+                    options: [''],
+                    possibleAnswers: ['', '', '', '', '', ''],
                 },
             });
         } else if (questionType === 'type_what_you_hear') {
@@ -280,12 +290,14 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
             };
 
             if (data.type === 'translate') {
+                const cleanSentence = ((data.content as any).sentence || []).filter((w: string) => !!w);
                 const cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w);
                 const direction = (data.content as { direction: 'from_english' | 'to_english' }).direction;
                 payload = {
                     ...payload,
                     content: {
                         ...payload.content,
+                        sentence: cleanSentence,
                         options: cleanOptions,
                         direction,
                         type: data.type,
@@ -308,6 +320,18 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                     ...payload,
                     content: {
                         ...payload.content,
+                        type: data.type,
+                    },
+                };
+            } else if (data.type === 'tap_what_you_hear') {
+                const cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w);
+                const possibleAnswers = ((data.content as any).possibleAnswers || []).filter((w: string) => !!w);
+                payload = {
+                    ...payload,
+                    content: {
+                        ...payload.content,
+                        options: cleanOptions,
+                        possibleAnswers,
                         type: data.type,
                     },
                 };
@@ -470,6 +494,100 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                 <p className="text-red-500 text-sm mb-2">{sentenceError}</p>
                             )}
                             <div className="space-y-2">
+                                {sentenceFields.map((field, index) => (
+                                    <div key={field.id} className="flex gap-2 items-center">
+                                        <select
+                                            {...register(`content.sentence.${index}`)}
+                                            className="flex-1 p-2 border rounded-md"
+                                            onChange={(e) => handleOptionChange(index, e.target.value)}
+                                            defaultValue={watch('content.sentence')[index] || ''}
+                                        >
+                                            <option value="">Select a word</option>
+                                            {words.map((word) => {
+                                                const selectedOptions = watch('content.sentence') || [];
+                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
+                                                return (
+                                                    <option
+                                                        key={word.id}
+                                                        value={word.id}
+                                                        disabled={isSelectedElsewhere}
+                                                    >
+                                                        {word.translations?.en || word.id}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => removeSentence(index)}
+                                        >
+                                            Remove
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => appendSentence('')}
+                                >
+                                    + Add Word
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium mb-2">
+                                Options (6 required)
+                            </label>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Select 6 different words that will be shown as possible answers to the user.
+                            </p>
+                            <div className="space-y-2">
+                                {[0, 1, 2, 3, 4, 5].map((index) => (
+                                    <div key={index} className="flex gap-2 items-center">
+                                        <select
+                                            {...register(`content.options.${index}`)}
+                                            className="flex-1 p-2 border rounded-md"
+                                            onChange={(e) => {
+                                                const currentOptions = watch('content.options') || [];
+                                                const newOptions = [...currentOptions];
+                                                newOptions[index] = e.target.value;
+                                                setValue('content.options', newOptions);
+                                            }}
+                                            value={watch('content.options')[index] || ''}
+                                        >
+                                            <option value="">Select a word</option>
+                                            {words
+                                                .filter(word => {
+                                                    const selectedOptions = watch('content.options') || [];
+                                                    // Allow the current value, but filter out all other selected values
+                                                    return (
+                                                        !selectedOptions.includes(String(word.id)) ||
+                                                        String(selectedOptions[index]) === String(word.id)
+                                                    );
+                                                })
+                                                .map((word) => (
+                                                    <option key={word.id} value={word.id}>
+                                                        {word.translations?.en || word.id}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                );
+
+            case 'tap_what_you_hear':
+                return (
+                    <>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                Build Your Sentence
+                            </label>
+                            <div className="space-y-2">
                                 {optionFields.map((field, index) => (
                                     <div key={field.id} className="flex gap-2 items-center">
                                         <select
@@ -511,99 +629,44 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                     + Add Word
                                 </Button>
                             </div>
+                            <p className="text-xs text-gray-500 mt-1">Add as many words as needed to build the sentence.</p>
                         </div>
-
                         <div className="mt-6">
                             <label className="block text-sm font-medium mb-2">
-                                Options (6 required)
+                                Possible Answer Options (6 required)
                             </label>
                             <p className="text-sm text-gray-500 mb-4">
-                                Select 6 different words that will be shown as possible answers to the user.
+                                Select 6 different words that will be shown as possible answers to the user. Words used in the sentence are pre-selected and cannot be chosen again.
                             </p>
                             <div className="space-y-2">
-                                {[0, 1, 2, 3, 4, 5].map((index) => (
-                                    <div key={index} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.options.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {words
-                                                .filter(word => {
-                                                    const selectedOptions = watch('content.options') || [];
-                                                    // Allow the current value, but filter out all other selected values
-                                                    return (
-                                                        !selectedOptions.includes(String(word.id)) ||
-                                                        String(selectedOptions[index]) === String(word.id)
-                                                    );
-                                                })
-                                                .map((word) => (
-                                                    <option key={word.id} value={word.id}>
-                                                        {word.translations?.en || word.id}
-                                                    </option>
-                                                ))}
-                                        </select>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </>
-                );
-
-            case 'tap_what_you_hear':
-                return (
-                    <>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Options (minimum 2 required)
-                            </label>
-                            <div className="space-y-2">
-                                {[0, 1, 2, 3].map((index) => (
-                                    <select
-                                        key={index}
-                                        {...register(`content.options.${index}`)}
-                                        className="w-full p-2 border rounded-md"
-                                        required={index < 2}
-                                    >
-                                        <option value="">Select a word</option>
-                                        {words.map((word) => {
-                                            const selectedOptions = watch('content.options') || [];
-                                            const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                            return (
-                                                <option
-                                                    key={word.id}
-                                                    value={word.id}
-                                                    disabled={isSelectedElsewhere}
-                                                >
-                                                    {word.translations?.en || word.id}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                ))}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">Leave the last two blank if you want fewer than 4 options.</p>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Correct Answer
-                            </label>
-                            <select
-                                {...register('content.correct', { valueAsNumber: true })}
-                                className="w-full p-2 border rounded-md"
-                            >
-                                <option value="">Select correct answer</option>
-                                {[0, 1, 2, 3].map((index) => {
-                                    const selectedWordId = watch(`content.options.${index}`);
-                                    const selectedWord = words.find(w => w.id === selectedWordId);
+                                {[0, 1, 2, 3, 4, 5].map((index) => {
+                                    const sentenceWords = watch('content.options') || [];
+                                    const possibleAnswers = watch('content.possibleAnswers') || ['', '', '', '', '', ''];
                                     return (
-                                        <option key={index} value={index}>
-                                            {selectedWord ? (selectedWord.translations?.en || selectedWord.id) : `Option ${index + 1}`}
-                                        </option>
+                                        <div key={index} className="flex gap-2 items-center">
+                                            <select
+                                                {...register(`content.possibleAnswers.${index}`)}
+                                                className="flex-1 p-2 border rounded-md"
+                                            >
+                                                <option value="">Select a word</option>
+                                                {words.map((word) => {
+                                                    const isSelectedElsewhere = possibleAnswers.some((opt, i) => i !== index && String(opt) === String(word.id));
+                                                    const isSentenceWord = sentenceWords.includes(word.id);
+                                                    return (
+                                                        <option
+                                                            key={word.id}
+                                                            value={word.id}
+                                                            disabled={isSelectedElsewhere || isSentenceWord}
+                                                        >
+                                                            {word.translations?.en || word.id}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        </div>
                                     );
                                 })}
-                            </select>
+                            </div>
                         </div>
                     </>
                 );
@@ -901,6 +964,32 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
             }
         }
     }, [initialData, words, reset, setValue, watch]);
+
+    // Sync possibleAnswers with sentence for tap_what_you_hear
+    useEffect(() => {
+        if (questionType !== 'tap_what_you_hear') return;
+        const sentenceWords = watch('content.options') || [];
+        let possibleAnswers = watch('content.possibleAnswers') || ['', '', '', '', '', ''];
+        // Remove any possibleAnswers that are not in sentenceWords and not selected elsewhere
+        possibleAnswers = possibleAnswers.filter(word => !word || sentenceWords.includes(word) || !sentenceWords.includes(word));
+        // Add sentenceWords to possibleAnswers in order, filling from the start
+        let newPossibleAnswers = [...possibleAnswers];
+        sentenceWords.forEach((word) => {
+            if (word && !newPossibleAnswers.includes(word)) {
+                const emptyIndex = newPossibleAnswers.findIndex((v) => !v);
+                if (emptyIndex !== -1) {
+                    newPossibleAnswers[emptyIndex] = word;
+                }
+            }
+        });
+        // Remove any sentence word that is no longer in the sentence
+        newPossibleAnswers = newPossibleAnswers.map((w) => (w && sentenceWords.includes(w) ? w : (sentenceWords.includes(w) ? w : (possibleAnswers.includes(w) ? w : ''))));
+        // Ensure length is 6
+        while (newPossibleAnswers.length < 6) newPossibleAnswers.push('');
+        if (JSON.stringify(newPossibleAnswers) !== JSON.stringify(possibleAnswers)) {
+            setValue('content.possibleAnswers', newPossibleAnswers);
+        }
+    }, [watch('content.options'), questionType]);
 
     // Only render the form after words are loaded to prevent hydration mismatch
     if (words.length === 0) {

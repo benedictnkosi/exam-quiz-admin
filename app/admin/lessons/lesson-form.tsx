@@ -38,7 +38,7 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
             unitId: String(initialData.unitId)
         } : {
             unitId: String(unitId),
-            order: 0,
+            lessonOrder: 0,
         },
     });
 
@@ -50,7 +50,7 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
             unitId: String(initialData.unitId)
         } : {
             unitId: String(unitId),
-            order: 0
+            lessonOrder: 0
         }
     });
 
@@ -62,7 +62,8 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                 console.log('Updating lesson with ID:', initialData.id);
                 // For updates, we need to include the unitId as a number for the API
                 const updatePayload = {
-                    ...data,
+                    title: data.title,
+                    lessonOrder: data.lessonOrder || 0,
                     unitId: Number(data.unitId)
                 };
                 console.log('Update payload:', updatePayload);
@@ -70,12 +71,9 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                 toast.success('Lesson updated successfully!');
             } else {
                 console.log('Creating new lesson');
-                const lessons = await getLessonsByUnitId(unitId);
-                const maxOrder = lessons.reduce((max: number, lesson: any) => lesson.lessonOrder > max ? lesson.lessonOrder : max, -1);
-                const nextOrder = maxOrder + 1;
                 const createPayload = {
-                    ...data,
-                    lessonOrder: nextOrder,
+                    title: data.title,
+                    lessonOrder: 0, // The backend will handle the order
                     unitId: Number(data.unitId)
                 };
                 console.log('Create payload:', createPayload);

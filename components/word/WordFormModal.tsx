@@ -214,7 +214,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
 
                 if (!response.ok) throw new Error('Failed to upload audio');
                 const data = await response.json();
-                audioUrl = `${API_HOST}/api/word/audio/get/${data.wordAudio.filename}`;
+                audioUrl = `${data.wordAudio.filename}`;
             }
 
             if (isEditing && form.id) {

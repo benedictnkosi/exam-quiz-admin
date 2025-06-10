@@ -12,7 +12,7 @@ export const lessonSchema = z.object({
         .min(3, 'Title must be at least 3 characters')
         .max(100, 'Title must be less than 100 characters')
         .regex(/^[a-zA-Z0-9\s\-_]+$/, 'Title can only contain letters, numbers, spaces, hyphens, and underscores'),
-    order: z.number().optional(),
+    lessonOrder: z.number().optional(),
 });
 
 export const questionSchema = z.object({
@@ -34,15 +34,16 @@ export const questionSchema = z.object({
         }),
         z.object({
             type: z.literal('translate'),
-            options: z.array(z.string()).min(1, 'At least one word is required'),
+            sentence: z.array(z.string()).min(1, 'At least one word is required for the sentence'),
+            options: z.array(z.string()).length(6, 'Must provide exactly 6 possible answers'),
             direction: z.enum(['from_english', 'to_english'], {
                 required_error: 'Translation direction is required',
             }),
         }),
         z.object({
             type: z.literal('tap_what_you_hear'),
-            options: z.array(z.string()).length(4, 'Must provide exactly 4 options'),
-            correct: z.number().min(0).max(3, 'Correct answer must be between 0 and 3'),
+            options: z.array(z.string()).min(1, 'At least one word is required'),
+            possibleAnswers: z.array(z.string()).length(6, 'Must provide exactly 6 possible answers'),
         }),
         z.object({
             type: z.literal('type_what_you_hear'),
