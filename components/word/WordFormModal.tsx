@@ -139,6 +139,11 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
     }
 
     async function handleImageUpload() {
+        if (!form.id) {
+            toast.error("Please save the word first before uploading an image");
+            return;
+        }
+
         if (!selectedFile) {
             toast.error("Please select an image to upload");
             return;
@@ -154,7 +159,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
             const formData = new FormData();
             formData.append('image', selectedFile);
 
-            const response = await fetch(`${API_HOST}/api/word/image/upload?word=${form.id || form.translations.en}`, {
+            const response = await fetch(`${API_HOST}/api/word/image/upload?word=${form.id}`, {
                 method: 'POST',
                 body: formData,
             });
@@ -381,7 +386,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                             <Button
                                 type="button"
                                 onClick={handleImageUpload}
-                                disabled={!selectedFile || isUploading}
+                                disabled={!selectedFile || isUploading || !form.id}
                             >
                                 {isUploading ? "Uploading..." : "Upload"}
                             </Button>
