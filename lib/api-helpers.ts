@@ -4,7 +4,7 @@ import { API_HOST } from '@/config/constants';
 export interface LanguageQuestion {
     id: string;
     type: string;
-    options: string[];
+    options?: string[];
     correctOption: string | null;
     questionOrder: number;
     blankIndex: number | null;

@@ -29,12 +29,31 @@ interface Word {
     image?: string;
     translations?: {
         en?: string;
+        [key: string]: string | undefined;
     };
 }
 
+interface Question {
+    id: string;
+    type: 'select_image' | 'translate' | 'tap_what_you_hear' | 'type_what_you_hear' | 'fill_in_blank' | 'match_pairs' | 'complete_translation';
+    order?: number;
+    options: string[];
+    correctOption: number | null;
+    questionOrder: number;
+    blankIndex: number | null;
+    sentenceWords: string[] | null;
+    direction: string | null;
+    words: Array<{
+        id: string;
+        image?: string;
+        audio?: Record<string, string>;
+        translations?: Record<string, string>;
+    }>;
+}
+
 interface QuestionFormProps {
-    initialData?: QuestionFormData & { id?: string };
     lessonId: string;
+    question?: Question | null;
     onSuccess?: () => void;
 }
 
@@ -44,14 +63,25 @@ type FormErrors = {
         audio?: { message: string };
         options?: Array<{ message: string }>;
         correct?: { message: string };
+        matchType?: { message: string };
     };
 };
 
-export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormProps) {
+// Helper function to get the first available translation
+const getFirstAvailableTranslation = (word: Word | undefined): string => {
+    if (!word) return '';
+    if (!word.translations) return word.id;
+    if (word.translations.en) return word.translations.en;
+    // Get the first available translation
+    const firstTranslation = Object.values(word.translations).find(t => t);
+    return firstTranslation || word.id;
+};
+
+export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProps) {
     const router = useRouter();
     const [words, setWords] = useState<Word[]>([]);
     const [selectedImages, setSelectedImages] = useState<string[]>(() => {
-        if (initialData?.type === 'select_image' && initialData.content && 'options' in initialData.content) {
+        if (question?.type === 'select_image') {
             // Initialize with empty strings for all positions
             const images = ['', '', '', ''];
             // We'll populate these in useEffect after fetching words
@@ -72,12 +102,27 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
         control,
     } = useForm<QuestionFormData>({
         resolver: zodResolver(questionSchema),
-        defaultValues: initialData || {
-            type: 'select_image',
+        defaultValues: question ? {
+            type: question.type,
             content: {
-                type: 'select_image',
-                options: ['', '', '', ''],
-                correct: 0
+                type: question.type,
+                options: question.options || [],
+                ...(question.type === 'select_image' && { correct: question.correctOption ?? 0 }),
+                ...(question.type === 'translate' && {
+                    sentence: question.sentenceWords || [],
+                    direction: question.direction as 'from_english' | 'to_english' || 'from_english',
+                }),
+                ...(question.type === 'fill_in_blank' && { blankIndex: question.blankIndex ?? 0 }),
+                ...(question.type === 'complete_translation' && { blankIndex: question.blankIndex ?? 0 }),
+                ...(question.type === 'match_pairs' && { matchType: 'text' }),
+            },
+        } : {
+            type: 'translate',
+            content: {
+                type: 'translate',
+                options: [],
+                sentence: [],
+                direction: 'from_english'
             },
         },
     });
@@ -117,9 +162,9 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                 console.log('Fetched words:', wordsList);
 
                 // If we have initial data for select_image type, populate the images
-                if (initialData?.type === 'select_image' && initialData.content && 'options' in initialData.content) {
+                if (question?.type === 'select_image') {
                     const newImages = [...selectedImages];
-                    initialData.content.options.forEach((wordId: string, index: number) => {
+                    question.options.forEach((wordId: string, index: number) => {
                         const word = wordsList.find(w => w.id === wordId);
                         if (word?.image) {
                             newImages[index] = word.image;
@@ -132,82 +177,27 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
             }
         }
         fetchWords();
-    }, [initialData]);
+    }, [question]);
 
-    // Reset form values when initialData changes (for edit mode)
     useEffect(() => {
-        console.log('initialData:', initialData);
-        console.log('initialData.content:', initialData?.content);
-        if (initialData) {
-            reset(initialData);
-            if (initialData.content && 'options' in initialData.content) {
-                setValue('content.options', initialData.content.options);
-                console.log('Set content.options to:', initialData.content.options);
-            }
-        } else if (questionType === 'translate') {
-            reset({
-                type: 'translate',
+        if (question) {
+            const formData = {
+                type: question.type,
                 content: {
-                    type: 'translate',
-                    sentence: [''],
-                    options: ['', '', '', '', '', ''],
-                    direction: 'from_english',
+                    type: question.type,
+                    options: question.options || [],
+                    ...(question.type === 'select_image' && { correct: question.correctOption ?? 0 }),
+                    ...(question.type === 'translate' && {
+                        sentence: question.sentenceWords || [],
+                        direction: question.direction as 'from_english' | 'to_english' || 'from_english',
+                    }),
+                    ...(question.type === 'fill_in_blank' && { blankIndex: question.blankIndex ?? 0 }),
+                    ...(question.type === 'complete_translation' && { blankIndex: question.blankIndex ?? 0 }),
                 },
-            });
-        } else if (questionType === 'select_image') {
-            reset({
-                type: 'select_image',
-                content: {
-                    type: 'select_image',
-                    options: ['', '', '', ''],
-                    correct: 0,
-                },
-            });
-        } else if (questionType === 'tap_what_you_hear') {
-            reset({
-                type: 'tap_what_you_hear',
-                content: {
-                    type: 'tap_what_you_hear',
-                    options: [''],
-                    possibleAnswers: ['', '', '', '', '', ''],
-                },
-            });
-        } else if (questionType === 'type_what_you_hear') {
-            reset({
-                type: 'type_what_you_hear',
-                content: {
-                    type: 'type_what_you_hear',
-                    options: [''],
-                },
-            });
-        } else if (questionType === 'fill_in_blank') {
-            reset({
-                type: 'fill_in_blank',
-                content: {
-                    type: 'fill_in_blank',
-                    options: [''],
-                    blankIndex: undefined,
-                },
-            });
-        } else if (questionType === 'complete_translation') {
-            reset({
-                type: 'complete_translation',
-                content: {
-                    type: 'complete_translation',
-                    options: [''],
-                    blankIndex: undefined,
-                },
-            });
-        } else if (questionType === 'match_pairs') {
-            reset({
-                type: 'match_pairs',
-                content: {
-                    type: 'match_pairs',
-                    options: ['', '', '', ''],
-                },
-            });
+            };
+            reset(formData);
         }
-    }, [initialData, reset, questionType, setValue]);
+    }, [question, reset]);
 
     useEffect(() => {
         if (questionType === 'translate') {
@@ -237,8 +227,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
     const isFormValid = questionType === 'select_image'
         ? options.every(option => option !== '') && correct !== undefined
         : questionType === 'translate'
-            ? (watch('content.options') as string[] || []).filter(w => !!w).length > 0 &&
-            watch('content.direction') !== undefined
+            ? watch('content.direction') !== undefined
             : questionType === 'fill_in_blank' || questionType === 'complete_translation'
                 ? (watch('content.options') as string[] || []).filter(w => !!w).length > 0 &&
                 watch('content.blankIndex') !== undefined
@@ -291,7 +280,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
 
             if (data.type === 'translate') {
                 const cleanSentence = ((data.content as any).sentence || []).filter((w: string) => !!w);
-                const cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w);
+                const cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w); // Keep filter to remove empty options
                 const direction = (data.content as { direction: 'from_english' | 'to_english' }).direction;
                 payload = {
                     ...payload,
@@ -346,14 +335,14 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
             const currentQuestions = await getQuestionsForLesson(lessonId);
             const nextOrder = currentQuestions.length;
 
-            if (initialData) {
-                if (!initialData.id) {
+            if (question) {
+                if (!question.id) {
                     toast.error('Question ID is missing.');
                     return;
                 }
                 // For updates, we don't need to send the order
                 const { order, ...updatePayload } = payload;
-                await updateQuestion(lessonId, initialData.id, updatePayload);
+                await updateQuestion(lessonId, question.id, updatePayload);
                 toast.success('Question updated successfully!');
             } else {
                 // For new questions, we include the order and required fields
@@ -362,7 +351,6 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                     questionOrder: nextOrder,
                     question: '', // Required field
                     correctAnswer: '', // Required field
-                    options: [], // Required field
                     explanation: '', // Required field
                     questionType: { id: 1 }, // Required field
                     unit: { id: 1 }, // Required field
@@ -418,7 +406,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                     })
                                                     .map((word) => (
                                                         <option key={word.id} value={word.id}>
-                                                            {word.translations?.en || word.id}
+                                                            {getFirstAvailableTranslation(word)}
                                                         </option>
                                                     ))}
                                             </select>
@@ -455,7 +443,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                         const word = words.find(w => String(w.id) === String(wordId));
                                         return (
                                             <option key={index} value={index}>
-                                                {word ? (word.translations?.en || word.id) : wordId}
+                                                {getFirstAvailableTranslation(word)}
                                             </option>
                                         );
                                     })}
@@ -512,7 +500,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                         value={word.id}
                                                         disabled={isSelectedElsewhere}
                                                     >
-                                                        {word.translations?.en || word.id}
+                                                        {getFirstAvailableTranslation(word)}
                                                     </option>
                                                 );
                                             })}
@@ -569,7 +557,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                 })
                                                 .map((word) => (
                                                     <option key={word.id} value={word.id}>
-                                                        {word.translations?.en || word.id}
+                                                        {getFirstAvailableTranslation(word)}
                                                     </option>
                                                 ))}
                                         </select>
@@ -606,7 +594,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                         value={word.id}
                                                         disabled={isSelectedElsewhere}
                                                     >
-                                                        {word.translations?.en || word.id}
+                                                        {getFirstAvailableTranslation(word)}
                                                     </option>
                                                 );
                                             })}
@@ -658,7 +646,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                             value={word.id}
                                                             disabled={isSelectedElsewhere || isSentenceWord}
                                                         >
-                                                            {word.translations?.en || word.id}
+                                                            {getFirstAvailableTranslation(word)}
                                                         </option>
                                                     );
                                                 })}
@@ -700,7 +688,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                         value={word.id}
                                                         disabled={isSelectedElsewhere}
                                                     >
-                                                        {word.translations?.en || word.id}
+                                                        {getFirstAvailableTranslation(word)}
                                                     </option>
                                                 );
                                             })}
@@ -756,7 +744,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                         value={word.id}
                                                         disabled={isSelectedElsewhere}
                                                     >
-                                                        {word.translations?.en || word.id}
+                                                        {getFirstAvailableTranslation(word)}
                                                     </option>
                                                 );
                                             })}
@@ -801,7 +789,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                         const word = words.find(w => String(w.id) === String(wordId));
                                         return word ? (
                                             <option key={index} value={index}>
-                                                {word.translations?.en || word.id}
+                                                {getFirstAvailableTranslation(word)}
                                             </option>
                                         ) : null;
                                     });
@@ -840,7 +828,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                         value={word.id}
                                                         disabled={isSelectedElsewhere}
                                                     >
-                                                        {word.translations?.en || word.id}
+                                                        {getFirstAvailableTranslation(word)}
                                                     </option>
                                                 );
                                             })}
@@ -885,7 +873,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                         const word = words.find(w => String(w.id) === String(wordId));
                                         return word ? (
                                             <option key={index} value={index}>
-                                                {word.translations?.en || word.id}
+                                                {getFirstAvailableTranslation(word)}
                                             </option>
                                         ) : null;
                                     });
@@ -898,6 +886,22 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
             case 'match_pairs':
                 return (
                     <>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">
+                                Match Type
+                            </label>
+                            <select
+                                {...register('content.matchType')}
+                                className="w-full p-2 border rounded-md mb-6"
+                            >
+                                <option value="">Select Type</option>
+                                <option value="audio">Audio</option>
+                                <option value="text">Text</option>
+                            </select>
+                            {formErrors.content?.matchType && (
+                                <p className="text-red-500 text-sm mt-1">{formErrors.content.matchType.message}</p>
+                            )}
+                        </div>
                         <div>
                             <label className="block text-sm font-medium mb-2">
                                 Options (4 required)
@@ -925,7 +929,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                                                 })
                                                 .map((word) => (
                                                     <option key={word.id} value={word.id}>
-                                                        {word.translations?.en || word.id}
+                                                        {getFirstAvailableTranslation(word)}
                                                     </option>
                                                 ))}
                                         </select>
@@ -942,9 +946,9 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
     };
 
     useEffect(() => {
-        if (initialData && words.length > 0) {
+        if (question && words.length > 0) {
             const currentOptions = watch('content.options');
-            const newOptions = initialData.content?.options || ['', '', '', ''];
+            const newOptions = question.options || ['', '', '', ''];
             // Only reset if options are different
             if (
                 !currentOptions ||
@@ -952,10 +956,17 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                 currentOptions.some((opt, i) => opt !== newOptions[i])
             ) {
                 const newInitial = {
-                    ...initialData,
+                    ...question,
                     content: {
-                        ...initialData.content,
+                        type: question.type,
                         options: newOptions,
+                        ...(question.type === 'select_image' && { correct: question.correctOption ?? 0 }),
+                        ...(question.type === 'translate' && {
+                            sentence: question.sentenceWords || [],
+                            direction: question.direction as 'from_english' | 'to_english' || 'from_english',
+                        }),
+                        ...(question.type === 'fill_in_blank' && { blankIndex: question.blankIndex ?? 0 }),
+                        ...(question.type === 'complete_translation' && { blankIndex: question.blankIndex ?? 0 }),
                     },
                 };
                 reset(newInitial);
@@ -963,7 +974,7 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                 console.log('Reset form with:', newInitial);
             }
         }
-    }, [initialData, words, reset, setValue, watch]);
+    }, [question, words, reset, setValue, watch]);
 
     // Sync possibleAnswers with sentence for tap_what_you_hear
     useEffect(() => {
@@ -990,6 +1001,90 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
             setValue('content.possibleAnswers', newPossibleAnswers);
         }
     }, [watch('content.options'), questionType]);
+
+    // Reset form when type changes
+    useEffect(() => {
+        if (!question) {  // Only reset for new questions
+            let newDefaults: QuestionFormData;
+
+            switch (questionType) {
+                case 'select_image':
+                    newDefaults = {
+                        type: 'select_image',
+                        content: {
+                            type: 'select_image',
+                            options: ['', '', '', ''],
+                            correct: 0
+                        }
+                    };
+                    break;
+                case 'translate':
+                    newDefaults = {
+                        type: 'translate',
+                        content: {
+                            type: 'translate',
+                            options: [],
+                            sentence: [],
+                            direction: 'from_english'
+                        }
+                    };
+                    break;
+                case 'fill_in_blank':
+                    newDefaults = {
+                        type: 'fill_in_blank',
+                        content: {
+                            type: 'fill_in_blank',
+                            options: [],
+                            blankIndex: 0
+                        }
+                    };
+                    break;
+                case 'complete_translation':
+                    newDefaults = {
+                        type: 'complete_translation',
+                        content: {
+                            type: 'complete_translation',
+                            options: [],
+                            blankIndex: 0
+                        }
+                    };
+                    break;
+                case 'match_pairs':
+                    newDefaults = {
+                        type: 'match_pairs',
+                        content: {
+                            type: 'match_pairs',
+                            options: ['', '', '', ''],
+                            matchType: 'text'
+                        }
+                    };
+                    break;
+                case 'tap_what_you_hear':
+                    newDefaults = {
+                        type: 'tap_what_you_hear',
+                        content: {
+                            type: 'tap_what_you_hear',
+                            options: [],
+                            possibleAnswers: ['', '', '', '', '', '']
+                        }
+                    };
+                    break;
+                case 'type_what_you_hear':
+                    newDefaults = {
+                        type: 'type_what_you_hear',
+                        content: {
+                            type: 'type_what_you_hear',
+                            options: []
+                        }
+                    };
+                    break;
+                default:
+                    return;
+            }
+
+            reset(newDefaults);
+        }
+    }, [questionType, reset, question]);
 
     // Only render the form after words are loaded to prevent hydration mismatch
     if (words.length === 0) {
@@ -1023,16 +1118,16 @@ export function QuestionForm({ initialData, lessonId, onSuccess }: QuestionFormP
                 <Button
                     type="button"
                     variant="outline"
-                    onClick={() => router.push(`/admin/lessons/${lessonId}`)}
+                    onClick={() => onSuccess?.()}
                 >
                     Cancel
                 </Button>
                 <Button type="submit" disabled={formIsSubmitting || !isFormValid}>
                     {formIsSubmitting
-                        ? initialData
+                        ? question
                             ? 'Updating...'
                             : 'Adding...'
-                        : initialData
+                        : question
                             ? 'Update Question'
                             : 'Add Question'}
                 </Button>

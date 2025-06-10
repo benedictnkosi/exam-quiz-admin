@@ -95,6 +95,7 @@ export default function LessonDetailPage({
     const [isWordModalOpen, setIsWordModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+    const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
     const fetchData = async () => {
         try {
@@ -424,11 +425,16 @@ export default function LessonDetailPage({
                                 </div>
                                 {renderQuestionContent(question)}
                             </div>
-                            <Link href={`/admin/lessons/${lessonId}/questions/${question.id}`}>
-                                <Button variant="outline" size="sm">
-                                    Edit Question
-                                </Button>
-                            </Link>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setEditingQuestion(question);
+                                    setIsQuestionModalOpen(true);
+                                }}
+                            >
+                                Edit Question
+                            </Button>
                         </div>
                     </div>
                 ))}
@@ -444,18 +450,28 @@ export default function LessonDetailPage({
                 wordGroups={wordGroups}
             />
 
-            {/* Question Creation Modal */}
-            <Dialog open={isQuestionModalOpen} onOpenChange={setIsQuestionModalOpen}>
+            {/* Question Creation/Edit Modal */}
+            <Dialog
+                open={isQuestionModalOpen}
+                onOpenChange={(open) => {
+                    setIsQuestionModalOpen(open);
+                    if (!open) {
+                        setEditingQuestion(null);
+                    }
+                }}
+            >
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Add New Question</DialogTitle>
+                        <DialogTitle>{editingQuestion ? 'Edit Question' : 'Add New Question'}</DialogTitle>
                     </DialogHeader>
                     <QuestionForm
                         lessonId={lessonId}
+                        question={editingQuestion}
                         onSuccess={() => {
                             setIsQuestionModalOpen(false);
+                            setEditingQuestion(null);
                             fetchData();
-                            toast.success('Question added successfully');
+                            toast.success(editingQuestion ? 'Question updated successfully' : 'Question added successfully');
                         }}
                     />
                 </DialogContent>

@@ -305,7 +305,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                                 }}
                             >
                                 <option value="">Select language</option>
-                                {LANGUAGE_OPTIONS.filter(lang => !form.translations[lang] && lang).map((lang) => (
+                                {LANGUAGE_OPTIONS.filter(lang => !form.translations[lang]).map((lang) => (
                                     <option key={lang} value={lang}>
                                         {LANGUAGE_LABELS[lang] || lang.toUpperCase()}
                                     </option>
