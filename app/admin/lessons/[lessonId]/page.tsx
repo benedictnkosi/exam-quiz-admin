@@ -367,7 +367,7 @@ export default function LessonDetailPage({
                         initialData={lesson ? {
                             id: lesson.id,
                             title: lesson.title,
-                            order: lesson.order,
+                            lessonOrder: lesson.order,
                             unitId: lesson.unitId
                         } : undefined}
                         unitId={lesson?.unitId || ''}
