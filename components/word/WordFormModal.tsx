@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import { API_HOST } from "@/config/constants";
 import { createWord, updateWord, updateWordTranslation, updateWordAudio, getWordById } from "@/lib/api-helpers";
 import React from "react";
-import { AudioRecordingModal } from './AudioRecordingModal';
+import dynamic from 'next/dynamic';
 
 const LANGUAGE_OPTIONS = [
     "af", // Afrikaans
@@ -55,6 +55,8 @@ interface WordFormModalProps {
         name: string;
     }>;
 }
+
+const AudioRecordingModal = dynamic(() => import('./AudioRecordingModal').then(mod => mod.AudioRecordingModal), { ssr: false });
 
 export function WordFormModal({ open, onOpenChange, onSuccess, initialData, wordGroups = [] }: WordFormModalProps) {
     const [form, setForm] = useState({
