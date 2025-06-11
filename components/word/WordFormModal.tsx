@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import { API_HOST } from "@/config/constants";
 import { createWord, updateWord, updateWordTranslation, updateWordAudio, getWordById } from "@/lib/api-helpers";
 import React from "react";
+import { AudioRecordingModal } from './AudioRecordingModal';
 
 const LANGUAGE_OPTIONS = [
     "af", // Afrikaans
@@ -72,6 +73,10 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
     const [translationInput, setTranslationInput] = useState("");
     const [isAddingTranslation, setIsAddingTranslation] = useState(false);
     const audioInputRef = useRef<HTMLInputElement | null>(null);
+    const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false);
+    const [startTime, setStartTime] = useState<number | undefined>(undefined);
+    const [endTime, setEndTime] = useState<number | undefined>(undefined);
+    const [recordedAudioFileName, setRecordedAudioFileName] = useState<string | null>(null);
 
     // Load last selected language when modal opens
     useEffect(() => {
@@ -208,28 +213,15 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
             setIsAddingTranslation(false);
             return;
         }
-
-        if (selectedLang !== 'en' && !selectedAudioFile) {
+        if (selectedLang !== 'en' && !recordedAudioFileName) {
             toast.error(`Audio file is required for ${LANGUAGE_LABELS[selectedLang]}`);
             setIsAddingTranslation(false);
             return;
         }
-
         try {
             let audioUrl = "";
-            if (selectedLang !== 'en' && selectedAudioFile) {
-                const formData = new FormData();
-                formData.append('file', selectedAudioFile);
-                formData.append('word', translationInput);
-
-                const response = await fetch(`${API_HOST}/api/word/audio/upload`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) throw new Error('Failed to upload audio');
-                const data = await response.json();
-                audioUrl = `${data.wordAudio.filename}`;
+            if (selectedLang !== 'en' && recordedAudioFileName) {
+                audioUrl = recordedAudioFileName;
             }
 
             if (isEditing && form.id) {
@@ -260,6 +252,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
             if (audioInputRef.current) {
                 audioInputRef.current.value = "";
             }
+            setRecordedAudioFileName(null);
 
             toast.success("Translation added successfully");
         } catch (error) {
@@ -279,6 +272,12 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
             return { ...prev, translations: newTranslations, audio: newAudio };
         });
     }
+
+    const handleAudioRecorded = (audioBlob: Blob, fileName?: string) => {
+        const file = new File([audioBlob], `recording-${selectedLang}.webm`, { type: 'audio/webm' });
+        setSelectedAudioFile(file);
+        if (fileName) setRecordedAudioFileName(fileName);
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -328,20 +327,23 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                                 value={translationInput}
                                 onChange={e => setTranslationInput(e.target.value)}
                             />
-                            <div className="flex gap-2 flex-1">
-                                <input
-                                    type="file"
-                                    accept="audio/*"
-                                    onChange={e => setSelectedAudioFile(e.target.files?.[0] || null)}
-                                    className="flex-1 p-2 border rounded-md h-10"
-                                    ref={audioInputRef}
-                                />
+                            <div className="flex flex-col sm:flex-row gap-2 flex-1 items-center">
+                                {selectedLang && selectedLang !== 'en' && (
+                                    <Button
+                                        type="button"
+                                        onClick={() => setIsRecordingModalOpen(true)}
+                                        className="h-10 px-4 whitespace-nowrap bg-blue-500 hover:bg-blue-600 text-white font-semibold d-block"
+                                        variant="secondary"
+                                    >
+                                        🎤 Record Audio
+                                    </Button>
+                                )}
                             </div>
                             {selectedLang && selectedLang !== 'en' && (
                                 <span className="text-sm text-red-500">* Required</span>
                             )}
                             <Button type="button" className="h-10 px-4" onClick={handleAddTranslation}
-                                disabled={isAddingTranslation || (selectedLang !== 'en' && !selectedAudioFile)}
+                                disabled={isAddingTranslation || (selectedLang !== 'en' && !recordedAudioFileName)}
                             >
                                 {isAddingTranslation ? 'Adding...' : 'Add Translation'}
                             </Button>
@@ -369,7 +371,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                                                 </div>
                                                 {form.audio && form.audio[lang] && (
                                                     <div className="mt-1">
-                                                        <audio controls src={form.audio[lang]} style={{ height: 28 }}>
+                                                        <audio controls src={`${API_HOST}/api/word/audio/get/${form.audio[lang]}`} style={{ height: 28 }}>
                                                             Your browser does not support the audio element.
                                                         </audio>
                                                     </div>
@@ -406,7 +408,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                                 <img
                                     src={`${API_HOST}/api/word/image/get/${form.image}`}
                                     alt="Word image"
-                                    className="w-48 h-48 object-cover rounded-md"
+                                    className="w-12 h-12 object-cover rounded-md"
                                 />
                                 <div className="text-green-600 font-medium mt-1 flex items-center gap-1">
                                     <svg className="w-4 h-4 inline-block" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -423,6 +425,13 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                     </DialogFooter>
                 </form>
             </DialogContent>
+            <AudioRecordingModal
+                open={isRecordingModalOpen}
+                onOpenChange={setIsRecordingModalOpen}
+                onAudioRecorded={handleAudioRecorded}
+                language={LANGUAGE_LABELS[selectedLang] || selectedLang}
+                word={translationInput}
+            />
         </Dialog>
     );
 } 

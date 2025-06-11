@@ -24,6 +24,7 @@
     "@types/js-cookie": "^3.0.6",
     "@types/katex": "^0.16.7",
     "@types/react-datepicker": "^6.2.0",
+    "@wavesurfer/react": "^1.0.11",
     "better-react-mathjax": "^2.1.0",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.8",
@@ -49,8 +50,11 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^4.12.0",
     "react-katex": "^3.0.1",
+    "react-media-recorder": "^1.7.1",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
+    "wavesurfer-react": "^3.0.4",
+    "wavesurfer.js": "^7.9.5",
     "zod": "^3.25.56"
   },
   "devDependencies": {
