@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const unitSchema = z.object({
     unitId: z.string().min(1, 'Unit ID is required'),
     title: z.string().min(1, 'Title is required'),
+    description: z.string().optional(),
     availableLanguages: z.array(z.string()).min(1, 'At least one language must be selected'),
 });
 

@@ -102,6 +102,7 @@ export function UnitForm({ onSuccess }: UnitFormProps) {
                     title: data.title,
                     unitId: data.unitId,
                     unitOrder: nextOrder,
+                    description: data.description,
                     availableLanguages: data.availableLanguages
                 })
             });
@@ -139,6 +140,19 @@ export function UnitForm({ onSuccess }: UnitFormProps) {
                         />
                         {errors.title && (
                             <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Description</label>
+                        <textarea
+                            {...register('description')}
+                            className="w-full p-2 border rounded-md"
+                            placeholder="Enter a description for this unit"
+                            rows={3}
+                        />
+                        {errors.description && (
+                            <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
                         )}
                     </div>
 
