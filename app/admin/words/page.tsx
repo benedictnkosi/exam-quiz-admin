@@ -266,7 +266,7 @@ export default function WordsPage() {
 
             {/* Word Groups Modal */}
             <Dialog open={isGroupModalOpen} onOpenChange={setIsGroupModalOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Manage Word Groups</DialogTitle>
                     </DialogHeader>
