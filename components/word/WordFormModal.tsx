@@ -38,6 +38,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
 };
 
 const LAST_SELECTED_LANGUAGE_KEY = 'lastSelectedLanguage';
+const LAST_SELECTED_GROUP_KEY = 'lastSelectedWordGroup';
 
 interface WordFormModalProps {
     open: boolean;
@@ -80,14 +81,19 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
     const [endTime, setEndTime] = useState<number | undefined>(undefined);
     const [recordedAudioFileName, setRecordedAudioFileName] = useState<string | null>(null);
 
-    // Load last selected language when modal opens
+    // Load last selected language and group when modal opens
     useEffect(() => {
         if (open) {
             console.log("Modal opened, checking localStorage");
             const lastLang = localStorage.getItem(LAST_SELECTED_LANGUAGE_KEY);
+            const lastGroup = localStorage.getItem(LAST_SELECTED_GROUP_KEY);
             console.log("Last language from localStorage:", lastLang);
+            console.log("Last group from localStorage:", lastGroup);
             if (lastLang) {
                 setSelectedLang(lastLang);
+            }
+            if (lastGroup) {
+                setForm(prev => ({ ...prev, groupId: Number(lastGroup) }));
             }
         }
     }, [open]);
@@ -99,6 +105,14 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
         if (lang) {
             console.log("Saving language to localStorage:", lang);
             localStorage.setItem(LAST_SELECTED_LANGUAGE_KEY, lang);
+        }
+    };
+
+    // Save selected group to localStorage
+    const handleGroupChange = (groupId: number) => {
+        setForm(prev => ({ ...prev, groupId }));
+        if (groupId) {
+            localStorage.setItem(LAST_SELECTED_GROUP_KEY, groupId.toString());
         }
     };
 
@@ -294,7 +308,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                             <select
                                 className="w-full p-2 border rounded-md"
                                 value={form.groupId}
-                                onChange={(e) => setForm(prev => ({ ...prev, groupId: Number(e.target.value) }))}
+                                onChange={(e) => handleGroupChange(Number(e.target.value))}
                             >
                                 <option value="">Select a group</option>
                                 {wordGroups.map((group) => (
