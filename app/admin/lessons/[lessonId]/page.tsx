@@ -230,13 +230,31 @@ export default function LessonDetailPage({
                             <ul className="list-disc list-inside text-sm text-gray-600">
                                 {question.options?.map((option, index) => {
                                     const word = getWordById(option);
+                                    const translation = word?.translations?.en ||
+                                        (word?.translations && Object.values(word.translations)[0]) ||
+                                        'No translation available';
                                     return (
-                                        <li key={index}>{word?.translations?.en || option}</li>
+                                        <li key={index}>{translation}</li>
                                     );
                                 })}
                             </ul>
                         </div>
-                        <p className="text-sm text-gray-600 mt-2">Correct: {getWordById(question.correctOption || '')?.translations?.en || question.correctOption}</p>
+                        <p className="text-sm text-gray-600 mt-2">
+                            <span className="font-medium">Correct Answer:</span> {(
+                                question.sentenceWords && question.sentenceWords.length > 0
+                                    ? question.sentenceWords.map(wordId => {
+                                        const word = getWordById(wordId);
+                                        const translation = word?.translations?.en ||
+                                            (word?.translations && Object.values(word.translations)[0]) ||
+                                            'No translation available';
+                                        return translation;
+                                    }).join(' ')
+                                    : <span className="text-gray-400">No correct answer set.</span>
+                            )}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-2">
+                            <span className="font-medium">Direction:</span> {question.direction || 'Not specified'}
+                        </p>
                     </>
                 );
             case 'tap_what_you_hear':
@@ -250,9 +268,12 @@ export default function LessonDetailPage({
                                 <ul className="list-disc list-inside text-sm text-gray-600">
                                     {question.options.map((option, index) => {
                                         const word = getWordById(option);
+                                        const translation = word?.translations?.en ||
+                                            (word?.translations && Object.values(word.translations)[0]) ||
+                                            'No translation available';
                                         return (
                                             <li key={index} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                {word?.translations?.en || option}
+                                                {translation}
                                             </li>
                                         );
                                     })}
@@ -260,9 +281,15 @@ export default function LessonDetailPage({
                             )}
                         </div>
                         <p className="text-sm text-gray-600 mt-2">
-                            <span className="font-medium">Correct:</span> {(
-                                typeof question.correctOption === 'number' && question.options?.[question.correctOption] !== undefined
-                                    ? getWordById(question.options[question.correctOption])?.translations?.en || question.options[question.correctOption]
+                            <span className="font-medium">Correct Answer:</span> {(
+                                question.sentenceWords && question.sentenceWords.length > 0
+                                    ? question.sentenceWords.map(wordId => {
+                                        const word = getWordById(wordId);
+                                        const translation = word?.translations?.en ||
+                                            (word?.translations && Object.values(word.translations)[0]) ||
+                                            'No translation available';
+                                        return translation;
+                                    }).join(' ')
                                     : <span className="text-gray-400">No correct answer set.</span>
                             )}
                         </p>
