@@ -132,7 +132,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                 type: 'translate',
                 options: [],
                 sentence: [],
-                direction: 'from_english'
+                direction: ''
             },
         },
     });
@@ -552,7 +552,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                 Select 6 different words that will be shown as possible answers to the user.
                             </p>
                             <div className="space-y-2">
-                                {[0, 1, 2, 3, 4, 5].map((index) => (
+                                {Array.from({ length: 5 }).map((_, index) => (
                                     <div key={index} className="flex gap-2 items-center">
                                         <select
                                             {...register(`content.options.${index}`)}
@@ -646,7 +646,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                 Select 6 different words that will be shown as possible answers to the user. Words used in the sentence are pre-selected and cannot be chosen again.
                             </p>
                             <div className="space-y-2">
-                                {[0, 1, 2, 3, 4, 5].map((index) => {
+                                {Array.from({ length: 6 }).map((_, index) => {
                                     const sentenceWords = watch('content.options') || [];
                                     const possibleAnswers = watch('content.possibleAnswers') || ['', '', '', '', '', ''];
                                     return (
@@ -656,7 +656,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                                 className="flex-1 p-2 border rounded-md"
                                             >
                                                 <option value="">Select a word</option>
-                                                {words.map((word) => {
+                                                {sortWordsByEnglishTranslation(words).map((word) => {
                                                     const isSelectedElsewhere = possibleAnswers.some((opt, i) => i !== index && String(opt) === String(word.id));
                                                     const isSentenceWord = sentenceWords.includes(word.id);
                                                     return (
@@ -923,13 +923,13 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2">
-                                Options (4 required)
+                                Options (5 required)
                             </label>
                             <p className="text-sm text-gray-500 mb-4">
-                                Select 4 different words that will be shown as pairs to match.
+                                Select 5 different words that will be shown as pairs to match.
                             </p>
                             <div className="space-y-2">
-                                {[0, 1, 2, 3].map((index) => (
+                                {[0, 1, 2, 3, 4].map((index) => (
                                     <div key={index} className="flex gap-2 items-center">
                                         <select
                                             {...register(`content.options.${index}`)}
@@ -1045,7 +1045,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                             type: 'translate',
                             options: [],
                             sentence: [],
-                            direction: 'from_english'
+                            direction: ''
                         }
                     };
                     break;
@@ -1074,8 +1074,8 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                         type: 'match_pairs',
                         content: {
                             type: 'match_pairs',
-                            options: ['', '', '', ''],
-                            matchType: 'text'
+                            options: ['', '', '', '', ''],
+                            matchType: ''
                         }
                     };
                     break;

@@ -37,7 +37,7 @@ export const questionSchema = z.object({
             type: z.literal('translate'),
             sentence: z.array(z.string()).min(1, 'At least one word is required for the sentence'),
             options: z.array(z.string()).min(0).max(6, 'Maximum 6 possible answers allowed'),
-            direction: z.enum(['from_english', 'to_english'], {
+            direction: z.enum(['from_english', 'to_english', ''], {
                 required_error: 'Translation direction is required',
             }),
         }),
@@ -62,8 +62,8 @@ export const questionSchema = z.object({
         }),
         z.object({
             type: z.literal('match_pairs'),
-            options: z.array(z.string()).length(4, 'Must provide exactly 4 options'),
-            matchType: z.enum(['audio', 'text'], {
+            options: z.array(z.string()).length(5, 'Must provide exactly 5 options'),
+            matchType: z.enum(['audio', 'text', ''], {
                 required_error: 'Match type is required',
             }),
         }),

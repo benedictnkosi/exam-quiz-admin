@@ -149,6 +149,8 @@ export default function LessonDetailPage({
 
     useEffect(() => {
         fetchData();
+        // Save lesson ID to localStorage
+        localStorage.setItem('lastViewedLessonId', lessonId);
     }, [lessonId]);
 
     // Helper to get word by ID
@@ -403,6 +405,9 @@ export default function LessonDetailPage({
                 <div className="flex gap-2">
                     <Link href="/admin/units">
                         <Button variant="outline">Home</Button>
+                    </Link>
+                    <Link href="/admin/words">
+                        <Button variant="outline">Manage Words</Button>
                     </Link>
                     <LessonForm
                         initialData={lesson ? {

@@ -69,11 +69,15 @@ export default function WordsPage() {
         image: string;
         groupId: number;
     } | null>(null);
+    const [lastViewedLessonId, setLastViewedLessonId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchWords();
         fetchWordGroups();
         fetchUnits();
+        // Get the last viewed lesson ID from localStorage
+        const savedLessonId = localStorage.getItem('lastViewedLessonId');
+        setLastViewedLessonId(savedLessonId);
     }, [selectedGroupFilter, selectedUnitFilter]);
 
     async function fetchUnits() {
@@ -191,6 +195,11 @@ export default function WordsPage() {
                 <Link href="/admin/units">
                     <Button variant="secondary">Home</Button>
                 </Link>
+                {lastViewedLessonId && (
+                    <Link href={`/admin/lessons/${lastViewedLessonId}`}>
+                        <Button variant="outline">Back to Lesson</Button>
+                    </Link>
+                )}
                 <Button variant="outline" onClick={() => setIsGroupModalOpen(true)}>Manage Word Groups</Button>
             </div>
             <h1 className="text-3xl font-bold mb-8">Manage Words</h1>
