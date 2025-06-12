@@ -64,6 +64,7 @@ type FormErrors = {
         options?: Array<{ message: string }>;
         correct?: { message: string };
         matchType?: { message: string };
+        direction?: { message: string };
     };
 };
 
@@ -75,6 +76,15 @@ const getFirstAvailableTranslation = (word: Word | undefined): string => {
     // Get the first available translation
     const firstTranslation = Object.values(word.translations).find(t => t);
     return firstTranslation || word.id;
+};
+
+// Add helper function to sort words by English translation
+const sortWordsByEnglishTranslation = (words: Word[]): Word[] => {
+    return [...words].sort((a, b) => {
+        const aTranslation = a.translations?.en || '';
+        const bTranslation = b.translations?.en || '';
+        return aTranslation.localeCompare(bTranslation);
+    });
 };
 
 export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProps) {
@@ -404,6 +414,11 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                                         const selectedOptions = watch('content.options') || [];
                                                         return !selectedOptions.includes(word.id) || selectedOptions[index] === word.id;
                                                     })
+                                                    .sort((a, b) => {
+                                                        const aTranslation = a.translations?.en || '';
+                                                        const bTranslation = b.translations?.en || '';
+                                                        return aTranslation.localeCompare(bTranslation);
+                                                    })
                                                     .map((word) => (
                                                         <option key={word.id} value={word.id}>
                                                             {getFirstAvailableTranslation(word)}
@@ -464,12 +479,17 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                 Translation Direction
                             </label>
                             <select
-                                {...register('content.direction')}
+                                {...register('content.direction', { required: 'Please select a translation direction' })}
                                 className="w-full p-2 border rounded-md mb-6"
+                                defaultValue=""
                             >
+                                <option value="">Please select direction</option>
                                 <option value="from_english">From English</option>
                                 <option value="to_english">To English</option>
                             </select>
+                            {formErrors.content?.direction && (
+                                <p className="text-red-500 text-sm mt-1">{formErrors.content.direction.message}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2">
@@ -491,7 +511,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                             defaultValue={watch('content.sentence')[index] || ''}
                                         >
                                             <option value="">Select a word</option>
-                                            {words.map((word) => {
+                                            {sortWordsByEnglishTranslation(words).map((word) => {
                                                 const selectedOptions = watch('content.sentence') || [];
                                                 const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
                                                 return (
@@ -546,20 +566,19 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                             value={watch('content.options')[index] || ''}
                                         >
                                             <option value="">Select a word</option>
-                                            {words
-                                                .filter(word => {
-                                                    const selectedOptions = watch('content.options') || [];
-                                                    // Allow the current value, but filter out all other selected values
-                                                    return (
-                                                        !selectedOptions.includes(String(word.id)) ||
-                                                        String(selectedOptions[index]) === String(word.id)
-                                                    );
-                                                })
-                                                .map((word) => (
-                                                    <option key={word.id} value={word.id}>
+                                            {sortWordsByEnglishTranslation(words).map((word) => {
+                                                const selectedOptions = watch('content.options') || [];
+                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
+                                                return (
+                                                    <option
+                                                        key={word.id}
+                                                        value={word.id}
+                                                        disabled={isSelectedElsewhere}
+                                                    >
                                                         {getFirstAvailableTranslation(word)}
                                                     </option>
-                                                ))}
+                                                );
+                                            })}
                                         </select>
                                     </div>
                                 ))}
@@ -585,7 +604,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                             defaultValue={watch('content.options')[index] || ''}
                                         >
                                             <option value="">Select a word</option>
-                                            {words.map((word) => {
+                                            {sortWordsByEnglishTranslation(words).map((word) => {
                                                 const selectedOptions = watch('content.options') || [];
                                                 const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
                                                 return (
@@ -679,7 +698,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                             defaultValue={watch('content.options')[index] || ''}
                                         >
                                             <option value="">Select a word</option>
-                                            {words.map((word) => {
+                                            {sortWordsByEnglishTranslation(words).map((word) => {
                                                 const selectedOptions = watch('content.options') || [];
                                                 const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
                                                 return (
@@ -735,7 +754,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                             defaultValue={watch('content.options')[index] || ''}
                                         >
                                             <option value="">Select a word</option>
-                                            {words.map((word) => {
+                                            {sortWordsByEnglishTranslation(words).map((word) => {
                                                 const selectedOptions = watch('content.options') || [];
                                                 const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
                                                 return (
@@ -819,7 +838,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                             defaultValue={watch('content.options')[index] || ''}
                                         >
                                             <option value="">Select a word</option>
-                                            {words.map((word) => {
+                                            {sortWordsByEnglishTranslation(words).map((word) => {
                                                 const selectedOptions = watch('content.options') || [];
                                                 const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
                                                 return (
@@ -921,11 +940,12 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                             {words
                                                 .filter(word => {
                                                     const selectedOptions = watch('content.options') || [];
-                                                    // Allow the current value, but filter out all other selected values
-                                                    return (
-                                                        !selectedOptions.includes(String(word.id)) ||
-                                                        String(selectedOptions[index]) === String(word.id)
-                                                    );
+                                                    return !selectedOptions.includes(String(word.id)) || String(selectedOptions[index]) === String(word.id);
+                                                })
+                                                .sort((a, b) => {
+                                                    const aTranslation = a.translations?.en || '';
+                                                    const bTranslation = b.translations?.en || '';
+                                                    return aTranslation.localeCompare(bTranslation);
                                                 })
                                                 .map((word) => (
                                                     <option key={word.id} value={word.id}>

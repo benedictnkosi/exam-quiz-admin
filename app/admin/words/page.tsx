@@ -246,7 +246,13 @@ export default function WordsPage() {
                     setEditingWord(null);
                 }}
                 wordGroups={wordGroups}
-                initialData={editingWord || undefined}
+                initialData={editingWord || (selectedGroupFilter ? {
+                    id: '',
+                    translations: {},
+                    audio: {},
+                    image: '',
+                    groupId: Number(selectedGroupFilter)
+                } : undefined)}
             />
 
             {/* Word Groups Modal */}

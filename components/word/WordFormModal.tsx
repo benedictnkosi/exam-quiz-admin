@@ -67,7 +67,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
         image: initialData?.image || "",
         groupId: initialData?.groupId || 0,
     });
-    const isEditing = !!initialData;
+    const isEditing = !!initialData?.id;
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedAudioFile, setSelectedAudioFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
