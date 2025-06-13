@@ -13,6 +13,8 @@ import {
     getQuestionsForLesson,
 } from '@/lib/api-helpers';
 import { useEffect, useState } from 'react';
+import { QuestionOptions } from '../../../../components/ui/question-options';
+import { SentenceBuilder } from '../../../../components/ui/sentence-builder';
 
 const QUESTION_TYPES = [
     'select_image',
@@ -119,19 +121,35 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                 options: question.options || [],
                 ...(question.type === 'select_image' && { correct: question.correctOption ?? 0 }),
                 ...(question.type === 'translate' && {
-                    sentence: question.sentenceWords || [],
+                    sentenceWords: question.sentenceWords || [],
                     direction: question.direction as 'from_english' | 'to_english' || 'from_english',
                 }),
-                ...(question.type === 'fill_in_blank' && { blankIndex: question.blankIndex ?? 0 }),
-                ...(question.type === 'complete_translation' && { blankIndex: question.blankIndex ?? 0 }),
-                ...(question.type === 'match_pairs' && { matchType: 'text' }),
+                ...(question.type === 'tap_what_you_hear' && {
+                    sentenceWords: question.sentenceWords || [],
+                    options: question.options || [],
+                }),
+                ...(question.type === 'type_what_you_hear' && {
+                    sentenceWords: question.sentenceWords || [],
+                }),
+                ...(question.type === 'fill_in_blank' && {
+                    sentenceWords: question.options || [],
+                    blankIndex: question.blankIndex ?? 0,
+                }),
+                ...(question.type === 'complete_translation' && {
+                    sentenceWords: question.options || [],
+                    blankIndex: question.blankIndex ?? 0,
+                }),
+                ...(question.type === 'match_pairs' && {
+                    options: question.options || [],
+                    matchType: 'text',
+                }),
             },
         } : {
             type: 'translate',
             content: {
                 type: 'translate',
                 options: [],
-                sentence: [],
+                sentenceWords: [],
                 direction: ''
             },
         },
@@ -155,7 +173,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
         remove: removeSentence,
     } = useFieldArray<any>({
         control,
-        name: 'content.sentence',
+        name: 'content.sentenceWords',
     });
 
     useEffect(() => {
@@ -198,7 +216,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                     options: question.options || [],
                     ...(question.type === 'select_image' && { correct: question.correctOption ?? 0 }),
                     ...(question.type === 'translate' && {
-                        sentence: question.sentenceWords || [],
+                        sentenceWords: question.sentenceWords || [],
                         direction: question.direction as 'from_english' | 'to_english' || 'from_english',
                     }),
                     ...(question.type === 'fill_in_blank' && { blankIndex: question.blankIndex ?? 0 }),
@@ -216,7 +234,6 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                 setSentenceError(null);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [watch('content.options'), questionType]);
 
     useEffect(() => {
@@ -245,8 +262,10 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
 
     const handleOptionChange = (index: number, value: string) => {
         const currentOptions = watch('content.options') || [];
+        console.log('Current options before change:', currentOptions);
         const newOptions = [...currentOptions];
         newOptions[index] = value;
+        console.log('Setting new options:', newOptions);
         setValue('content.options', newOptions);
         console.log(`Option at index ${index} changed to:`, value, 'Current options:', newOptions);
     };
@@ -288,53 +307,64 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                 },
             };
 
+            let cleanOptions: string[] = [];
+            let sentenceWords: string[] = [];
             if (data.type === 'translate') {
-                const cleanSentence = ((data.content as any).sentence || []).filter((w: string) => !!w);
-                const cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w); // Keep filter to remove empty options
+                const cleanSentence = ((data.content as any).sentenceWords || []).filter((w: string) => !!w);
+                cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w);
                 const direction = (data.content as { direction: 'from_english' | 'to_english' }).direction;
                 payload = {
                     ...payload,
                     content: {
-                        ...payload.content,
-                        sentence: cleanSentence,
+                        sentenceWords: cleanSentence,
                         options: cleanOptions,
                         direction,
                         type: data.type,
                     },
                 };
+            } else if (data.type === 'tap_what_you_hear') {
+                const cleanSentence = ((data.content as any).sentenceWords || []).filter((w: string) => !!w);
+                cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w);
+                payload = {
+                    ...payload,
+                    content: {
+                        sentenceWords: cleanSentence,
+                        options: cleanOptions,
+                        type: data.type,
+                    },
+                };
+            } else if (data.type === 'type_what_you_hear') {
+                const cleanSentence = ((data.content as any).sentenceWords || []).filter((w: string) => !!w);
+                payload = {
+                    ...payload,
+                    content: {
+                        sentenceWords: cleanSentence,
+                        type: data.type,
+                    },
+                };
             } else if (data.type === 'fill_in_blank' || data.type === 'complete_translation') {
-                const cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w);
+                const sentenceWords = ((data.content as any).sentenceWords || []).filter((w: string) => !!w);
                 const blankIndex = (data.content as { blankIndex: number }).blankIndex;
                 payload = {
                     ...payload,
                     content: {
-                        ...payload.content,
-                        options: cleanOptions,
+                        sentenceWords,
                         blankIndex,
                         type: data.type,
                     },
                 };
             } else if (data.type === 'match_pairs') {
-                payload = {
-                    ...payload,
-                    content: {
-                        ...payload.content,
-                        type: data.type,
-                    },
-                };
-            } else if (data.type === 'tap_what_you_hear') {
                 const cleanOptions = ((data.content as any).options || []).filter((w: string) => !!w);
-                const possibleAnswers = ((data.content as any).possibleAnswers || []).filter((w: string) => !!w);
+                const matchType = (data.content as { matchType: 'audio' | 'text' }).matchType;
                 payload = {
                     ...payload,
                     content: {
-                        ...payload.content,
                         options: cleanOptions,
-                        possibleAnswers,
+                        matchType,
                         type: data.type,
                     },
                 };
-            } // else for other types, type is already set above
+            }
 
             // LOGGING FOR DEBUGGING
             console.log('Payload to be submitted:', payload);
@@ -366,10 +396,11 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                     unit: { id: 1 }, // Required field
                     language: { id: 1 }, // Required field
                     typeId: 1, // Required field
-                    sentenceWords: [],
+                    sentenceWords: data.type === 'tap_what_you_hear' ? sentenceWords : [],
                     direction: '',
                     blankIndex: null,
                     correctOption: null,
+                    options: data.type === 'tap_what_you_hear' ? sentenceWords : [],
                 });
                 toast.success('Question added successfully!');
             }
@@ -407,17 +438,12 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                                 onChange={(e) => handleOptionChange(index, e.target.value)}
                                             >
                                                 <option value="">Select a word</option>
-                                                {words
+                                                {sortWordsByEnglishTranslation(words)
                                                     .filter(word => word.image) // Only show words with images
                                                     .filter(word => {
                                                         // Don't show words that are already selected in other options
                                                         const selectedOptions = watch('content.options') || [];
                                                         return !selectedOptions.includes(word.id) || selectedOptions[index] === word.id;
-                                                    })
-                                                    .sort((a, b) => {
-                                                        const aTranslation = a.translations?.en || '';
-                                                        const bTranslation = b.translations?.en || '';
-                                                        return aTranslation.localeCompare(bTranslation);
                                                     })
                                                     .map((word) => (
                                                         <option key={word.id} value={word.id}>
@@ -454,14 +480,25 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                     className="w-full p-2 border rounded-md"
                                 >
                                     <option value="">Select correct answer</option>
-                                    {(watch('content.options') || []).map((wordId, index) => {
-                                        const word = words.find(w => String(w.id) === String(wordId));
-                                        return (
-                                            <option key={index} value={index}>
-                                                {getFirstAvailableTranslation(word)}
-                                            </option>
-                                        );
-                                    })}
+                                    {(() => {
+                                        const optionsArr = watch('content.options') || [];
+                                        return optionsArr
+                                            .map((wordId, index) => {
+                                                const word = words.find(w => String(w.id) === String(wordId));
+                                                return word ? { word, index } : null;
+                                            })
+                                            .filter(item => item !== null)
+                                            .sort((a, b) => {
+                                                const aTranslation = a?.word.translations?.en || '';
+                                                const bTranslation = b?.word.translations?.en || '';
+                                                return aTranslation.localeCompare(bTranslation);
+                                            })
+                                            .map(item => (
+                                                <option key={item?.index} value={item?.index}>
+                                                    {getFirstAvailableTranslation(item?.word)}
+                                                </option>
+                                            ));
+                                    })()}
                                 </select>
                                 {formErrors.content?.correct && (
                                     <p className="text-red-500 text-sm mt-1">{formErrors.content.correct.message}</p>
@@ -491,302 +528,94 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                 <p className="text-red-500 text-sm mt-1">{formErrors.content.direction.message}</p>
                             )}
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Build Your Sentence
-                            </label>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Click the + button to add words to your sentence. You must add at least one word.
-                            </p>
-                            {sentenceError && (
-                                <p className="text-red-500 text-sm mb-2">{sentenceError}</p>
-                            )}
-                            <div className="space-y-2">
-                                {sentenceFields.map((field, index) => (
-                                    <div key={field.id} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.sentence.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                                            defaultValue={watch('content.sentence')[index] || ''}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {sortWordsByEnglishTranslation(words).map((word) => {
-                                                const selectedOptions = watch('content.sentence') || [];
-                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                                return (
-                                                    <option
-                                                        key={word.id}
-                                                        value={word.id}
-                                                        disabled={isSelectedElsewhere}
-                                                    >
-                                                        {getFirstAvailableTranslation(word)}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => removeSentence(index)}
-                                        >
-                                            Remove
-                                        </Button>
-                                    </div>
-                                ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => appendSentence('')}
-                                >
-                                    + Add Word
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="mt-6">
-                            <label className="block text-sm font-medium mb-2">
-                                Options (6 required)
-                            </label>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Select 6 different words that will be shown as possible answers to the user.
-                            </p>
-                            <div className="space-y-2">
-                                {Array.from({ length: 5 }).map((_, index) => (
-                                    <div key={index} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.options.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => {
-                                                const currentOptions = watch('content.options') || [];
-                                                const newOptions = [...currentOptions];
-                                                newOptions[index] = e.target.value;
-                                                setValue('content.options', newOptions);
-                                            }}
-                                            value={watch('content.options')[index] || ''}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {sortWordsByEnglishTranslation(words).map((word) => {
-                                                const selectedOptions = watch('content.options') || [];
-                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                                return (
-                                                    <option
-                                                        key={word.id}
-                                                        value={word.id}
-                                                        disabled={isSelectedElsewhere}
-                                                    >
-                                                        {getFirstAvailableTranslation(word)}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <SentenceBuilder
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            error={sentenceError}
+                            syncWithOptions={true}
+                            fieldArrayName="content.sentenceWords"
+                        />
+                        <QuestionOptions
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            title="Options"
+                            description="Select up to 10 different words that will be shown as possible answers to the user."
+                            fieldArrayName="content.options"
+                        />
                     </>
                 );
 
             case 'tap_what_you_hear':
                 return (
                     <>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Build Your Sentence
-                            </label>
-                            <div className="space-y-2">
-                                {optionFields.map((field, index) => (
-                                    <div key={field.id} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.options.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                                            defaultValue={watch('content.options')[index] || ''}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {sortWordsByEnglishTranslation(words).map((word) => {
-                                                const selectedOptions = watch('content.options') || [];
-                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                                return (
-                                                    <option
-                                                        key={word.id}
-                                                        value={word.id}
-                                                        disabled={isSelectedElsewhere}
-                                                    >
-                                                        {getFirstAvailableTranslation(word)}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleRemoveOption(index)}
-                                        >
-                                            Remove
-                                        </Button>
-                                    </div>
-                                ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleAddOption}
-                                >
-                                    + Add Word
-                                </Button>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">Add as many words as needed to build the sentence.</p>
-                        </div>
-                        <div className="mt-6">
-                            <label className="block text-sm font-medium mb-2">
-                                Possible Answer Options (6 required)
-                            </label>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Select 6 different words that will be shown as possible answers to the user. Words used in the sentence are pre-selected and cannot be chosen again.
-                            </p>
-                            <div className="space-y-2">
-                                {Array.from({ length: 6 }).map((_, index) => {
-                                    const sentenceWords = watch('content.options') || [];
-                                    const possibleAnswers = watch('content.possibleAnswers') || ['', '', '', '', '', ''];
-                                    return (
-                                        <div key={index} className="flex gap-2 items-center">
-                                            <select
-                                                {...register(`content.possibleAnswers.${index}`)}
-                                                className="flex-1 p-2 border rounded-md"
-                                            >
-                                                <option value="">Select a word</option>
-                                                {sortWordsByEnglishTranslation(words).map((word) => {
-                                                    const isSelectedElsewhere = possibleAnswers.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                                    const isSentenceWord = sentenceWords.includes(word.id);
-                                                    return (
-                                                        <option
-                                                            key={word.id}
-                                                            value={word.id}
-                                                            disabled={isSelectedElsewhere || isSentenceWord}
-                                                        >
-                                                            {getFirstAvailableTranslation(word)}
-                                                        </option>
-                                                    );
-                                                })}
-                                            </select>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                        <SentenceBuilder
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            title="Build Your Sentence"
+                            description="Add as many words as needed to build the sentence."
+                            fieldArrayName="content.sentenceWords"
+                        />
+                        <QuestionOptions
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            title="Options"
+                            description="Select up to 10 different words that will be shown as possible answers to the user."
+                            fieldArrayName="content.options"
+                        />
                     </>
                 );
 
             case 'type_what_you_hear':
                 return (
-                    <>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Build Your Sentence
-                            </label>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Click the + button to add words to your sentence. You must add at least one word.
-                            </p>
-                            <div className="space-y-2">
-                                {optionFields.map((field, index) => (
-                                    <div key={field.id} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.options.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                                            defaultValue={watch('content.options')[index] || ''}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {sortWordsByEnglishTranslation(words).map((word) => {
-                                                const selectedOptions = watch('content.options') || [];
-                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                                return (
-                                                    <option
-                                                        key={word.id}
-                                                        value={word.id}
-                                                        disabled={isSelectedElsewhere}
-                                                    >
-                                                        {getFirstAvailableTranslation(word)}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleRemoveOption(index)}
-                                        >
-                                            Remove
-                                        </Button>
-                                    </div>
-                                ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleAddOption}
-                                >
-                                    + Add Word
-                                </Button>
-                            </div>
-                        </div>
-                    </>
+                    <SentenceBuilder
+                        register={register}
+                        watch={watch}
+                        setValue={setValue}
+                        control={control}
+                        words={words}
+                        sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                        getFirstAvailableTranslation={getFirstAvailableTranslation}
+                        title="Build Your Sentence"
+                        description="Click the + button to add words to your sentence. You must add at least one word."
+                        fieldArrayName="content.sentenceWords"
+                    />
                 );
 
             case 'fill_in_blank':
                 return (
                     <>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Build Your Sentence
-                            </label>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Click the + button to add words to your sentence. You must add at least one word.
-                            </p>
-                            <div className="space-y-2">
-                                {optionFields.map((field, index) => (
-                                    <div key={field.id} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.options.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                                            defaultValue={watch('content.options')[index] || ''}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {sortWordsByEnglishTranslation(words).map((word) => {
-                                                const selectedOptions = watch('content.options') || [];
-                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                                return (
-                                                    <option
-                                                        key={word.id}
-                                                        value={word.id}
-                                                        disabled={isSelectedElsewhere}
-                                                    >
-                                                        {getFirstAvailableTranslation(word)}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleRemoveOption(index)}
-                                        >
-                                            Remove
-                                        </Button>
-                                    </div>
-                                ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleAddOption}
-                                >
-                                    + Add Word
-                                </Button>
-                            </div>
-                        </div>
+                        <SentenceBuilder
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            title="Build Your Sentence"
+                            description="Click the + button to add words to your sentence. You must add at least one word."
+                            fieldArrayName="content.sentenceWords"
+                        />
 
                         <div className="mt-6">
                             <label className="block text-sm font-medium mb-2">
@@ -801,17 +630,23 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                             >
                                 <option value="">Select word to omit</option>
                                 {(() => {
-                                    const optionsArr = watch('content.options') || [];
-                                    console.log('Populating omit dropdown with options:', optionsArr);
-                                    console.log('words:', words);
-                                    return optionsArr.map((wordId, index) => {
-                                        const word = words.find(w => String(w.id) === String(wordId));
-                                        return word ? (
-                                            <option key={index} value={index}>
-                                                {getFirstAvailableTranslation(word)}
+                                    const sentenceWords = watch('content.sentenceWords') || [];
+                                    return sentenceWords
+                                        .map((wordId, index) => {
+                                            const word = words.find(w => String(w.id) === String(wordId));
+                                            return word ? { word, index } : null;
+                                        })
+                                        .filter(item => item !== null)
+                                        .sort((a, b) => {
+                                            const aTranslation = a?.word.translations?.en || '';
+                                            const bTranslation = b?.word.translations?.en || '';
+                                            return aTranslation.localeCompare(bTranslation);
+                                        })
+                                        .map(item => (
+                                            <option key={item?.index} value={item?.index}>
+                                                {getFirstAvailableTranslation(item?.word)}
                                             </option>
-                                        ) : null;
-                                    });
+                                        ));
                                 })()}
                             </select>
                         </div>
@@ -821,56 +656,18 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
             case 'complete_translation':
                 return (
                     <>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Build Your Sentence
-                            </label>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Click the + button to add words to your sentence. You must add at least one word.
-                            </p>
-                            <div className="space-y-2">
-                                {optionFields.map((field, index) => (
-                                    <div key={field.id} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.options.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                                            defaultValue={watch('content.options')[index] || ''}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {sortWordsByEnglishTranslation(words).map((word) => {
-                                                const selectedOptions = watch('content.options') || [];
-                                                const isSelectedElsewhere = selectedOptions.some((opt, i) => i !== index && String(opt) === String(word.id));
-                                                return (
-                                                    <option
-                                                        key={word.id}
-                                                        value={word.id}
-                                                        disabled={isSelectedElsewhere}
-                                                    >
-                                                        {getFirstAvailableTranslation(word)}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleRemoveOption(index)}
-                                        >
-                                            Remove
-                                        </Button>
-                                    </div>
-                                ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleAddOption}
-                                >
-                                    + Add Word
-                                </Button>
-                            </div>
-                        </div>
+                        <SentenceBuilder
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            title="Build Your Sentence"
+                            description="Click the + button to add words to your sentence. You must add at least one word."
+                            fieldArrayName="content.sentenceWords"
+                        />
 
                         <div className="mt-6">
                             <label className="block text-sm font-medium mb-2">
@@ -885,17 +682,23 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                             >
                                 <option value="">Select word to omit</option>
                                 {(() => {
-                                    const optionsArr = watch('content.options') || [];
-                                    console.log('Populating omit dropdown with options:', optionsArr);
-                                    console.log('words:', words);
-                                    return optionsArr.map((wordId, index) => {
-                                        const word = words.find(w => String(w.id) === String(wordId));
-                                        return word ? (
-                                            <option key={index} value={index}>
-                                                {getFirstAvailableTranslation(word)}
+                                    const sentenceWords = watch('content.sentenceWords') || [];
+                                    return sentenceWords
+                                        .map((wordId, index) => {
+                                            const word = words.find(w => String(w.id) === String(wordId));
+                                            return word ? { word, index } : null;
+                                        })
+                                        .filter(item => item !== null)
+                                        .sort((a, b) => {
+                                            const aTranslation = a?.word.translations?.en || '';
+                                            const bTranslation = b?.word.translations?.en || '';
+                                            return aTranslation.localeCompare(bTranslation);
+                                        })
+                                        .map(item => (
+                                            <option key={item?.index} value={item?.index}>
+                                                {getFirstAvailableTranslation(item?.word)}
                                             </option>
-                                        ) : null;
-                                    });
+                                        ));
                                 })()}
                             </select>
                         </div>
@@ -921,42 +724,18 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                 <p className="text-red-500 text-sm mt-1">{formErrors.content.matchType.message}</p>
                             )}
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">
-                                Options (5 required)
-                            </label>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Select 5 different words that will be shown as pairs to match.
-                            </p>
-                            <div className="space-y-2">
-                                {[0, 1, 2, 3, 4].map((index) => (
-                                    <div key={index} className="flex gap-2 items-center">
-                                        <select
-                                            {...register(`content.options.${index}`)}
-                                            className="flex-1 p-2 border rounded-md"
-                                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                                        >
-                                            <option value="">Select a word</option>
-                                            {words
-                                                .filter(word => {
-                                                    const selectedOptions = watch('content.options') || [];
-                                                    return !selectedOptions.includes(String(word.id)) || String(selectedOptions[index]) === String(word.id);
-                                                })
-                                                .sort((a, b) => {
-                                                    const aTranslation = a.translations?.en || '';
-                                                    const bTranslation = b.translations?.en || '';
-                                                    return aTranslation.localeCompare(bTranslation);
-                                                })
-                                                .map((word) => (
-                                                    <option key={word.id} value={word.id}>
-                                                        {getFirstAvailableTranslation(word)}
-                                                    </option>
-                                                ))}
-                                        </select>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <QuestionOptions
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            title="Options"
+                            description="Select up to 10 different words that will be shown as possible answers to the user."
+                            fieldArrayName="content.options"
+                        />
                     </>
                 );
 
@@ -967,60 +746,139 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
 
     useEffect(() => {
         if (question && words.length > 0) {
+            console.log('Question data:', question);
+            console.log('Words data:', words);
             const currentOptions = watch('content.options');
-            const newOptions = question.options || ['', '', '', ''];
-            // Only reset if options are different
-            if (
-                !currentOptions ||
-                currentOptions.length !== newOptions.length ||
-                currentOptions.some((opt, i) => opt !== newOptions[i])
-            ) {
-                const newInitial = {
-                    ...question,
-                    content: {
-                        type: question.type,
-                        options: newOptions,
-                        ...(question.type === 'select_image' && { correct: question.correctOption ?? 0 }),
-                        ...(question.type === 'translate' && {
-                            sentence: question.sentenceWords || [],
-                            direction: question.direction as 'from_english' | 'to_english' || 'from_english',
-                        }),
-                        ...(question.type === 'fill_in_blank' && { blankIndex: question.blankIndex ?? 0 }),
-                        ...(question.type === 'complete_translation' && { blankIndex: question.blankIndex ?? 0 }),
-                    },
-                };
-                reset(newInitial);
-                setValue('content.options', newInitial.content.options); // force update
-                console.log('Reset form with:', newInitial);
+            console.log('Current options before reset:', currentOptions);
+            let newOptions;
+            let newInitial: QuestionFormData;
+
+            // Handle options based on question type
+            switch (question.type) {
+                case 'select_image':
+                    newOptions = question.options || ['', '', '', ''];
+                    break;
+                case 'translate':
+                    // For translate, ensure we have all options from the question
+                    newOptions = question.options || [];
+                    console.log('Translate question - Original options:', question.options);
+                    console.log('Translate question - New options:', newOptions);
+                    break;
+                case 'fill_in_blank':
+                case 'complete_translation':
+                    newOptions = question.options || [];
+                    break;
+                case 'match_pairs':
+                    newOptions = question.options || ['', '', '', '', ''];
+                    break;
+                case 'tap_what_you_hear':
+                    newOptions = question.options || [];
+                    break;
+                case 'type_what_you_hear':
+                    newOptions = question.sentenceWords || [];
+                    break;
+                default:
+                    newOptions = question.options || [];
             }
+
+            // Create new initial state based on question type
+            switch (question.type) {
+                case 'select_image':
+                    newInitial = {
+                        type: 'select_image',
+                        content: {
+                            type: 'select_image',
+                            options: newOptions,
+                            correct: question.correctOption ?? 0
+                        }
+                    } as QuestionFormData;
+                    break;
+                case 'translate':
+                    console.log('Creating translate initial state with options:', question.options);
+                    newInitial = {
+                        type: 'translate',
+                        content: {
+                            type: 'translate',
+                            options: question.options || [], // Use the original options array
+                            sentenceWords: question.sentenceWords || [],
+                            direction: question.direction as 'from_english' | 'to_english' || 'from_english'
+                        }
+                    } as QuestionFormData;
+                    console.log('Translate initial state created:', newInitial);
+                    break;
+                case 'fill_in_blank':
+                    newInitial = {
+                        type: 'fill_in_blank',
+                        content: {
+                            type: 'fill_in_blank',
+                            sentenceWords: question.sentenceWords || [], // Use sentenceWords directly instead of options
+                            blankIndex: question.blankIndex ?? 0
+                        }
+                    } as QuestionFormData;
+                    break;
+                case 'complete_translation':
+                    newInitial = {
+                        type: 'complete_translation',
+                        content: {
+                            type: 'complete_translation',
+                            sentenceWords: question.sentenceWords || [],
+                            blankIndex: question.blankIndex ?? 0
+                        }
+                    } as QuestionFormData;
+                    break;
+                case 'match_pairs':
+                    newInitial = {
+                        type: 'match_pairs',
+                        content: {
+                            type: 'match_pairs',
+                            options: newOptions,
+                            matchType: 'text'
+                        }
+                    } as QuestionFormData;
+                    break;
+                case 'tap_what_you_hear':
+                    newInitial = {
+                        type: 'tap_what_you_hear',
+                        content: {
+                            type: 'tap_what_you_hear',
+                            options: question.options || [],
+                            sentenceWords: question.sentenceWords || []
+                        }
+                    } as QuestionFormData;
+                    break;
+                case 'type_what_you_hear':
+                    newInitial = {
+                        type: 'type_what_you_hear',
+                        content: {
+                            type: 'type_what_you_hear',
+                            sentenceWords: question.sentenceWords || []
+                        }
+                    } as QuestionFormData;
+                    break;
+                default:
+                    return;
+            }
+
+            console.log('About to reset form with:', newInitial);
+            reset(newInitial);
+
+            // Force update options for all question types except type_what_you_hear
+            if (question.type !== 'type_what_you_hear') {
+                // Ensure we're using the original options array with word IDs
+                const optionsToSet = question.options || [];
+                console.log('Setting options to:', optionsToSet);
+                setValue('content.options', optionsToSet);
+
+                // Log the state after setting options
+                setTimeout(() => {
+                    const currentOptionsAfterSet = watch('content.options');
+                    console.log('Options after setValue:', currentOptionsAfterSet);
+                }, 0);
+            }
+
+            console.log('Form reset complete');
         }
     }, [question, words, reset, setValue, watch]);
-
-    // Sync possibleAnswers with sentence for tap_what_you_hear
-    useEffect(() => {
-        if (questionType !== 'tap_what_you_hear') return;
-        const sentenceWords = watch('content.options') || [];
-        let possibleAnswers = watch('content.possibleAnswers') || ['', '', '', '', '', ''];
-        // Remove any possibleAnswers that are not in sentenceWords and not selected elsewhere
-        possibleAnswers = possibleAnswers.filter(word => !word || sentenceWords.includes(word) || !sentenceWords.includes(word));
-        // Add sentenceWords to possibleAnswers in order, filling from the start
-        let newPossibleAnswers = [...possibleAnswers];
-        sentenceWords.forEach((word) => {
-            if (word && !newPossibleAnswers.includes(word)) {
-                const emptyIndex = newPossibleAnswers.findIndex((v) => !v);
-                if (emptyIndex !== -1) {
-                    newPossibleAnswers[emptyIndex] = word;
-                }
-            }
-        });
-        // Remove any sentence word that is no longer in the sentence
-        newPossibleAnswers = newPossibleAnswers.map((w) => (w && sentenceWords.includes(w) ? w : (sentenceWords.includes(w) ? w : (possibleAnswers.includes(w) ? w : ''))));
-        // Ensure length is 6
-        while (newPossibleAnswers.length < 6) newPossibleAnswers.push('');
-        if (JSON.stringify(newPossibleAnswers) !== JSON.stringify(possibleAnswers)) {
-            setValue('content.possibleAnswers', newPossibleAnswers);
-        }
-    }, [watch('content.options'), questionType]);
 
     // Reset form when type changes
     useEffect(() => {
@@ -1044,8 +902,27 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                         content: {
                             type: 'translate',
                             options: [],
-                            sentence: [],
+                            sentenceWords: [],
                             direction: ''
+                        }
+                    };
+                    break;
+                case 'tap_what_you_hear':
+                    newDefaults = {
+                        type: 'tap_what_you_hear',
+                        content: {
+                            type: 'tap_what_you_hear',
+                            options: [],
+                            sentenceWords: []
+                        }
+                    };
+                    break;
+                case 'type_what_you_hear':
+                    newDefaults = {
+                        type: 'type_what_you_hear',
+                        content: {
+                            type: 'type_what_you_hear',
+                            sentenceWords: []
                         }
                     };
                     break;
@@ -1054,7 +931,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                         type: 'fill_in_blank',
                         content: {
                             type: 'fill_in_blank',
-                            options: [],
+                            sentenceWords: [],
                             blankIndex: 0
                         }
                     };
@@ -1064,7 +941,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                         type: 'complete_translation',
                         content: {
                             type: 'complete_translation',
-                            options: [],
+                            sentenceWords: [],
                             blankIndex: 0
                         }
                     };
@@ -1076,25 +953,6 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                             type: 'match_pairs',
                             options: ['', '', '', '', ''],
                             matchType: ''
-                        }
-                    };
-                    break;
-                case 'tap_what_you_hear':
-                    newDefaults = {
-                        type: 'tap_what_you_hear',
-                        content: {
-                            type: 'tap_what_you_hear',
-                            options: [],
-                            possibleAnswers: ['', '', '', '', '', '']
-                        }
-                    };
-                    break;
-                case 'type_what_you_hear':
-                    newDefaults = {
-                        type: 'type_what_you_hear',
-                        content: {
-                            type: 'type_what_you_hear',
-                            options: []
                         }
                     };
                     break;

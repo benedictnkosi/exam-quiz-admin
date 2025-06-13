@@ -35,29 +35,29 @@ export const questionSchema = z.object({
         }),
         z.object({
             type: z.literal('translate'),
-            sentence: z.array(z.string()).min(1, 'At least one word is required for the sentence'),
-            options: z.array(z.string()).min(0).max(6, 'Maximum 6 possible answers allowed'),
+            sentenceWords: z.array(z.string()).min(1, 'At least one word is required for the sentence'),
+            options: z.array(z.string()).min(0).max(10, 'Maximum 10 possible answers allowed'),
             direction: z.enum(['from_english', 'to_english', ''], {
                 required_error: 'Translation direction is required',
             }),
         }),
         z.object({
             type: z.literal('tap_what_you_hear'),
-            options: z.array(z.string()).min(1, 'At least one word is required'),
-            possibleAnswers: z.array(z.string()).length(6, 'Must provide exactly 6 possible answers'),
+            sentenceWords: z.array(z.string()).min(1, 'At least one word is required for the sentence'),
+            options: z.array(z.string()).min(1).max(10, 'Maximum 10 possible answers allowed'),
         }),
         z.object({
             type: z.literal('type_what_you_hear'),
-            options: z.array(z.string()).min(1, 'At least one word is required'),
+            sentenceWords: z.array(z.string()).min(1, 'At least one word is required for the sentence'),
         }),
         z.object({
             type: z.literal('fill_in_blank'),
-            options: z.array(z.string()).min(1, 'At least one word is required'),
+            sentenceWords: z.array(z.string()).min(1, 'At least one word is required'),
             blankIndex: z.number().min(0, 'Must select a word to omit'),
         }),
         z.object({
             type: z.literal('complete_translation'),
-            options: z.array(z.string()).min(1, 'At least one word is required'),
+            sentenceWords: z.array(z.string()).min(1, 'At least one word is required'),
             blankIndex: z.number().min(0, 'Must select a word to omit'),
         }),
         z.object({

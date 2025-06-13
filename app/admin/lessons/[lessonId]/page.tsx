@@ -303,7 +303,7 @@ export default function LessonDetailPage({
                         <div className="mt-2">
                             <p className="text-sm font-medium">Options:</p>
                             <ul className="list-disc list-inside text-sm text-gray-600">
-                                {question.options?.filter(option => option !== question.correctAnswer).map((option, index) => {
+                                {question.options?.map((option, index) => {
                                     const word = getWordById(option);
                                     return (
                                         <li key={index}>{word?.translations?.en || option}</li>
@@ -311,6 +311,16 @@ export default function LessonDetailPage({
                                 })}
                             </ul>
                         </div>
+                        <p className="text-sm text-gray-600 mt-2">
+                            <span className="font-medium">Correct Answer:</span> {(
+                                question.sentenceWords && question.sentenceWords.length > 0
+                                    ? question.sentenceWords.map(wordId => {
+                                        const word = getWordById(wordId);
+                                        return word?.translations?.en || wordId;
+                                    }).join(' ')
+                                    : <span className="text-gray-400">No correct answer set.</span>
+                            )}
+                        </p>
                     </>
                 );
             case 'match_pairs':
@@ -332,18 +342,18 @@ export default function LessonDetailPage({
                 return (
                     <>
                         <div className="mt-2">
-                            <p className="text-sm font-medium">Options:</p>
+                            <p className="text-sm font-medium">Sentence Words:</p>
                             <ul className="list-disc list-inside text-sm text-gray-600">
-                                {question.options?.map((option, index) => {
-                                    const word = getWordById(option);
+                                {question.sentenceWords?.map((wordId, index) => {
+                                    const word = getWordById(wordId);
                                     return (
-                                        <li key={index}>{word?.translations?.en || option}</li>
+                                        <li key={index}>{word?.translations?.en || wordId}</li>
                                     );
                                 })}
                             </ul>
                         </div>
                         <p className="text-sm text-gray-600 mt-2">
-                            Blank Word: {getWordById(question.options?.[question.blankIndex ?? -1] || '')?.translations?.en || question.options?.[question.blankIndex ?? -1]}
+                            Blank Word: {getWordById(question.sentenceWords?.[question.blankIndex ?? -1] || '')?.translations?.en || question.sentenceWords?.[question.blankIndex ?? -1]}
                         </p>
                     </>
                 );
@@ -351,18 +361,21 @@ export default function LessonDetailPage({
                 return (
                     <>
                         <div className="mt-2">
-                            <p className="text-sm font-medium">Options:</p>
+                            <p className="text-sm font-medium">Sentence:</p>
                             <ul className="list-disc list-inside text-sm text-gray-600">
-                                {question.options?.map((option, index) => {
-                                    const word = getWordById(option);
+                                {question.sentenceWords?.map((wordId, index) => {
+                                    const word = getWordById(wordId);
+                                    const isBlank = index === question.blankIndex;
                                     return (
-                                        <li key={index}>{word?.translations?.en || option}</li>
+                                        <li key={index}>
+                                            {isBlank ? '_____' : (word?.translations?.en || wordId)}
+                                        </li>
                                     );
                                 })}
                             </ul>
                         </div>
                         <p className="text-sm text-gray-600 mt-2">
-                            Blank Word: {getWordById(question.options?.[question.blankIndex ?? -1] || '')?.translations?.en || question.options?.[question.blankIndex ?? -1]}
+                            <span className="font-medium">Blank Word:</span> {getWordById(question.sentenceWords?.[question.blankIndex ?? -1] || '')?.translations?.en || question.sentenceWords?.[question.blankIndex ?? -1]}
                         </p>
                     </>
                 );
@@ -430,7 +443,7 @@ export default function LessonDetailPage({
             </div>
 
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Questions</h2>
+                <h2 className="text-xl font-semibold">Questions ({questions.length})</h2>
                 <Button onClick={() => setIsQuestionModalOpen(true)}>Add New Question</Button>
             </div>
 
