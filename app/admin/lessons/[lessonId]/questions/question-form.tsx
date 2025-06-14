@@ -27,6 +27,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from '@/contexts/AuthContext';
 
 const QUESTION_TYPES = [
     'select_image',
@@ -103,6 +104,7 @@ const sortWordsByEnglishTranslation = (words: Word[]): Word[] => {
 
 export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProps) {
     const router = useRouter();
+    const { user } = useAuth();
     const [words, setWords] = useState<Word[]>([]);
     const [selectedImages, setSelectedImages] = useState<string[]>(() => {
         if (question?.type === 'select_image') {
@@ -395,7 +397,10 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                 }
                 // For updates, we don't need to send the order
                 const { order, ...updatePayload } = payload;
-                await updateQuestion(lessonId, question.id, updatePayload);
+                await updateQuestion(lessonId, question.id, {
+                    ...updatePayload,
+                    capturerId: user?.uid || ''
+                });
                 toast.success('Question updated successfully!');
             } else {
                 // For new questions, we include the order and required fields
@@ -414,6 +419,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                     blankIndex: null,
                     correctOption: null,
                     options: data.type === 'tap_what_you_hear' ? sentenceWords : [],
+                    capturerId: user?.uid || ''
                 });
                 toast.success('Question added successfully!');
             }

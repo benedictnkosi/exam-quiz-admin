@@ -13,6 +13,7 @@ export interface LanguageQuestion {
     correctAnswer?: string;
     explanation?: string;
     difficultyLevel?: number;
+    capturerId?: string;
     questionType?: {
         id: number;
     };
@@ -242,7 +243,7 @@ export async function deleteLesson(id: string | number) {
     return await response.json();
 }
 
-export async function createLanguageQuestion(data: Omit<LanguageQuestion, 'id'>): Promise<LanguageQuestion> {
+export async function createLanguageQuestion(data: Omit<LanguageQuestion, 'id'> & { capturerId: string }): Promise<LanguageQuestion> {
     const response = await fetch(`${API_HOST}/api/language-questions`, {
         method: 'POST',
         headers: {
@@ -330,7 +331,7 @@ export async function getQuestionsForLesson(lessonId: string): Promise<LanguageQ
     return response.json();
 }
 
-export async function addQuestionToLesson(lessonId: string, question: Omit<LanguageQuestion, 'id'>): Promise<LanguageQuestion> {
+export async function addQuestionToLesson(lessonId: string, question: Omit<LanguageQuestion, 'id'> & { capturerId: string }): Promise<LanguageQuestion> {
     const response = await fetch(`${API_HOST}/api/language-questions`, {
         method: 'POST',
         headers: {
@@ -349,7 +350,7 @@ export async function addQuestionToLesson(lessonId: string, question: Omit<Langu
     return response.json();
 }
 
-export async function updateQuestion(lessonId: string, questionId: string, question: Partial<LanguageQuestion>): Promise<LanguageQuestion> {
+export async function updateQuestion(lessonId: string, questionId: string, question: Partial<LanguageQuestion> & { capturerId: string }): Promise<LanguageQuestion> {
     const response = await fetch(`${API_HOST}/api/language-questions/${questionId}`, {
         method: 'PUT',
         headers: {
