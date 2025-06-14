@@ -11,10 +11,22 @@ import {
     updateQuestion,
     getWords,
     getQuestionsForLesson,
+    deleteLanguageQuestion,
 } from '@/lib/api-helpers';
 import { useEffect, useState } from 'react';
 import { QuestionOptions } from '../../../../components/ui/question-options';
 import { SentenceBuilder } from '../../../../components/ui/sentence-builder';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const QUESTION_TYPES = [
     'select_image',
@@ -103,6 +115,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
     });
     const [sentenceError, setSentenceError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const {
         register,
@@ -416,32 +429,54 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
         }
     };
 
+    const handleDelete = async () => {
+        if (!question?.id) return;
+
+        try {
+            setIsDeleting(true);
+            const response = await deleteLanguageQuestion(question.id);
+            if (response.success) {
+                toast.success(response.message || 'Question deleted successfully');
+                onSuccess?.();
+                if (!onSuccess) {
+                    router.push(`/admin/lessons/${lessonId}`);
+                }
+            } else {
+                toast.error(response.message || 'Failed to delete question');
+            }
+        } catch (error) {
+            console.error('Error deleting question:', error);
+            toast.error('Failed to delete question');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const renderQuestionFields = () => {
         switch (questionType) {
             case 'select_image':
                 return (
                     <>
-                        <div className="space-y-4">
+                        <div className="space-y-3 md:space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium mb-1 md:mb-2">
                                     Word Options (4 required)
                                 </label>
-                                <p className="text-sm text-gray-500 mb-4">
+                                <p className="text-sm text-gray-500 mb-2 md:mb-4">
                                     Select 4 different words with images. The selected words will be shown to the user as options.
                                 </p>
                                 {[0, 1, 2, 3].map((index) => (
-                                    <div key={index} className="space-y-2 mb-4">
-                                        <div className="flex gap-2 items-center">
+                                    <div key={index} className="space-y-2 mb-3 md:mb-4">
+                                        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                                             <select
                                                 {...register(`content.options.${index}`)}
-                                                className="flex-1 p-2 border rounded-md"
+                                                className="flex-1 p-2 border rounded-md text-base w-full"
                                                 onChange={(e) => handleOptionChange(index, e.target.value)}
                                             >
                                                 <option value="">Select a word</option>
                                                 {sortWordsByEnglishTranslation(words)
-                                                    .filter(word => word.image) // Only show words with images
+                                                    .filter(word => word.image)
                                                     .filter(word => {
-                                                        // Don't show words that are already selected in other options
                                                         const selectedOptions = watch('content.options') || [];
                                                         return !selectedOptions.includes(word.id) || selectedOptions[index] === word.id;
                                                     })
@@ -452,7 +487,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                                     ))}
                                             </select>
                                             {selectedImages[index] && (
-                                                <div className="w-16 h-16 flex-shrink-0">
+                                                <div className="w-16 h-16 flex-shrink-0 mt-2 sm:mt-0">
                                                     <img
                                                         src={selectedImages[index]}
                                                         alt="Selected word"
@@ -469,7 +504,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium mb-1 md:mb-2">
                                     Correct Answer
                                 </label>
                                 <p className="text-sm text-gray-500 mb-2">
@@ -477,7 +512,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                 </p>
                                 <select
                                     {...register('content.correct', { valueAsNumber: true })}
-                                    className="w-full p-2 border rounded-md"
+                                    className="w-full p-2 border rounded-md text-base"
                                 >
                                     <option value="">Select correct answer</option>
                                     {(() => {
@@ -512,12 +547,12 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                 return (
                     <>
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-1 md:mb-2">
                                 Translation Direction
                             </label>
                             <select
                                 {...register('content.direction', { required: 'Please select a translation direction' })}
-                                className="w-full p-2 border rounded-md mb-6"
+                                className="w-full p-2 border rounded-md text-base mb-4 md:mb-6"
                                 defaultValue=""
                             >
                                 <option value="">Please select direction</option>
@@ -528,30 +563,32 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                                 <p className="text-red-500 text-sm mt-1">{formErrors.content.direction.message}</p>
                             )}
                         </div>
-                        <SentenceBuilder
-                            register={register}
-                            watch={watch}
-                            setValue={setValue}
-                            control={control}
-                            words={words}
-                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
-                            getFirstAvailableTranslation={getFirstAvailableTranslation}
-                            error={sentenceError}
-                            syncWithOptions={true}
-                            fieldArrayName="content.sentenceWords"
-                        />
-                        <QuestionOptions
-                            register={register}
-                            watch={watch}
-                            setValue={setValue}
-                            control={control}
-                            words={words}
-                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
-                            getFirstAvailableTranslation={getFirstAvailableTranslation}
-                            title="Options"
-                            description="Select up to 10 different words that will be shown as possible answers to the user."
-                            fieldArrayName="content.options"
-                        />
+                        <div className="space-y-4 md:space-y-6">
+                            <SentenceBuilder
+                                register={register}
+                                watch={watch}
+                                setValue={setValue}
+                                control={control}
+                                words={words}
+                                sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                                getFirstAvailableTranslation={getFirstAvailableTranslation}
+                                error={sentenceError}
+                                syncWithOptions={true}
+                                fieldArrayName="content.sentenceWords"
+                            />
+                            <QuestionOptions
+                                register={register}
+                                watch={watch}
+                                setValue={setValue}
+                                control={control}
+                                words={words}
+                                sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                                getFirstAvailableTranslation={getFirstAvailableTranslation}
+                                title="Options"
+                                description="Select up to 10 different words that will be shown as possible answers to the user."
+                                fieldArrayName="content.options"
+                            />
+                        </div>
                     </>
                 );
 
@@ -970,14 +1007,14 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6 p-2 md:p-4">
             <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-1 md:mb-2">
                     Question Type
                 </label>
                 <select
                     {...register('type')}
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 border rounded-md text-base"
                 >
                     {QUESTION_TYPES.map((type) => (
                         <option key={type} value={type}>
@@ -992,113 +1029,48 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
 
             {renderQuestionFields()}
 
-            <div className="flex justify-end space-x-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4 md:mt-6">
+                {question && (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                disabled={isDeleting}
+                                className="w-full sm:w-auto"
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete Question'}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the question.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDelete}>
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
                 <Button
                     type="button"
                     variant="outline"
                     onClick={() => onSuccess?.()}
+                    className="w-full sm:w-auto"
                 >
                     Cancel
                 </Button>
-                {question && (
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                            // Create a copy of the current question data without the ID
-                            const questionData = { ...question };
-                            delete questionData.id;
-
-                            // Ensure we have a valid question type
-                            if (!questionData.type) return;
-
-                            // Reset the form with the copied data
-                            let newFormData: QuestionFormData;
-
-                            switch (questionData.type) {
-                                case 'select_image':
-                                    newFormData = {
-                                        type: 'select_image',
-                                        content: {
-                                            type: 'select_image',
-                                            options: questionData.options || [],
-                                            correct: questionData.correctOption ?? 0
-                                        }
-                                    };
-                                    break;
-                                case 'translate':
-                                    newFormData = {
-                                        type: 'translate',
-                                        content: {
-                                            type: 'translate',
-                                            options: questionData.options || [],
-                                            sentenceWords: questionData.sentenceWords || [],
-                                            direction: questionData.direction as 'from_english' | 'to_english' || 'from_english'
-                                        }
-                                    };
-                                    break;
-                                case 'tap_what_you_hear':
-                                    newFormData = {
-                                        type: 'tap_what_you_hear',
-                                        content: {
-                                            type: 'tap_what_you_hear',
-                                            options: questionData.options || [],
-                                            sentenceWords: questionData.sentenceWords || []
-                                        }
-                                    };
-                                    break;
-                                case 'type_what_you_hear':
-                                    newFormData = {
-                                        type: 'type_what_you_hear',
-                                        content: {
-                                            type: 'type_what_you_hear',
-                                            sentenceWords: questionData.sentenceWords || []
-                                        }
-                                    };
-                                    break;
-                                case 'fill_in_blank':
-                                    newFormData = {
-                                        type: 'fill_in_blank',
-                                        content: {
-                                            type: 'fill_in_blank',
-                                            sentenceWords: questionData.options || [],
-                                            blankIndex: questionData.blankIndex ?? 0
-                                        }
-                                    };
-                                    break;
-                                case 'complete_translation':
-                                    newFormData = {
-                                        type: 'complete_translation',
-                                        content: {
-                                            type: 'complete_translation',
-                                            sentenceWords: questionData.options || [],
-                                            blankIndex: questionData.blankIndex ?? 0
-                                        }
-                                    };
-                                    break;
-                                case 'match_pairs':
-                                    newFormData = {
-                                        type: 'match_pairs',
-                                        content: {
-                                            type: 'match_pairs',
-                                            options: questionData.options || [],
-                                            matchType: 'text'
-                                        }
-                                    };
-                                    break;
-                                default:
-                                    return;
-                            }
-
-                            reset(newFormData);
-                            // Clear the question prop to treat it as a new question
-                            question = null;
-                        }}
-                    >
-                        Save as New
-                    </Button>
-                )}
-                <Button type="submit" disabled={formIsSubmitting || !isFormValid}>
+                <Button
+                    type="submit"
+                    disabled={formIsSubmitting || !isFormValid}
+                    className="w-full sm:w-auto"
+                >
                     {formIsSubmitting
                         ? question
                             ? 'Updating...'

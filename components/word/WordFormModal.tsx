@@ -297,16 +297,16 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
-                    <DialogTitle>{isEditing ? "Edit Word" : "Create Word"}</DialogTitle>
+                    <DialogTitle className="text-xl sm:text-2xl">{isEditing ? "Edit Word" : "Create Word"}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {wordGroups.length > 0 && (
                         <div className="w-full mb-4">
                             <label className="block text-sm font-medium mb-2">Word Group</label>
                             <select
-                                className="w-full p-2 border rounded-md"
+                                className="w-full p-2 border rounded-md text-base"
                                 value={form.groupId}
                                 onChange={(e) => handleGroupChange(Number(e.target.value))}
                             >
@@ -320,9 +320,9 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                         </div>
                     )}
                     <div className="w-full mb-4">
-                        <div className="flex flex-wrap gap-2 items-center w-full">
+                        <div className="flex flex-col gap-3 w-full">
                             <select
-                                className="p-2 border rounded-md min-w-[160px] h-10 flex-shrink-0"
+                                className="w-full p-2 border rounded-md text-base h-12"
                                 value={selectedLang}
                                 onChange={(e) => {
                                     console.log("Select onChange triggered");
@@ -338,63 +338,84 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                             </select>
                             <input
                                 type="text"
-                                className="p-2 border rounded-md flex-1 h-10 min-w-[120px]"
+                                className="w-full p-2 border rounded-md text-base h-12"
                                 placeholder="Translation"
                                 value={translationInput}
                                 onChange={e => setTranslationInput(e.target.value)}
                             />
-                            <div className="flex flex-col sm:flex-row gap-2 flex-1 items-center">
+                            <div className="flex flex-col gap-2">
                                 {selectedLang && selectedLang !== 'en' && (
-                                    <Button
-                                        type="button"
-                                        onClick={() => setIsRecordingModalOpen(true)}
-                                        className="h-10 px-4 whitespace-nowrap bg-blue-500 hover:bg-blue-600 text-white font-semibold d-block"
-                                        variant="secondary"
-                                    >
-                                        🎤 Record Audio
-                                    </Button>
+                                    <>
+                                        <Button
+                                            type="button"
+                                            onClick={() => setIsRecordingModalOpen(true)}
+                                            className="w-full h-12 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
+                                            variant="secondary"
+                                            disabled={!translationInput.trim()}
+                                        >
+                                            🎤 Record Audio
+                                        </Button>
+                                        {recordedAudioFileName && (
+                                            <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                                                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <span className="text-sm text-green-700">Audio recorded and ready to be added</span>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
+                                {selectedLang && selectedLang !== 'en' && !recordedAudioFileName && (
+                                    <span className="text-sm text-red-500">* Audio recording required</span>
+                                )}
+                                <Button
+                                    type="button"
+                                    className="w-full h-12"
+                                    onClick={handleAddTranslation}
+                                    disabled={isAddingTranslation || (selectedLang !== 'en' && !recordedAudioFileName)}
+                                >
+                                    {isAddingTranslation ? 'Adding...' : 'Add Translation'}
+                                </Button>
                             </div>
-                            {selectedLang && selectedLang !== 'en' && (
-                                <span className="text-sm text-red-500">* Required</span>
-                            )}
-                            <Button type="button" className="h-10 px-4" onClick={handleAddTranslation}
-                                disabled={isAddingTranslation || (selectedLang !== 'en' && !recordedAudioFileName)}
-                            >
-                                {isAddingTranslation ? 'Adding...' : 'Add Translation'}
-                            </Button>
                         </div>
                     </div>
                     <div>
                         {Object.keys(form.translations).length > 0 && (
                             <div className="mb-2">
-                                <div className="font-medium mb-1">Added Translations:</div>
-                                <div className="space-y-2">
+                                <div className="font-medium mb-2 text-lg">Added Translations:</div>
+                                <div className="space-y-4">
                                     {Object.entries(form.translations).map(([lang, translation], idx, arr) => (
                                         <React.Fragment key={lang}>
                                             <div className="mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-medium">{LANGUAGE_LABELS[lang] || lang.toUpperCase()}:</span>
-                                                    <span>{translation}</span>
+                                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium">{LANGUAGE_LABELS[lang] || lang.toUpperCase()}:</span>
+                                                        <span className="break-words">{translation}</span>
+                                                    </div>
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => handleRemoveTranslation(lang)}
+                                                        className="self-start sm:self-center"
                                                     >
                                                         Remove
                                                     </Button>
                                                 </div>
                                                 {form.audio && form.audio[lang] && (
-                                                    <div className="mt-1">
-                                                        <audio controls src={`${API_HOST}/api/word/audio/get/${form.audio[lang]}`} style={{ height: 28 }}>
+                                                    <div className="mt-2">
+                                                        <audio
+                                                            controls
+                                                            src={`${API_HOST}/api/word/audio/get/${form.audio[lang]}`}
+                                                            className="w-full"
+                                                        >
                                                             Your browser does not support the audio element.
                                                         </audio>
                                                     </div>
                                                 )}
                                             </div>
                                             {idx < arr.length - 1 && (
-                                                <hr className="my-6 border-t-2 border-gray-200" />
+                                                <hr className="my-4 border-t-2 border-gray-200" />
                                             )}
                                         </React.Fragment>
                                     ))}
@@ -404,17 +425,18 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                     </div>
                     <div className="space-y-2">
                         <label className="block text-sm font-medium">Image</label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="file"
                                 accept="image/*"
                                 onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-                                className="flex-1 p-2 border rounded-md"
+                                className="w-full p-2 border rounded-md text-base"
                             />
                             <Button
                                 type="button"
                                 onClick={handleImageUpload}
                                 disabled={!selectedFile || isUploading || !form.id}
+                                className="w-full sm:w-auto h-12"
                             >
                                 {isUploading ? "Uploading..." : "Upload"}
                             </Button>
@@ -424,7 +446,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                                 <img
                                     src={`${API_HOST}/api/word/image/get/${form.image}`}
                                     alt="Word image"
-                                    className="w-12 h-12 object-cover rounded-md"
+                                    className="w-16 h-16 object-cover rounded-md"
                                 />
                                 <div className="text-green-600 font-medium mt-1 flex items-center gap-1">
                                     <svg className="w-4 h-4 inline-block" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -433,9 +455,9 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
                             </div>
                         )}
                     </div>
-                    <DialogFooter className="flex gap-4 mt-4">
-                        <Button type="submit">{isEditing ? "Update" : "Create"} Word</Button>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-6">
+                        <Button type="submit" className="w-full sm:w-auto h-12">{isEditing ? "Update" : "Create"} Word</Button>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-12">
                             Cancel
                         </Button>
                     </DialogFooter>

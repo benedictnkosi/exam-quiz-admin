@@ -96,10 +96,10 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                 console.log('Form submit event triggered');
                 handleSubmit(onSubmit)(e);
             }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
         >
             <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-1 sm:mb-2">
                     Title
                     <span className="text-gray-500 text-xs ml-1">(3-100 characters)</span>
                 </label>
@@ -109,7 +109,7 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                             console.log('Title input changed:', e.target.value);
                         }
                     })}
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 sm:p-3 border rounded-md text-base"
                     placeholder="e.g., Basic Greetings - Part 1"
                     minLength={3}
                     maxLength={100}
@@ -119,10 +119,11 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                 )}
             </div>
 
-            <div className="flex justify-end space-x-4">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
                 <Button
                     type="button"
                     variant="outline"
+                    className="w-full sm:w-auto"
                     onClick={() => {
                         console.log('Cancel button clicked');
                         onOpenChange?.(false);
@@ -133,6 +134,7 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                 <Button
                     type="submit"
                     disabled={isSubmitting}
+                    className="w-full sm:w-auto"
                     onClick={() => {
                         console.log('Submit button clicked, isSubmitting:', isSubmitting);
                         console.log('Current form errors:', errors);
@@ -156,9 +158,9 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                 <DialogTrigger asChild>
                     {trigger}
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="w-[95vw] sm:w-[500px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="text-xl sm:text-2xl">
                             {initialData ? 'Edit Lesson' : 'Create New Lesson'}
                         </DialogTitle>
                     </DialogHeader>

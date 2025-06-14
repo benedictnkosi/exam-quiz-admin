@@ -409,18 +409,18 @@ export default function LessonDetailPage({
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <div className="flex justify-between items-center mb-8">
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">{lesson.title}</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">{lesson.title}</h1>
                     <p className="text-gray-600">Order: {lesson.order}</p>
                 </div>
-                <div className="flex gap-2">
-                    <Link href="/admin/units">
-                        <Button variant="outline">Home</Button>
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <Link href="/admin/units" className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full sm:w-auto">Home</Button>
                     </Link>
-                    <Link href="/admin/words">
-                        <Button variant="outline">Manage Words</Button>
+                    <Link href="/admin/words" className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full sm:w-auto">Manage Words</Button>
                     </Link>
                     <LessonForm
                         initialData={lesson ? {
@@ -436,37 +436,44 @@ export default function LessonDetailPage({
                             fetchData();
                             toast.success('Lesson updated successfully');
                         }}
-                        trigger={<Button variant="outline">Edit Lesson</Button>}
+                        trigger={<Button variant="outline" className="flex-1 sm:flex-none w-full sm:w-auto">Edit Lesson</Button>}
                     />
-                    <Button onClick={() => setIsWordModalOpen(true)}>Quick Add Word</Button>
+                    <Button onClick={() => setIsWordModalOpen(true)} className="flex-1 sm:flex-none w-full sm:w-auto">Quick Add Word</Button>
                 </div>
             </div>
 
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h2 className="text-xl font-semibold">Questions ({questions.length})</h2>
-                <Button onClick={() => setIsQuestionModalOpen(true)}>Add New Question</Button>
+                <Button onClick={() => setIsQuestionModalOpen(true)} className="w-full sm:w-auto">Add New Question</Button>
             </div>
 
             <div className="grid gap-4">
                 {questions.map((question) => (
                     <div
                         key={question.id}
-                        className="p-4 bg-white rounded-lg shadow-sm border border-gray-200"
+                        className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => {
+                            setEditingQuestion(question as FormQuestion);
+                            setIsQuestionModalOpen(true);
+                        }}
                     >
-                        <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex-1 w-full">
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
                                     <h3 className="font-medium">
                                         {question.type.split('_').map(word =>
                                             word.charAt(0).toUpperCase() + word.slice(1)
                                         ).join(' ')}
                                     </h3>
                                     <span className="text-sm text-gray-500">(Order: {question.order})</span>
-                                    <div className="flex gap-1 ml-2">
+                                    <div className="flex gap-1">
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleOrderChange(question.id, 'up')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOrderChange(question.id, 'up');
+                                            }}
                                             disabled={question.order === 0}
                                         >
                                             <ArrowUp className="h-4 w-4" />
@@ -474,7 +481,10 @@ export default function LessonDetailPage({
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleOrderChange(question.id, 'down')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOrderChange(question.id, 'down');
+                                            }}
                                             disabled={question.order === questions.length - 1}
                                         >
                                             <ArrowDown className="h-4 w-4" />
@@ -483,16 +493,6 @@ export default function LessonDetailPage({
                                 </div>
                                 {renderQuestionContent(question)}
                             </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                    setEditingQuestion(question as FormQuestion);
-                                    setIsQuestionModalOpen(true);
-                                }}
-                            >
-                                Edit Question
-                            </Button>
                         </div>
                     </div>
                 ))}
@@ -518,7 +518,7 @@ export default function LessonDetailPage({
                     }
                 }}
             >
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                     <DialogHeader>
                         <DialogTitle>{editingQuestion ? 'Edit Question' : 'Add New Question'}</DialogTitle>
                     </DialogHeader>

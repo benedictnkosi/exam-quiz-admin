@@ -126,16 +126,16 @@ export function UnitForm({ onSuccess }: UnitFormProps) {
             <DialogTrigger asChild>
                 <Button>Create New Unit</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] w-[95vw] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Create New Unit</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-2">Title</label>
                         <input
                             {...register('title')}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-3 border rounded-md text-base"
                             placeholder="e.g., Basic Greetings"
                         />
                         {errors.title && (
@@ -147,7 +147,7 @@ export function UnitForm({ onSuccess }: UnitFormProps) {
                         <label className="block text-sm font-medium mb-2">Description</label>
                         <textarea
                             {...register('description')}
-                            className="w-full p-2 border rounded-md"
+                            className="w-full p-3 border rounded-md text-base"
                             placeholder="Enter a description for this unit"
                             rows={3}
                         />
@@ -160,16 +160,16 @@ export function UnitForm({ onSuccess }: UnitFormProps) {
                         <label className="block text-sm font-medium mb-2">
                             Available Languages
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {LANGUAGE_OPTIONS.map((lang) => (
-                                <label key={lang} className="flex items-center space-x-2">
+                                <label key={lang} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-md">
                                     <input
                                         type="checkbox"
                                         value={lang}
                                         {...register('availableLanguages')}
-                                        className="rounded"
+                                        className="rounded h-5 w-5"
                                     />
-                                    <span>{LANGUAGE_NAMES[lang]}</span>
+                                    <span className="text-base">{LANGUAGE_NAMES[lang]}</span>
                                 </label>
                             ))}
                         </div>
@@ -180,15 +180,16 @@ export function UnitForm({ onSuccess }: UnitFormProps) {
                         )}
                     </div>
 
-                    <div className="flex justify-end space-x-4">
+                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => setOpen(false)}
+                            className="w-full sm:w-auto"
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                             {isSubmitting ? 'Creating...' : 'Create Unit'}
                         </Button>
                     </div>

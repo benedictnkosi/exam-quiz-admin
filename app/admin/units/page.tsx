@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { X, ArrowUp, ArrowDown, Trash2, ArrowLeft } from 'lucide-react';
 import { UnitForm } from './new/unit-form';
 import { API_HOST } from '@/config/constants';
 
@@ -212,32 +212,43 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Language Learning Admin</h1>
-                <div className="flex gap-2">
-                    <Link href="/admin/words">
-                        <Button variant="secondary">Manage Words</Button>
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div className="flex items-center gap-4">
+                    <Link href="/admin">
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="h-5 w-5" />
+                        </Button>
+                    </Link>
+                    <h1 className="text-2xl sm:text-3xl font-bold">Language Learning Admin</h1>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Link href="/admin/words" className="w-full sm:w-auto">
+                        <Button variant="secondary" className="w-full sm:w-auto">Manage Words</Button>
                     </Link>
                     <UnitForm onSuccess={fetchUnits} />
                 </div>
             </div>
 
-            <div className="grid gap-6">
+            <div className="grid gap-4 sm:gap-6">
                 {units.map((unit) => (
                     <div
                         key={unit.id}
-                        className="p-6 bg-white rounded-lg shadow-sm border border-gray-200"
+                        className="p-4 sm:p-6 bg-white rounded-lg shadow-sm border border-gray-200 relative group cursor-pointer"
+                        onClick={() => window.location.href = `/admin/units/${unit.id}`}
                     >
-                        <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <h2 className="text-xl font-semibold">{unit.title}</h2>
-                                    <div className="flex gap-1 ml-2">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex-1 w-full">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                                    <h2 className="text-lg sm:text-xl font-semibold">{unit.title}</h2>
+                                    <div className="flex gap-1">
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleOrderChange(unit.id, 'up')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOrderChange(unit.id, 'up');
+                                            }}
                                             disabled={unit.order === 0}
                                         >
                                             <ArrowUp className="h-4 w-4" />
@@ -245,7 +256,10 @@ export default function AdminDashboard() {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleOrderChange(unit.id, 'down')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOrderChange(unit.id, 'down');
+                                            }}
                                             disabled={unit.order === units.length - 1}
                                         >
                                             <ArrowDown className="h-4 w-4" />
@@ -254,7 +268,7 @@ export default function AdminDashboard() {
                                 </div>
                                 <p className="text-gray-600 mb-4">{unit.description}</p>
                                 <div className="space-y-4">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                                         <Select
                                             value={selectedLanguages[unit.id] || ''}
                                             onValueChange={(value) => {
@@ -265,7 +279,7 @@ export default function AdminDashboard() {
                                                 handleAddLanguage(unit.id, value);
                                             }}
                                         >
-                                            <SelectTrigger className="w-[200px]">
+                                            <SelectTrigger className="w-full sm:w-[200px]">
                                                 <SelectValue placeholder="Add language" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -286,10 +300,14 @@ export default function AdminDashboard() {
                                                 <div
                                                     key={lang}
                                                     className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
+                                                    onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <span>{languageInfo?.name || lang}</span>
                                                     <button
-                                                        onClick={() => handleRemoveLanguage(unit.id, lang)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveLanguage(unit.id, lang);
+                                                        }}
                                                         className="text-gray-500 hover:text-gray-700"
                                                     >
                                                         <X className="h-4 w-4" />
@@ -300,18 +318,18 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex gap-2">
-                                <Link href={`/admin/units/${unit.id}`}>
-                                    <Button variant="outline">Edit Unit</Button>
-                                </Link>
-                                <Button
-                                    variant="destructive"
-                                    onClick={() => handleDeleteUnit(unit.id)}
-                                    disabled={isDeleting[unit.id]}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteUnit(unit.id);
+                                }}
+                                disabled={isDeleting[unit.id]}
+                                className="absolute top-4 right-4"
+                            >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
                         </div>
                     </div>
                 ))}

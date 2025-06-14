@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft, Trash2 } from 'lucide-react';
 import { getLessonsByUnitId } from '@/lib/api-helpers';
 import { LessonForm } from '@/app/admin/lessons/lesson-form';
 import { API_BASE_URL, API_HOST } from '@/config/constants';
@@ -190,63 +190,80 @@ export default function UnitDetailPage({
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <div className="flex flex-col gap-2 mb-8">
-                <h1 className="text-3xl font-bold">{unitName ? unitName : 'Unit'}</h1>
-                <div className="flex justify-between items-center">
+        <div className="container mx-auto py-4 px-4 sm:py-8">
+            <div className="flex flex-col gap-2 mb-6 sm:mb-8">
+                <div className="flex items-center gap-4">
+                    <Link href="/admin/units">
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="h-5 w-5" />
+                        </Button>
+                    </Link>
+                    <h1 className="text-2xl sm:text-3xl font-bold">{unitName ? unitName : 'Unit'}</h1>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                     <span className="text-xl font-semibold">Unit Lessons</span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <LessonForm
                             unitId={unitId}
-                            trigger={<Button onClick={() => setIsLessonModalOpen(true)}>Add New Lesson</Button>}
+                            trigger={<Button onClick={() => setIsLessonModalOpen(true)} className="w-full sm:w-auto">Add New Lesson</Button>}
                             open={isLessonModalOpen}
                             onOpenChange={setIsLessonModalOpen}
                             onLessonAdded={onLessonAdded}
                         />
                         <Button
-                            variant="destructive"
+                            variant="ghost"
+                            size="icon"
                             onClick={handleDeleteUnit}
                             disabled={isDeleting}
-                            className="text-white"
+                            className="text-red-500"
                         >
-                            {isDeleting ? 'Deleting...' : 'Delete Unit'}
+                            <Trash2 className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
             </div>
 
-            <div className="grid gap-6">
+            <div className="grid gap-4 sm:gap-6">
                 {lessons.map((lesson) => (
                     <div
                         key={lesson.id}
-                        className="p-6 bg-white rounded-lg shadow-sm border border-gray-200"
+                        className="p-4 sm:p-6 bg-white rounded-lg shadow-sm border border-gray-200 relative group cursor-pointer"
+                        onClick={() => window.location.href = `/admin/lessons/${lesson.id}`}
                     >
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <h2 className="text-xl font-semibold">{lesson.title}</h2>
-                                    <span className="text-sm text-gray-500">(Order: {lesson.lessonOrder})</span>
-                                    <div className="flex gap-1 ml-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleOrderChange(lesson.id, 'up')}
-                                            disabled={lesson.lessonOrder === 0}
-                                        >
-                                            <ArrowUp className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleOrderChange(lesson.id, 'down')}
-                                            disabled={lesson.lessonOrder === lessons.length - 1}
-                                        >
-                                            <ArrowDown className="h-4 w-4" />
-                                        </Button>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                            <div className="w-full">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                                    <h2 className="text-lg sm:text-xl font-semibold">{lesson.title}</h2>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-500">(Order: {lesson.lessonOrder})</span>
+                                        <div className="flex gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOrderChange(lesson.id, 'up');
+                                                }}
+                                                disabled={lesson.lessonOrder === 0}
+                                            >
+                                                <ArrowUp className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOrderChange(lesson.id, 'down');
+                                                }}
+                                                disabled={lesson.lessonOrder === lessons.length - 1}
+                                            >
+                                                <ArrowDown className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                                 <p className="text-gray-600 mb-4">{lesson.description}</p>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     {lesson.wordIds?.map((wordId: string) => (
                                         <span
                                             key={wordId}
@@ -257,20 +274,18 @@ export default function UnitDetailPage({
                                     ))}
                                 </div>
                             </div>
-                            <div className="flex gap-2 items-center">
-                                <Link href={`/admin/lessons/${lesson.id}`}>
-                                    <Button variant="outline" size="sm">Edit Lesson</Button>
-                                </Link>
-                                <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    className="rounded-md px-4 text-white"
-                                    onClick={() => handleDeleteLesson(lesson.id)}
-                                    disabled={deletingLessonId === lesson.id}
-                                >
-                                    {deletingLessonId === lesson.id ? 'Deleting...' : 'Delete'}
-                                </Button>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteLesson(lesson.id);
+                                }}
+                                disabled={deletingLessonId === lesson.id}
+                                className="absolute top-4 right-4"
+                            >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
                         </div>
                     </div>
                 ))}

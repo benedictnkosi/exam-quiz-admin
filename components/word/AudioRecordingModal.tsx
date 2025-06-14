@@ -120,11 +120,11 @@ export function AudioRecordingModal({ open, onOpenChange, onAudioRecorded, langu
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md w-[95vw] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Record Audio for {language}</DialogTitle>
+                    <DialogTitle className="text-lg sm:text-xl">Record Audio for {language}</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col items-center space-y-4 py-4">
+                <div className="flex flex-col items-center space-y-4 py-2 sm:py-4">
                     <div className="w-full flex flex-col items-center justify-center">
                         {status === 'recording' ? (
                             <div className="flex items-center gap-2">
@@ -136,31 +136,31 @@ export function AudioRecordingModal({ open, onOpenChange, onAudioRecorded, langu
                                 <div ref={containerRef} className="w-full cursor-pointer" onClick={onWaveformClick} />
                                 <div className="flex items-center justify-between w-full mt-2">
                                     <span className="text-xs text-gray-500">{formatTime(currentTime)}</span>
-                                    <Button type="button" onClick={onPlayPause} className="px-4 py-1">
+                                    <Button type="button" onClick={onPlayPause} className="px-3 py-1 text-sm">
                                         {isPlaying ? 'Pause' : 'Play'}
                                     </Button>
                                 </div>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <Button type="button" size="sm" variant="outline" onClick={handleSetStartTime}>
+                                <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 w-full">
+                                    <Button type="button" size="sm" variant="outline" onClick={handleSetStartTime} className="w-full sm:w-auto">
                                         Set Start Time
                                     </Button>
-                                    <Button type="button" size="sm" variant="outline" onClick={handleSetEndTime}>
+                                    <Button type="button" size="sm" variant="outline" onClick={handleSetEndTime} className="w-full sm:w-auto">
                                         Set End Time
                                     </Button>
                                 </div>
-                                <div className="flex items-center gap-4 mt-1">
+                                <div className="flex flex-col sm:flex-row items-center gap-2 mt-1">
                                     <span className="text-xs text-blue-600">Start: {startTime !== null ? formatTime(startTime) : '--:--.---'}</span>
                                     <span className="text-xs text-pink-600">End: {endTime !== null ? formatTime(endTime) : '--:--.---'}</span>
                                 </div>
                             </>
                         ) : null}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto">
                         {status !== 'recording' ? (
                             <Button
                                 onClick={startRecording}
                                 disabled={isProcessing}
-                                className="bg-red-500 hover:bg-red-600"
+                                className="bg-red-500 hover:bg-red-600 w-full sm:w-auto"
                             >
                                 Start Recording
                             </Button>
@@ -168,26 +168,28 @@ export function AudioRecordingModal({ open, onOpenChange, onAudioRecorded, langu
                             <Button
                                 onClick={stopRecording}
                                 disabled={isProcessing}
-                                className="bg-gray-500 hover:bg-gray-600"
+                                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
                             >
                                 Stop Recording
                             </Button>
                         )}
                     </div>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                         disabled={isProcessing}
+                        className="w-full sm:w-auto"
                     >
                         Cancel
                     </Button>
                     <Button
                         type="button"
                         onClick={handleSave}
-                        disabled={!mediaBlobUrl || isProcessing}
+                        disabled={!mediaBlobUrl || isProcessing || status === 'recording' || startTime === null || endTime === null}
+                        className="w-full sm:w-auto"
                     >
                         {isProcessing ? 'Saving...' : 'Save Recording'}
                     </Button>

@@ -294,7 +294,21 @@ export async function updateLanguageQuestion(id: string, data: Partial<LanguageQ
     return response.json();
 }
 
-export async function deleteLanguageQuestion(id: string): Promise<void> {
+export async function deleteLanguageQuestion(id: string): Promise<{
+    success: boolean;
+    message: string;
+    deletedQuestion: {
+        id: number;
+        options: string[];
+        correctOption: number | null;
+        questionOrder: number;
+        type: string;
+        blankIndex: number | null;
+        sentenceWords: string[];
+        direction: string;
+        lessonId: number;
+    };
+}> {
     const response = await fetch(`${API_HOST}/api/language-questions/${id}`, {
         method: 'DELETE',
     });
@@ -302,6 +316,8 @@ export async function deleteLanguageQuestion(id: string): Promise<void> {
     if (!response.ok) {
         throw new Error('Failed to delete language question');
     }
+
+    return response.json();
 }
 
 export async function getQuestionsForLesson(lessonId: string): Promise<LanguageQuestion[]> {
