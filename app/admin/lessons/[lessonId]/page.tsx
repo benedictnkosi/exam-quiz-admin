@@ -12,6 +12,7 @@ import { WordFormModal } from '@/components/word/WordFormModal';
 import { LessonForm } from '@/app/admin/lessons/lesson-form';
 import { QuestionForm } from '@/app/admin/lessons/[lessonId]/questions/question-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useAuth } from "@/contexts/AuthContext";
 
 
 interface Question {
@@ -98,6 +99,7 @@ export default function LessonDetailPage({
 }: {
     params: { lessonId: string };
 }) {
+    const { user } = useAuth();
     const router = useRouter();
     const { lessonId } = params;
     const [lesson, setLesson] = useState<Lesson | null>(null);
@@ -506,6 +508,7 @@ export default function LessonDetailPage({
                     toast.success('Word added successfully');
                 }}
                 wordGroups={wordGroups}
+                learnerUid={user?.uid || ''}
             />
 
             {/* Question Creation/Edit Modal */}

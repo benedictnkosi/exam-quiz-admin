@@ -95,13 +95,13 @@ export default function UnitDetailPage({
 
         try {
             // Update both lessons' orders
-            await fetch(`${API_BASE_URL}/api/lessons/${currentLesson.id}`, {
+            await fetch(`${API_HOST}/api/lessons/${currentLesson.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lessonOrder: newIndex })
             });
 
-            await fetch(`${API_BASE_URL}/api/lessons/${targetLesson.id}`, {
+            await fetch(`${API_HOST}/api/lessons/${targetLesson.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lessonOrder: currentIndex })
@@ -130,7 +130,7 @@ export default function UnitDetailPage({
         }
         setIsDeleting(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/api/units/${unitId}`, {
+            const response = await fetch(`${API_HOST}/api/units/${unitId}`, {
                 method: 'DELETE'
             });
 
@@ -156,7 +156,7 @@ export default function UnitDetailPage({
             }
 
             // Delete the lesson using the new API
-            const response = await fetch(`${API_BASE_URL}/api/lessons/${lessonId}`, {
+            const response = await fetch(`${API_HOST}/api/lessons/${lessonId}`, {
                 method: 'DELETE'
             });
 

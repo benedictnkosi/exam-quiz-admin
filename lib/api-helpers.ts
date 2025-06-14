@@ -170,12 +170,12 @@ export async function updateWordTranslation(id: string, languageCode: string, tr
     }
 }
 
-export async function updateWordAudio(id: string, languageCode: string, audioUrl: string) {
+export async function updateWordAudio(id: string, languageCode: string, audioUrl: string, uid: string) {
     try {
         const response = await fetch(`${API_HOST}/api/words/word/${id}/audio`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ languageCode, audioUrl }),
+            body: JSON.stringify({ languageCode, audioUrl, uid }),
         });
         if (!response.ok) throw new Error('Failed to update audio');
         return await response.json();

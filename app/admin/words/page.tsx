@@ -11,6 +11,7 @@ import { API_HOST } from "@/config/constants";
 import { WordFormModal } from '@/components/word/WordFormModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Volume2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const LANGUAGE_OPTIONS = [
     "af", // Afrikaans
@@ -41,6 +42,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
 };
 
 export default function WordsPage() {
+    const { user } = useAuth();
     const [words, setWords] = useState<Array<{
         id: number;
         translations: Record<string, string>;
@@ -167,6 +169,7 @@ export default function WordsPage() {
                     image: '',
                     groupId: Number(selectedUnitFilter)
                 } : undefined)}
+                learnerUid={user?.uid || ''}
             />
 
             {/* Words List */}

@@ -44,6 +44,7 @@ interface WordFormModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
+    learnerUid: string;
     initialData?: {
         id: string;
         translations: Record<string, string>;
@@ -59,7 +60,7 @@ interface WordFormModalProps {
 
 const AudioRecordingModal = dynamic(() => import('./AudioRecordingModal').then(mod => mod.AudioRecordingModal), { ssr: false });
 
-export function WordFormModal({ open, onOpenChange, onSuccess, initialData, wordGroups = [] }: WordFormModalProps) {
+export function WordFormModal({ open, onOpenChange, onSuccess, learnerUid, initialData, wordGroups = [] }: WordFormModalProps) {
     const [form, setForm] = useState({
         id: initialData?.id || "",
         translations: initialData?.translations || {} as Record<string, string>,
@@ -243,7 +244,7 @@ export function WordFormModal({ open, onOpenChange, onSuccess, initialData, word
             if (isEditing && form.id) {
                 await updateWordTranslation(form.id, selectedLang, translationInput);
                 if (audioUrl) {
-                    await updateWordAudio(form.id, selectedLang, audioUrl);
+                    await updateWordAudio(form.id, selectedLang, audioUrl, learnerUid);
                 }
                 // Fetch the updated word and update the form state
                 const updatedWord = await getWordById(form.id);
