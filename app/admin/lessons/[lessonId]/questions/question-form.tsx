@@ -1000,6 +1000,104 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                 >
                     Cancel
                 </Button>
+                {question && (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            // Create a copy of the current question data without the ID
+                            const questionData = { ...question };
+                            delete questionData.id;
+
+                            // Ensure we have a valid question type
+                            if (!questionData.type) return;
+
+                            // Reset the form with the copied data
+                            let newFormData: QuestionFormData;
+
+                            switch (questionData.type) {
+                                case 'select_image':
+                                    newFormData = {
+                                        type: 'select_image',
+                                        content: {
+                                            type: 'select_image',
+                                            options: questionData.options || [],
+                                            correct: questionData.correctOption ?? 0
+                                        }
+                                    };
+                                    break;
+                                case 'translate':
+                                    newFormData = {
+                                        type: 'translate',
+                                        content: {
+                                            type: 'translate',
+                                            options: questionData.options || [],
+                                            sentenceWords: questionData.sentenceWords || [],
+                                            direction: questionData.direction as 'from_english' | 'to_english' || 'from_english'
+                                        }
+                                    };
+                                    break;
+                                case 'tap_what_you_hear':
+                                    newFormData = {
+                                        type: 'tap_what_you_hear',
+                                        content: {
+                                            type: 'tap_what_you_hear',
+                                            options: questionData.options || [],
+                                            sentenceWords: questionData.sentenceWords || []
+                                        }
+                                    };
+                                    break;
+                                case 'type_what_you_hear':
+                                    newFormData = {
+                                        type: 'type_what_you_hear',
+                                        content: {
+                                            type: 'type_what_you_hear',
+                                            sentenceWords: questionData.sentenceWords || []
+                                        }
+                                    };
+                                    break;
+                                case 'fill_in_blank':
+                                    newFormData = {
+                                        type: 'fill_in_blank',
+                                        content: {
+                                            type: 'fill_in_blank',
+                                            sentenceWords: questionData.options || [],
+                                            blankIndex: questionData.blankIndex ?? 0
+                                        }
+                                    };
+                                    break;
+                                case 'complete_translation':
+                                    newFormData = {
+                                        type: 'complete_translation',
+                                        content: {
+                                            type: 'complete_translation',
+                                            sentenceWords: questionData.options || [],
+                                            blankIndex: questionData.blankIndex ?? 0
+                                        }
+                                    };
+                                    break;
+                                case 'match_pairs':
+                                    newFormData = {
+                                        type: 'match_pairs',
+                                        content: {
+                                            type: 'match_pairs',
+                                            options: questionData.options || [],
+                                            matchType: 'text'
+                                        }
+                                    };
+                                    break;
+                                default:
+                                    return;
+                            }
+
+                            reset(newFormData);
+                            // Clear the question prop to treat it as a new question
+                            question = null;
+                        }}
+                    >
+                        Save as New
+                    </Button>
+                )}
                 <Button type="submit" disabled={formIsSubmitting || !isFormValid}>
                     {formIsSubmitting
                         ? question

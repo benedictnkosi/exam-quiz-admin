@@ -251,7 +251,7 @@ export default function LessonDetailPage({
                                             'No translation available';
                                         return translation;
                                     }).join(' ')
-                                    : <span className="text-gray-400">No correct answer set.</span>
+                                    : <span className="text-red-500">Please set the correct answer by editing this question</span>
                             )}
                         </p>
                         <p className="text-sm text-gray-600 mt-2">

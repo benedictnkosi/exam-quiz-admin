@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/config/constants';
+import { API_BASE_URL, API_HOST } from '@/config/constants';
 import React, { useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
@@ -44,8 +44,20 @@ interface StatsResponse {
     };
 }
 
+interface LanguageStats {
+    capturerName: string;
+    questionCount: number;
+}
+
+interface LanguageStatsResponse {
+    fromDate: string;
+    endDate: string;
+    stats: LanguageStats[];
+}
+
 export default function QuestionStatsTable() {
     const [stats, setStats] = useState<StatsResponse['data'] | null>(null);
+    const [languageStats, setLanguageStats] = useState<LanguageStats[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedFromDate, setSelectedFromDate] = useState<Date>(() => {
@@ -64,11 +76,19 @@ export default function QuestionStatsTable() {
             try {
                 const fromDate = selectedFromDate.toISOString().split('T')[0];
                 const endDate = selectedEndDate.toISOString().split('T')[0];
-                const response = await fetch(`${API_BASE_URL}/stats/questions?fromDate=${fromDate}&endDate=${endDate}`);
-                const data: StatsResponse = await response.json();
 
-                if (data.status === 'OK') {
-                    setStats(data.data);
+                // Fetch both regular stats and language stats
+                const [statsResponse, languageStatsResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/stats/questions?fromDate=${fromDate}&endDate=${endDate}`),
+                    fetch(`${API_HOST}/api/language-questions/capturer/stats?fromDate=${fromDate}&endDate=${endDate}`)
+                ]);
+
+                const statsData: StatsResponse = await statsResponse.json();
+                const languageStatsData: LanguageStatsResponse = await languageStatsResponse.json();
+
+                if (statsData.status === 'OK') {
+                    setStats(statsData.data);
+                    setLanguageStats(languageStatsData.stats);
                 } else {
                     setError('Failed to fetch statistics');
                 }
@@ -207,13 +227,18 @@ export default function QuestionStatsTable() {
                         <div className="bg-white p-3 rounded shadow">
                             <div className="text-sm text-gray-500">Total Due (Rands)</div>
                             <div className="text-xl font-semibold">
-                                {stats && `R ${Object.values(stats.capturer_stats)
-                                    .filter(capturer => capturer.email !== 'nkosi@gmail.com')
-                                    .reduce((sum, capturer) => {
-                                        const aiQuestions = capturer.ai_questions_count || 0;
-                                        const normalQuestions = capturer.total - aiQuestions;
-                                        return sum + (aiQuestions * 1) + (normalQuestions * 3);
-                                    }, 0).toLocaleString()}`}
+                                {stats && `R ${(
+                                    Object.values(stats.capturer_stats)
+                                        .filter(capturer => capturer.email !== 'nkosi@gmail.com')
+                                        .reduce((sum, capturer) => {
+                                            const aiQuestions = capturer.ai_questions_count || 0;
+                                            const normalQuestions = capturer.total - aiQuestions;
+                                            return sum + (aiQuestions * 1) + (normalQuestions * 3);
+                                        }, 0) +
+                                    languageStats
+                                        .filter(stat => stat.capturerName !== 'Benedict Nkosi')
+                                        .reduce((sum, stat) => sum + stat.questionCount, 0)
+                                ).toLocaleString()}`}
                             </div>
                         </div>
                     </div>
@@ -266,7 +291,7 @@ export default function QuestionStatsTable() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {capturer.status_counts.pending} ({capturer.percentages.pending.toFixed(1)}%)
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <td className="px-6 py-4 whitespace-naowrap text-sm text-gray-500">
                                                     {aiQuestions}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -282,6 +307,45 @@ export default function QuestionStatsTable() {
                                 <tr>
                                     <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500">
                                         No capturer statistics available
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Language Statistics */}
+            <div>
+                <h3 className="text-lg font-medium text-gray-800 mb-4">Language Questions Statistics</h3>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capturer Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question Count</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Due</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {languageStats.length > 0 ? (
+                                languageStats.map((stat, index) => (
+                                    <tr key={index}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {stat.capturerName}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {stat.questionCount}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {stat.capturerName === 'Benedict Nkosi' ? 'N/A' : `R ${stat.questionCount.toLocaleString()}`}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500">
+                                        No language statistics available
                                     </td>
                                 </tr>
                             )}
