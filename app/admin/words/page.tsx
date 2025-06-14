@@ -50,10 +50,16 @@ export default function WordsPage() {
         image: string | null;
         groupId: string | null;
     }>>([]);
-    const [units, setUnits] = useState<Array<{ id: string; title: string }>>([]);
+    const [wordGroups, setWordGroups] = useState<Array<{ id: string; name: string }>>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isWordModalOpen, setIsWordModalOpen] = useState(false);
-    const [selectedUnitFilter, setSelectedUnitFilter] = useState<string>("all");
+    const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>(() => {
+        // Initialize from localStorage if available, otherwise default to "all"
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('selectedWordGroupFilter') || "all";
+        }
+        return "all";
+    });
     const [editingWord, setEditingWord] = useState<{
         id: string;
         translations: Record<string, string>;
@@ -65,20 +71,23 @@ export default function WordsPage() {
 
     useEffect(() => {
         fetchWords();
-        fetchUnits();
+        fetchWordGroups();
         // Get the last viewed lesson ID from localStorage
         const savedLessonId = localStorage.getItem('lastViewedLessonId');
         setLastViewedLessonId(savedLessonId);
-    }, [selectedUnitFilter]);
+    }, [selectedGroupFilter]);
 
-    async function fetchUnits() {
+    // Add effect to save selected group filter to localStorage
+    useEffect(() => {
+        localStorage.setItem('selectedWordGroupFilter', selectedGroupFilter);
+    }, [selectedGroupFilter]);
+
+    async function fetchWordGroups() {
         try {
-            const response = await fetch(`${API_HOST}/api/units`);
-            if (!response.ok) throw new Error('Failed to fetch units');
-            const data = await response.json();
-            setUnits(data);
+            const data = await getWordGroups();
+            setWordGroups(data);
         } catch (error) {
-            toast.error("Failed to fetch units");
+            toast.error("Failed to fetch word groups");
         }
     }
 
@@ -86,8 +95,8 @@ export default function WordsPage() {
         setIsLoading(true);
         try {
             let data;
-            if (selectedUnitFilter && selectedUnitFilter !== "all") {
-                const response = await fetch(`${API_HOST}/api/words/unit/${selectedUnitFilter}`);
+            if (selectedGroupFilter && selectedGroupFilter !== "all") {
+                const response = await fetch(`${API_HOST}/api/words/group/${selectedGroupFilter}`);
                 if (!response.ok) throw new Error('Failed to fetch words');
                 data = await response.json();
             } else {
@@ -128,17 +137,17 @@ export default function WordsPage() {
             <div className="flex flex-col gap-2 mb-4">
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Select
-                        value={selectedUnitFilter}
-                        onValueChange={setSelectedUnitFilter}
+                        value={selectedGroupFilter}
+                        onValueChange={setSelectedGroupFilter}
                     >
                         <SelectTrigger className="w-full sm:w-[180px] h-8 text-sm">
-                            <SelectValue placeholder="Filter by Unit" />
+                            <SelectValue placeholder="Filter by Word Group" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Units</SelectItem>
-                            {units.map((unit) => (
-                                <SelectItem key={unit.id} value={unit.id}>
-                                    {unit.title}
+                            <SelectItem value="all">All Word Groups</SelectItem>
+                            {wordGroups.map((group) => (
+                                <SelectItem key={group.id} value={group.id}>
+                                    {group.name}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -161,13 +170,13 @@ export default function WordsPage() {
                     toast.success(editingWord ? 'Word updated successfully' : 'Word added successfully');
                     setEditingWord(null);
                 }}
-                wordGroups={units.map(unit => ({ id: Number(unit.id), name: unit.title }))}
-                initialData={editingWord || (selectedUnitFilter !== "all" ? {
+                wordGroups={wordGroups.map(group => ({ id: Number(group.id), name: group.name }))}
+                initialData={editingWord || (selectedGroupFilter !== "all" ? {
                     id: '',
                     translations: {},
                     audio: {},
                     image: '',
-                    groupId: Number(selectedUnitFilter)
+                    groupId: Number(selectedGroupFilter)
                 } : undefined)}
                 learnerUid={user?.uid || ''}
             />
@@ -200,9 +209,9 @@ export default function WordsPage() {
                                 </div>
                                 {word.groupId && (
                                     <div>
-                                        <span className="font-medium">Unit:</span>
+                                        <span className="font-medium">Word Group:</span>
                                         <span className="ml-2">
-                                            {units.find(u => u.id === word.groupId)?.title || word.groupId}
+                                            {wordGroups.find(g => g.id === word.groupId)?.name || word.groupId}
                                         </span>
                                     </div>
                                 )}

@@ -179,8 +179,8 @@ export default function LessonDetailPage({
 
         try {
             // Update both questions' orders
-            await updateQuestion(lessonId, currentQuestion.id, { questionOrder: newIndex });
-            await updateQuestion(lessonId, targetQuestion.id, { questionOrder: currentIndex });
+            await updateQuestion(lessonId, currentQuestion.id, { questionOrder: newIndex, capturerId: user?.uid || '' });
+            await updateQuestion(lessonId, targetQuestion.id, { questionOrder: currentIndex, capturerId: user?.uid || '' });
 
             // Update local state
             const newQuestions = [...questions];
