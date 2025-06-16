@@ -322,7 +322,7 @@ export async function deleteLanguageQuestion(id: string): Promise<{
 }
 
 export async function getQuestionsForLesson(lessonId: string): Promise<LanguageQuestion[]> {
-    const response = await fetch(`${API_HOST}/api/language-questions/lesson/${lessonId}`);
+    const response = await fetch(`${API_HOST}/api/language-questions/lesson/${lessonId}/language/zu`);
 
     if (!response.ok) {
         throw new Error('Failed to fetch questions for lesson');
