@@ -45,7 +45,7 @@ export default function SubjectQuestionCountTable() {
     const [data, setData] = useState<SubjectQuestionCount[]>([])
     const [gradeCounts, setGradeCounts] = useState<GradeCount[]>([])
     const [loading, setLoading] = useState(true)
-    const [selectedTerm, setSelectedTerm] = useState("2")
+    const [selectedTerm, setSelectedTerm] = useState("4")
     const { user } = useAuth()
     const [showConfirmation, setShowConfirmation] = useState(false)
     const [selectedSubject, setSelectedSubject] = useState<SubjectQuestionCount | null>(null)
