@@ -37,6 +37,7 @@ const QUESTION_TYPES = [
     'fill_in_blank',
     'match_pairs',
     'complete_translation',
+    'type_missing_word',
 ] as const;
 
 interface Word {
@@ -50,7 +51,7 @@ interface Word {
 
 interface Question {
     id: string;
-    type: 'select_image' | 'translate' | 'tap_what_you_hear' | 'type_what_you_hear' | 'fill_in_blank' | 'match_pairs' | 'complete_translation';
+    type: 'select_image' | 'translate' | 'tap_what_you_hear' | 'type_what_you_hear' | 'fill_in_blank' | 'match_pairs' | 'complete_translation' | 'type_missing_word';
     order?: number;
     options: string[];
     correctOption: number | null;
@@ -782,6 +783,58 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                     </>
                 );
 
+            case 'type_missing_word':
+                return (
+                    <>
+                        <SentenceBuilder
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            control={control}
+                            words={words}
+                            sortWordsByEnglishTranslation={sortWordsByEnglishTranslation}
+                            getFirstAvailableTranslation={getFirstAvailableTranslation}
+                            title="Build Your Sentence"
+                            description="Click the + button to add words to your sentence. You must add at least one word."
+                            fieldArrayName="content.sentenceWords"
+                        />
+
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium mb-2">
+                                Select Word to Omit
+                            </label>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Choose which word will be replaced with a blank in the sentence.
+                            </p>
+                            <select
+                                {...register('content.blankIndex', { valueAsNumber: true })}
+                                className="w-full p-2 border rounded-md"
+                            >
+                                <option value="">Select word to omit</option>
+                                {(() => {
+                                    const sentenceWords = watch('content.sentenceWords') || [];
+                                    return sentenceWords
+                                        .map((wordId, index) => {
+                                            const word = words.find(w => String(w.id) === String(wordId));
+                                            return word ? { word, index } : null;
+                                        })
+                                        .filter(item => item !== null)
+                                        .sort((a, b) => {
+                                            const aTranslation = a?.word.translations?.en || '';
+                                            const bTranslation = b?.word.translations?.en || '';
+                                            return aTranslation.localeCompare(bTranslation);
+                                        })
+                                        .map(item => (
+                                            <option key={item?.index} value={item?.index}>
+                                                {getFirstAvailableTranslation(item?.word)}
+                                            </option>
+                                        ));
+                                })()}
+                            </select>
+                        </div>
+                    </>
+                );
+
             default:
                 return null;
         }
@@ -809,6 +862,7 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                     break;
                 case 'fill_in_blank':
                 case 'complete_translation':
+                case 'type_missing_word':
                     newOptions = question.options || [];
                     break;
                 case 'match_pairs':
@@ -864,6 +918,16 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                         type: 'complete_translation',
                         content: {
                             type: 'complete_translation',
+                            sentenceWords: question.sentenceWords || [],
+                            blankIndex: question.blankIndex ?? 0
+                        }
+                    } as QuestionFormData;
+                    break;
+                case 'type_missing_word':
+                    newInitial = {
+                        type: 'type_missing_word',
+                        content: {
+                            type: 'type_missing_word',
                             sentenceWords: question.sentenceWords || [],
                             blankIndex: question.blankIndex ?? 0
                         }
@@ -996,6 +1060,16 @@ export function QuestionForm({ lessonId, question, onSuccess }: QuestionFormProp
                             type: 'match_pairs',
                             options: ['', '', '', '', ''],
                             matchType: ''
+                        }
+                    };
+                    break;
+                case 'type_missing_word':
+                    newDefaults = {
+                        type: 'type_missing_word',
+                        content: {
+                            type: 'type_missing_word',
+                            sentenceWords: [],
+                            blankIndex: 0
                         }
                     };
                     break;

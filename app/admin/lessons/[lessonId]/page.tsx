@@ -53,7 +53,7 @@ interface Question {
 
 // Interface for the form component's Question type
 interface FormQuestion extends Omit<Question, 'correctOption'> {
-    type: 'select_image' | 'translate' | 'tap_what_you_hear' | 'type_what_you_hear' | 'fill_in_blank' | 'match_pairs' | 'complete_translation';
+    type: 'select_image' | 'translate' | 'tap_what_you_hear' | 'type_what_you_hear' | 'fill_in_blank' | 'match_pairs' | 'complete_translation' | 'type_missing_word';
     options: string[];
     correctOption: number | null;
     words: Array<{
@@ -360,6 +360,28 @@ export default function LessonDetailPage({
                     </>
                 );
             case 'complete_translation':
+                return (
+                    <>
+                        <div className="mt-2">
+                            <p className="text-sm font-medium">Sentence:</p>
+                            <ul className="list-disc list-inside text-sm text-gray-600">
+                                {question.sentenceWords?.map((wordId, index) => {
+                                    const word = getWordById(wordId);
+                                    const isBlank = index === question.blankIndex;
+                                    return (
+                                        <li key={index}>
+                                            {isBlank ? '_____' : (word?.translations?.en || wordId)}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-2">
+                            <span className="font-medium">Blank Word:</span> {getWordById(question.sentenceWords?.[question.blankIndex ?? -1] || '')?.translations?.en || question.sentenceWords?.[question.blankIndex ?? -1]}
+                        </p>
+                    </>
+                );
+            case 'type_missing_word':
                 return (
                     <>
                         <div className="mt-2">

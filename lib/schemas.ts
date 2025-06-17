@@ -25,6 +25,7 @@ export const questionSchema = z.object({
         'fill_in_blank',
         'match_pairs',
         'complete_translation',
+        'type_missing_word',
     ]),
     order: z.number().optional(),
     content: z.discriminatedUnion('type', [
@@ -57,6 +58,11 @@ export const questionSchema = z.object({
         }),
         z.object({
             type: z.literal('complete_translation'),
+            sentenceWords: z.array(z.string()).min(1, 'At least one word is required'),
+            blankIndex: z.number().min(0, 'Must select a word to omit'),
+        }),
+        z.object({
+            type: z.literal('type_missing_word'),
             sentenceWords: z.array(z.string()).min(1, 'At least one word is required'),
             blankIndex: z.number().min(0, 'Must select a word to omit'),
         }),
