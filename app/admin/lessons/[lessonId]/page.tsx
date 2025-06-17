@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft } from 'lucide-react';
 import { getLessonById as getLessonByIdApi, getQuestionsForLesson, getWords, updateQuestion, createWord, getWordGroups, updateLesson } from '@/lib/api-helpers';
 
 import { useRouter } from 'next/navigation';
@@ -435,9 +435,19 @@ export default function LessonDetailPage({
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">{lesson.title}</h1>
-                    <p className="text-gray-600">Order: {lesson.order}</p>
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => router.back()}
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold mb-2">{lesson.title}</h1>
+                        <p className="text-gray-600">Order: {lesson.order}</p>
+                    </div>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <Link href="/admin/units" className="flex-1 sm:flex-none">

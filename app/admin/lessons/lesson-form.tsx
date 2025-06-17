@@ -71,9 +71,13 @@ export function LessonForm({ initialData, unitId, trigger, open, onOpenChange, o
                 toast.success('Lesson updated successfully!');
             } else {
                 console.log('Creating new lesson');
+                // Get existing lessons to determine the next order number
+                const existingLessons = await getLessonsByUnitId(unitId);
+                const nextOrder = existingLessons.length;
+
                 const createPayload = {
                     title: data.title,
-                    lessonOrder: 0, // The backend will handle the order
+                    lessonOrder: nextOrder, // Set to the next available order number
                     unitId: Number(data.unitId)
                 };
                 console.log('Create payload:', createPayload);
