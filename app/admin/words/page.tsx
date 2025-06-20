@@ -311,6 +311,9 @@ export default function WordsPage() {
                     <div className="mb-2 text-sm text-gray-700 font-medium">
                         Showing words missing <span className="font-bold">{LANGUAGE_LABELS[missingLang]}</span> translation (must have English translation)
                     </div>
+                    <div className="mb-2 text-xs text-gray-600">
+                        Total: {words.filter(word => word.translations?.en && !word.translations?.[missingLang]).length} words
+                    </div>
                     {words.filter(word => word.translations?.en && !word.translations?.[missingLang]).length === 0 ? (
                         <div className="text-gray-500">No words are missing {LANGUAGE_LABELS[missingLang]} translation.</div>
                     ) : (
@@ -367,6 +370,9 @@ export default function WordsPage() {
                 </div>
             ) : (
                 <div className="space-y-4">
+                    <div className="mb-2 text-xs text-gray-600">
+                        Total: {words.length} words
+                    </div>
                     {words.map((word) => (
                         <div key={word.id} className="p-4 bg-white rounded-lg shadow-sm border flex flex-col sm:flex-row justify-between gap-4">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
