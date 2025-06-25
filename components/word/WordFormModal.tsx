@@ -157,7 +157,8 @@ export function WordFormModal({ open, onOpenChange, onSuccess, learnerUid, initi
                 // Convert form data to match WordData interface
                 const wordData = {
                     ...form,
-                    groupId: form.groupId || undefined
+                    groupId: form.groupId || undefined,
+                    uid: learnerUid
                 };
                 await createWord(wordData);
                 toast.success("Word created");

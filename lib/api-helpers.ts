@@ -52,6 +52,7 @@ interface WordData {
     audio?: Record<string, string>;
     image?: string;
     groupId?: number;
+    uid?: string;
 }
 
 interface GroupData {
