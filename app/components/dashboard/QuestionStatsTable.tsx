@@ -256,7 +256,7 @@ export default function QuestionStatsTable() {
                                         .reduce((sum, stat) => sum + stat.questionCount, 0) +
                                     wordRecordingStats
                                         .filter(stat => stat.learnerName !== 'Benedict Nkosi')
-                                        .reduce((sum, stat) => sum + (stat.totalRecordings * 2), 0)
+                                        .reduce((sum, stat) => sum + (stat.totalRecordings * 3), 0)
                                 ).toLocaleString()}`}
                             </div>
                         </div>
@@ -353,7 +353,7 @@ export default function QuestionStatsTable() {
                                     {languageStats.map((stat, index) => {
                                         const wordRecording = wordRecordingStats.find(wr => wr.learnerName === stat.capturerName) || { totalRecordings: 0 };
                                         const isBenedict = stat.capturerName === 'Benedict Nkosi';
-                                        const totalDue = isBenedict ? 'N/A' : `R ${(stat.questionCount + (wordRecording.totalRecordings * 2)).toLocaleString()}`;
+                                        const totalDue = isBenedict ? 'N/A' : `R ${(stat.questionCount + (wordRecording.totalRecordings * 3)).toLocaleString()}`;
 
                                         return (
                                             <tr key={`lang-${index}`}>
@@ -386,7 +386,7 @@ export default function QuestionStatsTable() {
                                                     {stat.totalRecordings}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {stat.learnerName === 'Benedict Nkosi' ? 'N/A' : `R ${(stat.totalRecordings * 2).toLocaleString()}`}
+                                                    {stat.learnerName === 'Benedict Nkosi' ? 'N/A' : `R ${(stat.totalRecordings * 3).toLocaleString()}`}
                                                 </td>
                                             </tr>
                                         ))
