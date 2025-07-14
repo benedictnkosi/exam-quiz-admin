@@ -174,7 +174,9 @@ export default function SubjectQuestionCountTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((item, index) => (
+                        {data
+                          .filter(item => !/accounting|computer applications|information technology|life orientation/i.test(item.subject_name))
+                          .map((item, index) => (
                             <TableRow key={index}>
                                 <TableCell>{item.subject_name}</TableCell>
                                 <TableCell>{item.grade}</TableCell>

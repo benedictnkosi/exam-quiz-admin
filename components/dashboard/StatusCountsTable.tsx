@@ -180,7 +180,9 @@ export default function StatusCountsTable() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {Object.entries(stats.subject_counts).map(([subject, count]) => (
+                                    {Object.entries(stats.subject_counts)
+                                      .filter(([subject]) => !/accounting|computer applications|information technology|life orientation/i.test(subject))
+                                      .map(([subject, count]) => (
                                         <tr key={subject}>
                                             <td className="px-6 py-4 text-sm text-gray-900">{subject}</td>
                                             <td className="px-6 py-4 text-sm text-gray-500">{count}</td>

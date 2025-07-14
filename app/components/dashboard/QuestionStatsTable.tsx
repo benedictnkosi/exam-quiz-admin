@@ -189,7 +189,9 @@ export default function QuestionStatsTable() {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {stats && Object.keys(stats.subject_counts).length > 0 ? (
-                                Object.entries(stats.subject_counts).map(([subject, count]) => (
+                                Object.entries(stats.subject_counts)
+                                  .filter(([subject]) => !/accounting|computer applications|information technology|life orientation/i.test(subject))
+                                  .map(([subject, count]) => (
                                     <tr key={subject}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {subject}
