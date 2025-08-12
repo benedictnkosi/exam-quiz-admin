@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Handle privacy, info, and delete-account pages - always accessible
-  if (path === '/privacy' || path === '/info' || path === '/info/delete-account') {
+  if (path === '/privacy' || path === '/privacy-maths' || path === '/privacy-accounting' || path === '/info' || path === '/info/delete-account') {
     return NextResponse.next()
   }
 
