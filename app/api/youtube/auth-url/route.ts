@@ -10,7 +10,11 @@ const SCOPES = [
 function getOAuth2Client() {
     const clientId = process.env.GOOGLE_CLIENT_ID
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/youtube/callback'
+    const publicBase = process.env.GOOGLE_REDIRECT_URI_BASE
+        || process.env.NEXT_PUBLIC_HOST_URL
+        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined)
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI
+        || (publicBase ? `${publicBase}/api/youtube/callback` : 'http://localhost:3000/api/youtube/callback')
     if (!clientId || !clientSecret) {
         throw new Error('Missing Google OAuth env vars')
     }

@@ -22,7 +22,9 @@ export default function YoutubeUploadsPage() {
     const fetchPending = async () => {
         setLoading(true)
         try {
-            const res = await fetch('/api/heygen/pending', { cache: 'no-store' })
+            const base = process.env.NEXT_PUBLIC_ADMIN_API_BASE || 'https://examquiz.dedicated.co.za'
+
+            const res = await fetch(`${base}/api/heygen/pending`, { cache: 'no-store' })
             const data = await res.json()
             setPending(Array.isArray(data) ? data : [])
         } catch (e) {
