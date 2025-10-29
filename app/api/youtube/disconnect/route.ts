@@ -19,7 +19,9 @@ export async function POST(request: NextRequest) {
             try {
                 const parsed = JSON.parse(tokenCookie)
                 accessToken = parsed?.access_token
-            } catch {}
+            } catch {
+                // ignore malformed cookie
+            }
         }
 
         if (accessToken) {

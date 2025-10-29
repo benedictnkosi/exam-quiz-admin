@@ -91,7 +91,9 @@ export async function POST(request: NextRequest) {
             try {
                 // Ensure we have capBuffer from prior block; if not yet fetched/converted, do basic fetch here too
                 // We will have capBuffer in scope only inside the captions block; re-fetch here if needed
-            } catch {}
+            } catch {
+                // no-op: optional prefetch failed
+            }
         }
 
         // If we created a burned file, overwrite uploadBody
@@ -122,7 +124,9 @@ export async function POST(request: NextRequest) {
                         else assText = iconv.decode(capBuf2, 'utf8')
 
                         let srtText = ''
-                        try { srtText = subsrt.convert(assText, { to: 'srt', from: 'ass' }) } catch {}
+                        try { srtText = subsrt.convert(assText, { to: 'srt', from: 'ass' }) } catch {
+                            // subsrt failed, will fallback
+                        }
                         if (!srtText || srtText.trim().length === 0) {
                             srtText = convertAssToSrtFallback(assText)
                         }
@@ -131,7 +135,9 @@ export async function POST(request: NextRequest) {
                             haveSrt = true
                         }
                     }
-                } catch {}
+                } catch {
+                    // ignore caption fetch/convert errors here; we'll skip burn
+                }
 
                 if (haveSrt) {
                     await fs.writeFile(inVideo, videoBuffer)
@@ -361,7 +367,7 @@ function convertAssToSrtFallback(assText: string): string {
 
 function normalizeAssTime(t: string): string | null {
     // ASS time like H:MM:SS.CS or 0:0:0.00 → produce HH:MM:SS,mmm
-    const m = t.match(/^(\d+):(\d+):(\d+)[\.:](\d{1,2})$/)
+    const m = t.match(/^(\d+):(\d+):(\d+)[.:](\d{1,2})$/)
     if (!m) return null
     const hh = String(parseInt(m[1], 10)).padStart(2, '0')
     const mm = String(parseInt(m[2], 10)).padStart(2, '0')
