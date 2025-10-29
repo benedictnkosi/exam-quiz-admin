@@ -43,3 +43,6 @@ next-env.d.ts
 # sensitive files
 firebase-service-account.json
 firebase-service-account.json.backup
+
+# Ignore Google secrets
+client_secret_*.json
