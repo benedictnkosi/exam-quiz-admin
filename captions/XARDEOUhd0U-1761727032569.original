@@ -1,0 +1,40 @@
+[Script Info]
+Title: movio
+ScriptType: v4.00+
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+
+Style: Default,NotoSans-Regular,12.0,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,70,70,0,0,4,0,2,2,10,10,10,1
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:0:0.00,0:0:0.76,Default,,0000,0000,0000,,Good evening! 
+Dialogue: 0,0:0:0.76,0:0:3.27,Default,,0000,0000,0000,,You 're watching South \nAfrica Why So Serious 
+Dialogue: 0,0:0:3.27,0:0:3.60,Default,,0000,0000,0000,,News. 
+Dialogue: 0,0:0:3.60,0:0:6.11,Default,,0000,0000,0000,,I 'm Dan — here 's your \ndaily dose of drama. 
+Dialogue: 0,0:0:6.11,0:0:8.40,Default,,0000,0000,0000,,Deputy Police Minister \nCastle Matale has 
+Dialogue: 0,0:0:8.40,0:0:10.91,Default,,0000,0000,0000,,described the police \nminister 's decision to 
+Dialogue: 0,0:0:10.91,0:0:13.53,Default,,0000,0000,0000,,disband the political \nkillings task team as `` 
+Dialogue: 0,0:0:13.53,0:0:14.51,Default,,0000,0000,0000,,highly irregular. 
+Dialogue: 0,0:0:14.51,0:0:16.97,Default,,0000,0000,0000,,'' Only in SA can \noperational challenges be 
+Dialogue: 0,0:0:16.97,0:0:18.77,Default,,0000,0000,0000,,solved by simply \nignoring them! 
+Dialogue: 0,0:0:18.77,0:0:21.44,Default,,0000,0000,0000,,Meanwhile, at the \nMadlanga Commission, forensic 
+Dialogue: 0,0:0:21.44,0:0:23.90,Default,,0000,0000,0000,,analysts are busy \nclarifying discrepancies, 
+Dialogue: 0,0:0:23.90,0:0:26.57,Default,,0000,0000,0000,,proving once again that \ncrime scene evidence is 
+Dialogue: 0,0:0:26.57,0:0:27.61,Default,,0000,0000,0000,,just a suggestion. 
+Dialogue: 0,0:0:27.61,0:0:28.70,Default,,0000,0000,0000,,Another plot twist! 
+Dialogue: 0,0:0:28.70,0:0:31.04,Default,,0000,0000,0000,,In other news, the DA \nhas launched a bold 
+Dialogue: 0,0:0:31.04,0:0:33.12,Default,,0000,0000,0000,,proposal to scrap the \nBlack Economic 
+Dialogue: 0,0:0:33.12,0:0:35.68,Default,,0000,0000,0000,,Empowerment policy, \nclaiming it benefits only 
+Dialogue: 0,0:0:35.68,0:0:36.28,Default,,0000,0000,0000,,the elite. 
+Dialogue: 0,0:0:36.28,0:0:38.90,Default,,0000,0000,0000,,Because who needs \neconomic growth when you can 
+Dialogue: 0,0:0:38.90,0:0:40.15,Default,,0000,0000,0000,,just change the rules? 
+Dialogue: 0,0:0:40.15,0:0:42.83,Default,,0000,0000,0000,,As we gear up for the \nG20 summit, Mayor Leagaza 
+Dialogue: 0,0:0:42.83,0:0:44.96,Default,,0000,0000,0000,,is confident South \nAfrica will shine. 
+Dialogue: 0,0:0:44.96,0:0:47.52,Default,,0000,0000,0000,,Let ’ s hope the only \nthing that gets lost is 
+Dialogue: 0,0:0:47.52,0:0:48.50,Default,,0000,0000,0000,,the Wi-Fi signal! 
+Dialogue: 0,0:0:48.50,0:0:51.01,Default,,0000,0000,0000,,That 's your daily dose \nof drama — where the 
+Dialogue: 0,0:0:51.01,0:0:53.52,Default,,0000,0000,0000,,scandals are serious, \nbut the anchor is n't. 
+Dialogue: 0,0:0:53.52,0:0:54.56,Default,,0000,0000,0000,,Goodnight, Mzansi. 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { API_BASE_URL } from '@/config/constants'
 
 export default function AdminRoute({ children }: { children: React.ReactNode }) {
     const router = useRouter()
@@ -17,7 +18,7 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
             }
 
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/learner?uid=${user.uid}`)
+                const response = await fetch(`${API_BASE_URL}/learner?uid=${user.uid}`)
                 const data = await response.json()
                 setIsAdmin(data.role === 'admin')
             } catch (error) {

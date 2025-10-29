@@ -13,6 +13,7 @@ const menuItems = [
   { path: '/admin', label: 'Dashboard' },
   { path: '/questions', label: 'Questions', showRejected: true },
   { path: '/admin/ai-questions/upload-exam-paper', label: 'Upload Exam Paper' },
+  { path: '/admin/youtube-uploads', label: 'YouTube Uploads' },
   { path: '/admin/app-management', label: 'App Management' },
   { path: '/admin/story-arcs', label: 'Story Arcs' },
   { path: '/admin/subscriptions', label: 'Subscriptions' },
