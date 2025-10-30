@@ -124,7 +124,7 @@ export default function YoutubeUploadsPage() {
             const res = await fetch('/api/youtube/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, videoUrl: item.video_url, captionUrl: item.caption_url, tags, privacyStatus: 'public' }),
+                body: JSON.stringify({ title, description, heygenId: item.id, tags, privacyStatus: 'public' }),
             })
             if (res.status === 401) {
                 setAuthNeeded(true)
