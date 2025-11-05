@@ -83,13 +83,44 @@ export default function YoutubeUploadsPage() {
             setUploadingId(item.id)
             const dateStr = formatDate(item.created_at)
             
+            // Check if title contains "SABC Digital News - Last 4 Hours" for time-based title
+            const isSABCNews = item.title.includes('SABC Digital News - Last 4 Hours')
+            
             // Check if title contains "madlanga" for specialized Madlanga Commission content
             const isMadlanga = item.title.toLowerCase().includes('madlanga')
             const isAdhoc = item.title.toLowerCase().includes('parliamentary')
             
             let title, description, tags
             
-            if (isMadlanga) {
+            if (isSABCNews) {
+                // Get the time from created_at timestamp
+                const createdDate = item.created_at ? new Date(item.created_at) : new Date()
+                const hours = createdDate.getHours()
+                const minutes = createdDate.getMinutes()
+                const timeInMinutes = hours * 60 + minutes
+                
+                // Determine time-based title
+                if (timeInMinutes < 16 * 60) { // Before 1300 (1:00 PM)
+                    title = `Midday News Update ${dateStr}`
+                } else if (timeInMinutes < 20 * 60) { // Before 2000 (8:00 PM)
+                    title = `Afternoon News Update ${dateStr}`
+                } else if (timeInMinutes >= 20 * 60) { // After 2000 (8:00 PM)
+                    title = `Evening News Update ${dateStr}`
+                } else {
+                    // Between 1800 and 2000 - default to Afternoon
+                    title = `Evening News Update ${dateStr}`
+                }
+                
+                // Use default description and tags for SABC News
+                description = `Welcome to South Africa Why So Serious News — your daily 60-second dose of Mzansi's madness! 🇿🇦\n\nHosted by Dan, this satirical news update delivers the day's biggest headlines with wit, speed, and straight-face humour.\nFrom commissions and corruption to power cuts and pop culture — it's the real news, just less depressing.\n\nWe laugh before we cry, one headline at a time.\n\n📺 New episodes daily\n🎙️ Smart. Funny. Fast. Mzansi.`
+                tags = [
+                    'SouthAfrica','WhySoSerious','MzansiNews','DailyNews','Satire','SouthAfricanNews',
+                    'BreakingNews','ComedyNews','SAComedy','DanReports','Mzansi','TrendingSA',
+                    'CommissionOfInquiry','Corruption','Loadshedding','SAHeadlines','PoliticalSatire',
+                    'SABCNews','EWN','PrimeNews','MzansiDrama','Shorts','TikTokNews','AfricanNews',
+                    'NewsParody','LocalNews','GoodNightMzansi'
+                ]
+            } else if (isMadlanga) {
                 title = `The Madlanga Commission ${dateStr}`
                 description = `Step into the courtroom soap opera that never ends — The Madlanga Commission. 🎬\n\nDan breaks down the latest testimony, name-dropping, and jaw-dropping revelations from South Africa's most dramatic inquiry. From missing bullets to mystery phone calls and power plays behind the scenes, it's the story that makes Generations look like a documentary.\n\nThis is South Africa Why So Serious News — where the scandals are serious, but the anchor isn't.\nCatch new episodes daily for your 60-second fix of Mzansi madness.\n\n📺 Smart. Funny. Fast. Mzansi.\n#WhySoSerious`
                 tags = [
