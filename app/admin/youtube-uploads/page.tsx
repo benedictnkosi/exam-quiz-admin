@@ -83,8 +83,9 @@ export default function YoutubeUploadsPage() {
             setUploadingId(item.id)
             const dateStr = formatDate(item.created_at)
             
-            // Check if title contains "SABC Digital News - Last 4 Hours" for time-based title
-            const isSABCNews = item.title.includes('SABC Digital News - Last 4 Hours')
+            // Check if title contains SABC Digital News (case-insensitive, robust to suffixes)
+            const normalizedTitle = (item.title || '').toLowerCase()
+            const isSABCNews = normalizedTitle.includes('last 4 hours')
             
             // Check if title contains "madlanga" for specialized Madlanga Commission content
             const isMadlanga = item.title.toLowerCase().includes('madlanga')
